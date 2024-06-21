@@ -1,4 +1,5 @@
 {
+  "name": "nitro-docs",
   "private": true,
   "scripts": {
     "dev": "undocs dev",
