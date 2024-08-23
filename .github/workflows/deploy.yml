@@ -25,8 +25,8 @@ jobs:
         env:
           NUXT_UI_PRO_LICENSE: ${{ secrets.NUXT_UI_PRO_LICENSE }}
         run: |
-          bun install --no-frozen-lockfile
-          cd docs && bun run build
+          cd docs && bun install --no-frozen-lockfile
+          bun run build
           cd .docs/.output/public && zip -rq ../../../../build.zip .
 
       - name: Deploy to Zeabur
