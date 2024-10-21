@@ -1,38 +1,38 @@
 # Flightcontrol
 
-> Deploy Nitro apps to AWS via Flightcontrol.
+> 通过 Flightcontrol 将 Nitro 应用部署到 AWS。
 
-**Preset:** `flightcontrol`
+**预设：** `flightcontrol`
 
 :read-more{title="flightcontrol.dev" to="https://flightcontrol.dev?ref=nitro"}
 
 ::note
-Flightcontrol has zero config support for [Nuxt](https://nuxt.com/) projects.
+Flightcontrol 对 [Nuxt](https://nuxt.com/) 项目的支持是零配置。
 ::
 
-## Set Up your flightcontrol account
+## 设置你的 flightcontrol 账户
 
-On a high level, the steps you will need to follow to deploy a project for the first time are:
+从高层次来看，第一次部署项目时你需要遵循的步骤是：
 
-1. Create an account at [Flightcontrol](https://app.flightcontrol.dev/signup?ref=nitro)
-2. Create an account at [AWS](https://portal.aws.amazon.com/billing/signup) (if you don't already have one)
-3. Link your AWS account to the Flightcontrol
-4. Authorize the Flightcontrol GitHub App to access your chosen repositories, public or private.
-5. Create a Flightcontrol project with configuration via the Dashboard or with configuration via `flightcontrol.json`.
+1. 在 [Flightcontrol](https://app.flightcontrol.dev/signup?ref=nitro) 创建一个账户
+2. 在 [AWS](https://portal.aws.amazon.com/billing/signup) 创建一个账户（如果你还没有的话）
+3. 将你的 AWS 账户链接到 Flightcontrol
+4. 授权 Flightcontrol GitHub 应用访问你选择的公共或私有仓库。
+5. 通过仪表板或 `flightcontrol.json` 创建一个 Flightcontrol 项目。
 
-### Create a project with configuration via the dashboard
+### 通过仪表板创建带配置的项目
 
-1. Create a Flightcontrol project from the Dashboard. Select a repository for the source.
-2. Select the `GUI` config type.
-3. Select the Nuxt preset. This preset will also work for any Nitro-based applications.
-4. Select your preferred AWS server size.
-5. Submit the new project form.
+1. 从仪表板创建一个 Flightcontrol 项目。选择一个作为源的仓库。
+2. 选择 `GUI` 配置类型。
+3. 选择 Nuxt 预设。该预设也适用于任何基于 Nitro 的应用程序。
+4. 选择你首选的 AWS 服务器大小。
+5. 提交新项目表单。
 
-### Create a project with configuration via `flightcontrol.json`
+### 通过 `flightcontrol.json` 创建带配置的项目
 
-1. Create a Flightcontrol project from your dashboard. Select a repository for the source.
-2. Select the `flightcontrol.json` config type.
-3. Add a new file at the root of your repository called `flightcontrol.json`. Here is an example configuration that creates an AWS fargate service for your app:
+1. 从你的仪表板创建一个 Flightcontrol 项目。选择一个作为源的仓库。
+2. 选择 `flightcontrol.json` 配置类型。
+3. 在你的仓库根目录下添加一个名为 `flightcontrol.json` 的新文件。以下是一个示例配置，用于为你的应用创建 AWS fargate 服务：
 
   ```json [flightcontrol.json]
   {
@@ -49,7 +49,7 @@ On a high level, the steps you will need to follow to deploy a project for the f
           {
             "id": "nitro",
             "buildType": "nixpacks",
-            "name": "My Nitro site",
+            "name": "我的 Nitro 网站",
             "type": "fargate",
             "domain": "www.yourdomain.com",
             "outputDirectory": ".output",
@@ -63,8 +63,8 @@ On a high level, the steps you will need to follow to deploy a project for the f
   }
   ```
 
-4. Submit the new project form.
+4. 提交新项目表单。
 
 ::read-more{to="https://www.flightcontrol.dev/docs?ref=nitro"}
-Learn more about Flightcontrol's [configuration](https://www.flightcontrol.dev/docs?ref=nitro).
+了解更多关于 Flightcontrol 的 [配置](https://www.flightcontrol.dev/docs?ref=nitro)。
 ::

@@ -1,39 +1,39 @@
 # Koyeb
 
-> Deploy Nitro apps to Koyeb.
+> 将 Nitro 应用部署到 Koyeb。
 
-**Preset:** `koyeb`
+**预设:** `koyeb`
 
 :read-more{to="https://www.koyeb.com"}
 
-## Using the control panel
+## 使用控制面板
 
-1. In the [Koyeb control panel](https://app.koyeb.com/), click **Create App**.
-2. Choose **GitHub** as your deployment method.
-3. Choose the GitHub **repository** and **branch** containing your application code.
-4. Name your Service.
-5. If you did not add a `start` command to your `package.json` file, under the **Build and deployment settings**, toggle the override switch associated with the run command field.  In the **Run command** field, enter:
+1. 在 [Koyeb 控制面板](https://app.koyeb.com/) 中，点击 **创建应用**。
+2. 选择 **GitHub** 作为您的部署方式。
+3. 选择包含应用代码的 GitHub **存储库** 和 **分支**。
+4. 命名您的服务。
+5. 如果您没有在 `package.json` 文件中添加 `start` 命令，在 **构建和部署设置** 下，切换与运行命令字段相关的覆盖开关。在 **运行命令** 字段中输入：
 
    ```bash
-   node .output/server/index.mjs`
+   node .output/server/index.mjs
    ```
 
-6. In the **Advanced** section, click **Add Variable** and add a `NITRO_PRESET` variable set to `koyeb`.
-7. Name the App.
-8. Click the **Deploy** button.
+6. 在 **高级** 部分，点击 **添加变量** 并添加一个 `NITRO_PRESET` 变量，值设置为 `koyeb`。
+7. 命名应用。
+8. 点击 **部署** 按钮。
 
-## Using the Koyeb CLI
+## 使用 Koyeb CLI
 
-1. Follow the instructions targeting your operating system to [install the Koyeb CLI client](https://www.koyeb.com/docs/cli/installation) with an installer.  Alternatively, visit the [releases page on GitHub](https://github.com/koyeb/koyeb-cli/releases) to directly download required files.
-2. Create a Koyeb API access token by visiting the [API settings for your organization](https://app.koyeb.com/settings/api) in the Koyeb control panel.
-3. Log into your account with the Koyeb CLI by typing:
+1. 按照针对您的操作系统的说明 [安装 Koyeb CLI 客户端](https://www.koyeb.com/docs/cli/installation)，您可以使用安装程序。或者，访问 [GitHub 的发布页面](https://github.com/koyeb/koyeb-cli/releases) 直接下载所需文件。
+2. 通过访问 Koyeb 控制面板中的 [组织的 API 设置](https://app.koyeb.com/settings/api) 创建 Koyeb API 访问令牌。
+3. 通过输入以下命令使用 Koyeb CLI 登录到您的帐户：
 
    ```bash
    koyeb login
    ```
 
-   Paste your API credentials when prompted.
-4. Deploy your Nitro application from a GitHub repository with the following command.  Be sure to substitute your own values for `<APPLICATION_NAME>`, `<YOUR_GITHUB_USERNAME>`, and `<YOUR_REPOSITORY_NAME>`:
+   当提示时，粘贴您的 API 凭据。
+4. 使用以下命令从 GitHub 存储库部署您的 Nitro 应用。确保将 `<APPLICATION_NAME>`、`<YOUR_GITHUB_USERNAME>` 和 `<YOUR_REPOSITORY_NAME>` 替换为您自己的值：
 
    ```bash
    koyeb app init <APPLICATION_NAME> \
@@ -46,9 +46,9 @@
       --env NITRO_PRESET=koyeb
    ```
 
-## Using a docker container
+## 使用 Docker 容器
 
-1. Create a `.dockerignore` file in the root of your project and add the following lines:
+1. 在项目根目录创建 `.dockerignore` 文件并添加以下内容：
 
    ```
    Dockerfile
@@ -62,7 +62,7 @@
    README.md
    ```
 
-2. Add a `Dockerfile` to the root of your project:
+2. 在项目根目录添加一个 `Dockerfile`：
 
    ```
    FROM node:18-alpine AS base
@@ -90,8 +90,8 @@
    CMD ["npm", "run", "start"]
    ```
 
-The Dockerfile above provides the minimum requirements to run the Nitro application. You can easily extend it depending on your needs.
-You will then need to push your Docker image to a registry. You can use [Docker Hub](https://hub.docker.com/) or [GitHub Container Registry](https://docs.github.com/en/packages/guides/about-github-container-registry) for example.
-In the Koyeb control panel, use the image and the tag field to specify the image you want to deploy.
-You can also use the [Koyeb CLI](https://www.koyeb.com/docs/build-and-deploy/cli/installation)
-Refer to the Koyeb [Docker documentation](https://www.koyeb.com/docs/build-and-deploy/prebuilt-docker-images) for more information.
+上述 Dockerfile 提供了运行 Nitro 应用的最小要求。您可以根据需要轻松扩展它。
+然后，您需要将 Docker 镜像推送到一个注册表。您可以使用 [Docker Hub](https://hub.docker.com/) 或 [GitHub 容器注册表](https://docs.github.com/en/packages/guides/about-github-container-registry) 等。
+在 Koyeb 控制面板中，使用镜像和标签字段指定您想要部署的镜像。
+您还可以使用 [Koyeb CLI](https://www.koyeb.com/docs/build-and-deploy/cli/installation)。
+有关更多信息，请参阅 Koyeb [Docker 文档](https://www.koyeb.com/docs/build-and-deploy/prebuilt-docker-images)。

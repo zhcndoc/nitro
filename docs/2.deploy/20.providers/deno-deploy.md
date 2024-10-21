@@ -1,33 +1,33 @@
 # Deno Deploy
 
-> Deploy Nitro apps to [Deno Deploy](https://deno.com/deploy).
+> 将 Nitro 应用程序部署到 [Deno Deploy](https://deno.com/deploy)。
 
-**Preset:** `deno_deploy`
+**预设:** `deno_deploy`
 
 :read-more{title="Deno Deploy" to="https://deno.com/deploy"}
 
-## Deploy with the CLI
+## 使用 CLI 部署
 
-You can use [deployctl](https://deno.com/deploy/docs/deployctl) to deploy your app.
+您可以使用 [deployctl](https://deno.com/deploy/docs/deployctl) 来部署您的应用程序。
 
-Login to [Deno Deploy](https://dash.deno.com/account#access-tokens) to obtain a `DENO_DEPLOY_TOKEN` access token, and set it as an environment variable.
+登录到 [Deno Deploy](https://dash.deno.com/account#access-tokens) 以获取 `DENO_DEPLOY_TOKEN` 访问令牌，并将其设置为环境变量。
 
 ```bash
-# Build with the deno_deploy NITRO preset
+# 使用 deno_deploy NITRO 预设进行构建
 NITRO_PRESET=deno_deploy npm run build
 
-# Make sure to run the deployctl command from the output directory
+# 确保在输出目录中运行 deployctl 命令
 cd .output
 deployctl deploy --project=my-project server/index.ts
 ```
 
-## Deploy within CI/CD using gitHub actions
+## 使用 GitHub Actions 在 CI/CD 中部署
 
-You just need to include the deployctl GitHub Action as a step in your workflow.
+您只需在工作流程中包含 deployctl GitHub Action 作为一个步骤。
 
-You do not need to set up any secrets for this to work. You do need to link your GitHub repository to your Deno Deploy project and choose the "GitHub Actions" deployment mode. You can do this in your project settings on [Deno Deploy](https://dash.deno.com).
+您不需要设置任何秘密以使其正常工作。您需要将您的 GitHub 存储库链接到您的 Deno Deploy 项目，并选择 "GitHub Actions" 部署模式。您可以在 [Deno Deploy](https://dash.deno.com) 的项目设置中完成此操作。
 
-Create the following workflow file in your `.github/workflows` directory:
+在您的 `.github/workflows` 目录中创建以下工作流程文件：
 
 ```yaml [.github/workflows/deno_deploy.yml]
 name: deno-deploy
@@ -53,7 +53,7 @@ jobs:
       - run: pnpm build
         env:
           NITRO_PRESET: deno_deploy
-      - name: Deploy to Deno Deploy
+      - name: 部署到 Deno Deploy
         uses: denoland/deployctl@v1
         with:
           project: my-project
@@ -61,6 +61,6 @@ jobs:
           root: .output
 ```
 
-## Deno runtime
+## Deno 运行时
 
 :read-more{to="/deploy/runtimes/deno"}

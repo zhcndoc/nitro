@@ -1,45 +1,45 @@
 # Firebase
 
-> Deploy Nitro apps to Firebase.
+> 将 Nitro 应用部署到 Firebase。
 
-**Preset:** `firebase`
+**预设:** `firebase`
 
 :read-more{title="Firebase Hosting" to="https://firebase.google.com/docs/hosting"}
 
 ::note
-You need to be on the **Blaze plan** to use Nitro with cloud functions.
+您需要在 **Blaze 计划** 中才能使用 Nitro 和云函数。
 ::
 
 ::important
-This preset will deploy to firebase functions 1st gen by default. If you want to deploy to firebase functions 2nd gen, see the [instructions below](#using-2nd-generation-firebase-functions).
+此预设默认将部署到 Firebase 函数的第一代。如果您想部署到 Firebase 函数的第二代，请查阅 [以下说明](#using-2nd-generation-firebase-functions)。
 ::
 
-## Project Setup
+## 项目设置
 
-### Using firebase CLI (recommended)
+### 使用 firebase CLI（推荐）
 
-You may instead prefer to set up your project with the Firebase CLI, which will fetch your project ID for you, add required dependencies (see above) and even set up automated deployments via GitHub Actions (for hosting only). [Learn about installing the firebase CLI](https://firebase.google.com/docs/cli#windows-npm).
+您也可以选择通过 Firebase CLI 设置项目，它会为您获取项目 ID，添加所需的依赖项（见上文），甚至通过 GitHub Actions 设置自动部署（仅限托管）。 [了解如何安装 Firebase CLI](https://firebase.google.com/docs/cli#windows-npm)。
 
-#### 1. Install firebase CLI globally
+#### 1. 全局安装 firebase CLI
 
-Always try to use the latest version of the Firebase CLI.
+始终尝试使用最新版本的 Firebase CLI。
 
 ```bash
 npm install -g firebase-tools@latest
 ```
 
-**Note**: You need to be on [^11.18.0](https://github.com/firebase/firebase-tools/releases/tag/v11.18.0) to deploy a `nodejs18` function.
+**注意**：您需要在 [^11.18.0](https://github.com/firebase/firebase-tools/releases/tag/v11.18.0) 上以部署 `nodejs18` 函数。
 
-#### 2. Initialize your firebase project
+#### 2. 初始化您的 Firebase 项目
 
 ```bash
 firebase login
 firebase init hosting
 ```
 
-When prompted, you can enter `.output/public` as the public directory. In the next step, **do not** configure your project as a single-page app.
+当提示时，您可以将 `.output/public` 作为公共目录。在下一步中，**不要**将您的项目配置为单页应用程序。
 
-Once complete, add the following to your `firebase.json` to enable server rendering in Cloud Functions:
+完成后，将以下内容添加到您的 `firebase.json` 中以启用 Cloud Functions 的服务器渲染：
 
 ```json [firebase.json]
 {
@@ -55,15 +55,15 @@ Once complete, add the following to your `firebase.json` to enable server render
 }
 ```
 
-You can find more details in the [Firebase documentation](https://firebase.google.com/docs/hosting/quickstart).
+您可以在 [Firebase 文档](https://firebase.google.com/docs/hosting/quickstart) 中找到更多详细信息。
 
-### Alternative method
+### 替代方法
 
-If you don't already have a `firebase.json` in your root directory, Nitro will create one the first time you run it. In this file, you will need to replace `<your_project_id>` with the ID of your Firebase project. This file should then be committed to the git.
+如果您在根目录中没有 `firebase.json`，Nitro 将在您第一次运行它时创建一个。在此文件中，您需要将 `<your_project_id>` 替换为您的 Firebase 项目的 ID。然后，应将此文件提交到 git。
 
-#### 1. Create a `.firebaserc` file
+#### 1. 创建 `.firebaserc` 文件
 
-It is recommended to create a `.firebaserc` file so you don't need to manually pass your project ID to your `firebase` commands (with `--project <your_project_id>`):
+建议创建 `.firebaserc` 文件，这样您在将项目 ID 传递给 `firebase` 命令时就无需手动指定（使用 `--project <your_project_id>`）：
 
 ```json [.firebaserc]
 {
@@ -73,32 +73,32 @@ It is recommended to create a `.firebaserc` file so you don't need to manually p
 }
 ```
 
-This file is usually generated when you initialize your project with the Firebase CLI. But if you don't have one, you can create it manually.
+该文件通常是在使用 Firebase CLI 初始化项目时生成的。但如果没有，您可以手动创建。
 
-#### 2. Install firebase dependencies
+#### 2. 安装 Firebase 依赖项
 
-Then, add Firebase dependencies to your project:
+接下来，将 Firebase 依赖项添加到您的项目中：
 
 :pm-install{name="firebase-admin firebase-functions firebase-functions-test" dev}
 
-#### 3. Log into the firebase CLI
+#### 3. 登录 Firebase CLI
 
-Make sure you are authenticated with the firebase cli. Run this command and follow the prompts:
+确保您已通过 Firebase CLI 进行身份验证。运行此命令并按照提示操作：
 
 :pm-x{command="firebase-tools login"}
 
-## Local preview
+## 本地预览
 
-You can preview a local version of your site if you need to test things out without deploying.
+如果您需要测试而不进行部署，可以预览本地版本的网站。
 
 ```bash
 NITRO_PRESET=firebase npm run build
 firebase emulators:start
 ```
 
-## Build and deploy
+## 构建和部署
 
-Deploy to Firebase Hosting by running a Nitro build and then running the `firebase deploy` command.
+通过运行 Nitro 构建然后运行 `firebase deploy` 命令，将应用部署到 Firebase Hosting。
 
 ```bash
 NITRO_PRESET=firebase npm run build
@@ -106,17 +106,17 @@ NITRO_PRESET=firebase npm run build
 
 :pm-x{command="firebase-tools deploy"}
 
-If you installed the Firebase CLI globally, you can also run:
+如果您全局安装了 Firebase CLI，您还可以运行：
 
 ```bash
 firebase deploy
 ```
 
-## Using 2nd generation firebase functions
+## 使用第二代 Firebase 函数
 
-- [Comparison between 1st and 2nd generation functions](https://firebase.google.com/docs/functions/version-comparison)
+- [第一代和第二代函数的比较](https://firebase.google.com/docs/functions/version-comparison)
 
-To switch to the more recent and, recommended generation of firebase functions, set the `firebase.gen` option to `2`:
+要切换到更现代和推荐的 Firebase 函数的版本，请将 `firebase.gen` 选项设置为 `2`：
 
 ::code-group
 
@@ -143,14 +143,14 @@ export default defineNuxtConfig({
 ::
 
 ::note
-If you cannot use configuration for any reason, alternatively you can use `NITRO_FIREBASE_GEN` environment variable.
+如果出于某种原因您无法使用配置，您可以改用 `NITRO_FIREBASE_GEN` 环境变量。
 ::
 
-If you already have a deployed version of your website and want to upgrade to 2nd gen, [see the Migration process on Firebase docs](https://firebase.google.com/docs/functions/2nd-gen-upgrade). Namely, the CLI will ask you to delete your existing functions before deploying the new ones.
+如果您已经有了部署的网站版本，并希望升级到第二代，请 [查看 Firebase 文档中的迁移过程](https://firebase.google.com/docs/functions/2nd-gen-upgrade)。尤其是，CLI 会要求您在部署新函数之前删除现有函数。
 
-## Options
+## 选项
 
-You can set options for the firebase functions in your `nitro.config.ts` file:
+您可以在 `nitro.config.ts` 文件中为 Firebase 函数设置选项：
 
 ::code-group
 
@@ -182,18 +182,18 @@ export default defineNuxtConfig({
 
 ::
 
-You can also set options for 1st generation Cloud Functions if the `gen` option is set to `1`. Note these are different from the options for 2nd generation Cloud Functions.
+如果将 `gen` 选项设置为 `1`，您还可以为第一代云函数设置选项。请注意，这些选项与第二代云函数的选项不同。
 
-### Runtime Node.js version
+### 运行时 Node.js 版本
 
-You can set custom Node.js version in configuration:
+您可以在配置中设置自定义 Node.js 版本：
 
 ::code-group
 
 ```ts [nitro.config.ts]
 export default defineNitroConfig({
   firebase: {
-    nodeVersion: "18" // Can be "16", "18", "20" or "22"
+    nodeVersion: "18" // 可以是 "16"、"18"、"20" 或 "22"
   },
 });
 ```
@@ -202,7 +202,7 @@ export default defineNitroConfig({
 export default defineNuxtConfig({
   nitro: {
     firebase: {
-      nodeVersion: "18" // Can be "16", "18", "20" or "22"
+      nodeVersion: "18" // 可以是 "16"、"18"、"20" 或 "22"
     },
   },
 });
@@ -210,9 +210,9 @@ export default defineNuxtConfig({
 
 ::
 
-Firebase tools use the `engines.node` version in  `package.json` to determine which node version to use for your functions. Nitro automatically writes to the `.output/server/package.json` with configured Node.js version.
+Firebase 工具使用 `package.json` 中的 `engines.node` 版本来确定要为您的函数使用的 Node 版本。Nitro 会自动写入带有配置 Node.js 版本的 `.output/server/package.json`。
 
-You might also need to add a runtime key to your `firebase.json` file:
+您可能还需要在 `firebase.json` 文件中添加运行时键：
 
 ```json [firebase.json]
 {
@@ -223,24 +223,24 @@ You might also need to add a runtime key to your `firebase.json` file:
 }
 ```
 
-You can read more about this in [Firebase Docs](https://firebase.google.com/docs/functions/manage-functions?gen=2nd#set_nodejs_version).
+您可以在 [Firebase 文档](https://firebase.google.com/docs/functions/manage-functions?gen=2nd#set_nodejs_version) 中阅读更多关于此的信息。
 
-## If your firebase project has other cloud functions
+## 如果您的 Firebase 项目有其他云函数
 
-You may be warned that other cloud functions will be deleted when you deploy your nitro project. This is because nitro will deploy your entire project to firebase functions. If you want to deploy only your nitro project, you can use the `--only` flag:
+您可能会收到警告，说明在您部署 Nitro 项目时将删除其他云函数。这是因为 Nitro 将部署您的整个项目到 Firebase 函数。如果您只想部署您的 Nitro 项目，可以使用 `--only` 标志：
 
 ```bash
 firebase deploy --only functions:server,hosting
 ```
 
-## Advanced
+## 高级
 
-### Renaming function
+### 重命名函数
 
-When deploying multiple apps within the same Firebase project, you must give your server a unique name in order to avoid overwriting
-your functions.
+在同一个 Firebase 项目中部署多个应用时，您必须为您的服务器指定一个唯一名称，
+以避免覆盖您的函数。
 
-You can specify a new name for the deployed Firebase function in your configuration:
+您可以在配置中指定要部署的 Firebase 函数的新名称：
 
 ::code-group
 

@@ -1,18 +1,18 @@
 # Zeabur
 
-> Deploy Nitro apps to [Zeabur](https://zeabur.com).
+> 将 Nitro 应用程序部署到 [Zeabur](https://zeabur.com)。
 
-**Preset:** `zeabur`
+**预设:** `zeabur`
 
 :read-more{title="Zeabur" to="https://zeabur.com"}
 
 ::note
-Integration with this provider is possible with [zero configuration](/deploy/#zero-config-providers).
+与此提供者的集成可以通过 [零配置](/deploy/#zero-config-providers) 完成。
 ::
 
-## Deploy using git
+## 使用 git 部署
 
-1. Push your code to your git repository (Currently only GitHub supported).
-2. [Import your project](https://zeabur.com/docs/get-started) into Zeabur.
-3. Zeabur will detect that you are using Nitro and will enable the correct settings for your deployment.
-4. Your application is deployed!
+1. 将代码推送到您的 git 仓库（目前仅支持 GitHub）。
+2. [将您的项目导入](https://zeabur.com/docs/get-started) 到 Zeabur。
+3. Zeabur 将检测到您正在使用 Nitro，并将启用正确的部署设置。
+4. 您的应用程序已部署！

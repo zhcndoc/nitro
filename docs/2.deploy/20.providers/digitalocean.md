@@ -1,24 +1,24 @@
 # DigitalOcean
 
-> Deploy Nitro apps to DigitalOcean.
+> 将 Nitro 应用部署到 DigitalOcean。
 
-**Preset:** `digital_ocean`
+**预设:** `digital_ocean`
 
-:read-more{title="Digital Ocean App Platform" to="https://docs.digitalocean.com/products/app-platform/"}
+:read-more{title="Digital Ocean 应用平台" to="https://docs.digitalocean.com/products/app-platform/"}
 
-## Set up application
+## 设置应用
 
-1. Create a new Digital Ocean app following the [guide](https://docs.digitalocean.com/products/app-platform/how-to/create-apps/).
+1. 根据 [指南](https://docs.digitalocean.com/products/app-platform/how-to/create-apps/) 创建一个新的 Digital Ocean 应用。
 
-1. Next, you'll need to configure environment variables. In your app settings, ensure the following app-level environment variables are set:
+1. 接下来，您需要配置环境变量。在您的应用设置中，确保设置以下应用级环境变量：
 
    ```bash
    NITRO_PRESET=digital_ocean
    ```
 
-   [More information](https://docs.digitalocean.com/products/app-platform/how-to/use-environment-variables/).
+   [更多信息](https://docs.digitalocean.com/products/app-platform/how-to/use-environment-variables/)。
 
-1. You will need to ensure you set an `engines.node` field in your app's `package.json` to ensure Digital Ocean uses a supported version of Node.js:
+1. 您需要在应用的 `package.json` 中设置 `engines.node` 字段，以确保 Digital Ocean 使用支持的 Node.js 版本：
 
    ```json
    {
@@ -28,9 +28,9 @@
    }
    ```
 
-   [See more information](https://docs.digitalocean.com/products/app-platform/languages-frameworks/nodejs/#node-version).
+   [查看更多信息](https://docs.digitalocean.com/products/app-platform/languages-frameworks/nodejs/#node-version)。
 
-1. You'll also need to add a run command so Digital Ocean knows what command to run after a build. You can do so by adding a start script to your `package.json`:
+1. 您还需要添加一个运行命令，以便 Digital Ocean 知道在构建后运行哪个命令。您可以通过在 `package.json` 中添加一个启动脚本来实现：
 
    ```json
    {
@@ -40,6 +40,6 @@
    }
    ```
 
-1. Finally, you'll need to add this start script to your Digital Ocean app's run command. Go to `Components > Settings > Commands`, click "Edit", then add `npm run start`
+1. 最后，您需要将这个启动脚本添加到 Digital Ocean 应用的运行命令中。前往 `组件 > 设置 > 命令`，点击“编辑”，然后添加 `npm run start`
 
-Your app should be live at a Digital Ocean generated URL and you can now follow [the rest of the Digital Ocean deployment guide](https://docs.digitalocean.com/products/app-platform/how-to/manage-deployments/).
+您的应用应该在一个由 Digital Ocean 生成的 URL 上上线，您现在可以继续阅读 [其余的 Digital Ocean 部署指南](https://docs.digitalocean.com/products/app-platform/how-to/manage-deployments/)。

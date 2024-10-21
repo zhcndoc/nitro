@@ -1,89 +1,89 @@
 # Azure
 
-> Deploy Nitro apps to Azure Static Web apps or functions.
+> 将 Nitro 应用部署到 Azure 静态 Web 应用或函数。
 
-## Azure static web apps
+## Azure 静态 Web 应用
 
-**Preset:** `azure`
+**预设:** `azure`
 
-:read-more{title="Azure Static Web Apps" to="https://azure.microsoft.com/en-us/products/app-service/static"}
+:read-more{title="Azure 静态 Web 应用" to="https://azure.microsoft.com/en-us/products/app-service/static"}
 
 ::note
-Integration with this provider is possible with [zero configuration](/deploy/#zero-config-providers).
+与此提供者的集成可以实现 [零配置](/deploy/#zero-config-providers)。
 ::
 
-[Azure Static Web Apps](https://azure.microsoft.com/en-us/products/app-service/static) are designed to be deployed continuously in a [GitHub Actions workflow](https://docs.microsoft.com/en-us/azure/static-web-apps/github-actions-workflow). By default, Nitro will detect this deployment environment and enable the `azure` preset.
+[Azure 静态 Web 应用](https://azure.microsoft.com/en-us/products/app-service/static) 旨在通过 [GitHub Actions 工作流程](https://docs.microsoft.com/en-us/azure/static-web-apps/github-actions-workflow) 持续部署。默认情况下，Nitro 将检测此部署环境并启用 `azure` 预设。
 
-### Local preview
+### 本地预览
 
-Install [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local) if you want to test locally.
+如果您想进行本地测试，请安装 [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local)。
 
-You can invoke a development environment to preview before deploying.
+您可以调用开发环境以预览部署前的效果。
 
 ```bash
 NITRO_PRESET=azure npx nypm@latest build
 npx @azure/static-web-apps-cli start .output/public --api-location .output/server
 ```
 
-### Configuration
+### 配置
 
-Azure Static Web Apps are [configured](https://learn.microsoft.com/en-us/azure/static-web-apps/configuration) using the `staticwebapp.config.json` file.
+Azure 静态 Web 应用通过 `staticwebapp.config.json` 文件进行 [配置](https://learn.microsoft.com/en-us/azure/static-web-apps/configuration)。
 
-Nitro automatically generates this configuration file whenever the application is built with the `azure` preset.
+Nitro 会在使用 `azure` 预设构建应用程序时自动生成此配置文件。
 
-Nitro will automatically add the following properties based on the following criteria:
-| Property | Criteria | Default |
+Nitro 将根据以下标准自动添加以下属性：
+| 属性 | 标准 | 默认值 |
 | --- | --- | --- |
-| **[platform.apiRuntime](https://learn.microsoft.com/en-us/azure/static-web-apps/configuration#platform)** | Will automatically set to `node:16` or `node:14` depending on your package configuration. | `node:16` |
-| **[navigationFallback.rewrite](https://learn.microsoft.com/en-us/azure/static-web-apps/configuration#fallback-routes)** | Is always `/api/server` | `/api/server` |
-| **[routes](https://learn.microsoft.com/en-us/azure/static-web-apps/configuration#routes)** | All prerendered routes are added. Additionally, if you do not have an `index.html` file an empty one is created for you for compatibility purposes and also requests to `/index.html` are redirected to the root directory which is handled by `/api/server`.  | `[]` |
+| **[platform.apiRuntime](https://learn.microsoft.com/en-us/azure/static-web-apps/configuration#platform)** | 将根据您的包配置自动设置为 `node:16` 或 `node:14`。 | `node:16` |
+| **[navigationFallback.rewrite](https://learn.microsoft.com/en-us/azure/static-web-apps/configuration#fallback-routes)** | 始终为 `/api/server` | `/api/server` |
+| **[routes](https://learn.microsoft.com/en-us/azure/static-web-apps/configuration#routes)** | 所有预渲染的路由会被添加。此外，如果您没有 `index.html` 文件，会为您创建一个空的兼容文件，并且对 `/index.html` 的请求会重定向到根目录，由 `/api/server` 处理。 | `[]` |
 
-### Custom configuration
+### 自定义配置
 
-You can alter the Nitro generated configuration using `azure.config` option.
+您可以使用 `azure.config` 选项更改 Nitro 生成的配置。
 
-Custom routes will be added and matched first. In the case of a conflict (determined if an object has the same route property), custom routes will override generated ones.
+自定义路由将首先被添加和匹配。如果发生冲突（通过对象的路由属性是否相同来确定），自定义路由将覆盖生成的路由。
 
-### Deploy from CI/CD via GitHub actions
+### 通过 GitHub actions 从 CI/CD 部署
 
-When you link your GitHub repository to Azure Static Web Apps, a workflow file is added to the repository.
+当您将 GitHub 仓库链接到 Azure 静态 Web 应用时，将在仓库中添加一个工作流程文件。
 
-When you are asked to select your framework, select custom and provide the following information:
+当要求您选择框架时，选择自定义并提供以下信息：
 
-| Input | Value |
+| 输入 | 值 |
 | --- | --- |
 | **app_location** | '/' |
 | **api_location** | '.output/server' |
 | **output_location** | '.output/public' |
 
-If you miss this step, you can always find the build configuration section in your workflow and update the build configuration:
+如果您错过了这一步，您可以在工作流程中的构建配置部分查找并更新构建配置：
 
 ```yaml [.github/workflows/azure-static-web-apps-<RANDOM_NAME>.yml]
-###### Repository/Build Configurations ######
+###### 仓库/构建配置 ######
 app_location: '/'
 api_location: '.output/server'
 output_location: '.output/public'
-###### End of Repository/Build Configurations ######
+###### 仓库/构建配置结束 ######
 ```
 
-That's it! Now Azure Static Web Apps will automatically deploy your Nitro-powered application on push.
+就是这样！现在 Azure 静态 Web 应用将在推送时自动部署您的 Nitro 动力应用。
 
-If you are using runtimeConfig, you will likely want to configure the corresponding [environment variables on Azure](https://docs.microsoft.com/en-us/azure/static-web-apps/application-settings).
+如果您使用了 runtimeConfig，您可能希望在 Azure 上配置相应的 [环境变量](https://docs.microsoft.com/en-us/azure/static-web-apps/application-settings)。
 
-## Azure functions
+## Azure 函数
 
-**Preset:** `azure_functions`
+**预设:** `azure_functions`
 
 ::important
-If you encounter any issues, please ensure you're using a Node.js 16+ runtime. You can find more information about [how to set the Node version in the Azure docs](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-node?tabs=v2#setting-the-node-version).
-Please see [unjs/nitro#2114](https://github.com/unjs/nitro/issues/2114) for some common issues.
+如果您遇到任何问题，请确保您使用 Node.js 16+ 运行时。您可以在 Azure 文档中找到 [如何设置 Node 版本](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-node?tabs=v2#setting-the-node-version) 的更多信息。
+有关常见问题，请参见 [unjs/nitro#2114](https://github.com/unjs/nitro/issues/2114)。
 ::
 
-### Local preview
+### 本地预览
 
-Install [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local) if you want to test locally.
+如果您想进行本地测试，请安装 [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local)。
 
-You can invoke a development environment from the serverless directory.
+您可以从无服务器目录调用开发环境。
 
 ```bash
 NITRO_PRESET=azure_functions npx nypm@latest build
@@ -91,24 +91,24 @@ cd .output
 func start
 ```
 
-You can now visit `http://localhost:7071/` in your browser and browse your site running locally on Azure Functions.
+现在您可以在浏览器中访问 `http://localhost:7071/` 并浏览您在 Azure Functions 上本地运行的网站。
 
-### Deploy from your local machine
+### 从本地计算机部署
 
-To deploy, just run the following command:
+要进行部署，只需运行以下命令：
 
 ```bash
-# To publish the bundled zip file
+# 发布打包的 zip 文件
 az functionapp deployment source config-zip -g <resource-group> -n <app-name> --src dist/deploy.zip
-# Alternatively you can publish from source
+# 或者您可以从源发布
 cd dist && func azure functionapp publish --javascript <app-name>
 ```
 
-### Deploy from CI/CD via GitHub actions
+### 通过 GitHub actions 从 CI/CD 部署
 
-First, obtain your Azure Functions Publish Profile and add it as a secret to your GitHub repository settings following [these instructions](https://github.com/Azure/functions-action#using-publish-profile-as-deployment-credential-recommended).
+首先，获取您的 Azure Functions 发布配置文件，并将其添加为您 GitHub 仓库设置中的秘密，按照 [这些说明](https://github.com/Azure/functions-action#using-publish-profile-as-deployment-credential-recommended)。
 
-Then create the following file as a workflow:
+然后创建以下文件作为工作流程：
 
 ```yaml [.github/workflows/azure.yml]
 name: azure
@@ -134,7 +134,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
 
-      - name: Get yarn cache directory path
+      - name: 获取 yarn 缓存目录路径
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
 
@@ -146,16 +146,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-azure
 
-      - name: Install Dependencies
+      - name: 安装依赖
         if: steps.cache.outputs.cache-hit != 'true'
         run: yarn
 
-      - name: Build
+      - name: 构建
         run: npm run build
         env:
           NITRO_PRESET: azure_functions
 
-      - name: 'Deploy to Azure Functions'
+      - name: '部署到 Azure Functions'
         uses: Azure/functions-action@v1
         with:
           app-name: <your-app-name>
@@ -163,6 +163,6 @@ jobs:
           publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
 ```
 
-### Optimizing Azure functions
+### 优化 Azure 函数
 
-Consider [turning on immutable packages](https://docs.microsoft.com/en-us/azure/app-service/deploy-run-package) to support running your app from the zip file. This can speed up cold starts.
+考虑 [开启不可变包](https://docs.microsoft.com/en-us/azure/app-service/deploy-run-package) 以支持从 zip 文件运行您的应用。这可以加速冷启动。

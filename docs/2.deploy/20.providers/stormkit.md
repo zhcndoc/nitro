@@ -1,23 +1,23 @@
 # StormKit
 
-> Deploy Nitro apps to StormKit.
+> 将 Nitro 应用部署到 StormKit。
 
-**Preset:** `stormkit`
+**预设:** `stormkit`
 
 :read-more{title="Stormkit" to="https://www.stormkit.io"}
 
 ::note
-Integration with [Stormkit](https://www.stormkit.io/) is possible with [zero configuration](/deploy#zero-config-providers).
+与 [Stormkit](https://www.stormkit.io/) 的集成可以通过 [零配置](/deploy#zero-config-providers) 实现。
 ::
 
-## Setup
+## 设置
 
-Follow the steps to [create a new app](https://app.stormkit.io/apps/new) on Stormkit.
+按照步骤在 Stormkit 上 [创建一个新应用](https://app.stormkit.io/apps/new)。
 
-![Create a new app on Stormkit](/images/stormkit-new-app.png)
+![在 Stormkit 上创建新应用](/images/stormkit-new-app.png)
 
-## Deployment
+## 部署
 
-By default, Stormkit will deploy your apps automatically when you push changes to your main branch. But to trigger a manual deploy (for example, you might do this for the very first deployment), you may click `Deploy now`.
+默认情况下，当您向主分支推送更改时，Stormkit 会自动部署您的应用。但是，如果您想触发手动部署（例如，您可能会在第一次部署时这样做），可以点击 `立即部署`。
 
-![Trigger a manual deploy with Deploy Now](/images/stormkit-deploy.png)
+![通过立即部署触发手动部署](/images/stormkit-deploy.png)

@@ -1,42 +1,42 @@
 # Alwaysdata
 
-> Deploy Nitro apps to alwaysdata.
+> 将 Nitro 应用部署到 alwaysdata。
 
-**Preset:** `alwaysdata`
+**预设:** `alwaysdata`
 
 :read-more{to="https://alwaysdata.com"}
 
-## Set up application
+## 设置应用
 
-### Pre-requisites
+### 先决条件
 
-1. [Register a new profile](https://www.alwaysdata.com/en/register/) on alwaysdata platform if you don't have one.
+1. 如果你还没有帐户，请在 alwaysdata 平台上[注册一个新档案](https://www.alwaysdata.com/en/register/)。
 
-2. Get a free 100Mb plan to host your app.
+2. 获取一个免费的 100Mb 计划来托管你的应用。
 
 > [!NOTE]
-> Keep in mind your *account name* will be used to provide you a default URL in the form of `account_name.alwaysdata.net`, so choose it wisely. You can also link your existing domains to your account later or register as many accounts under your profile as you need.
+> 请记住，你的 *帐户名* 将用于为你提供一个形式为 `account_name.alwaysdata.net` 的默认 URL，因此请明智地选择。你也可以在稍后将现有域名链接到你的帐户，或者根据需要在你的档案下注册多个帐户。
 
-### Local deployment
+### 本地部署
 
-1. Build your project locally with `npm run build -- preset alwaysdata`
+1. 使用 `npm run build -- preset alwaysdata` 在本地构建你的项目。
 
-2. [Upload your app](https://help.alwaysdata.com/en/remote-access/) to your account in its own directory (e.g. `$HOME/www/my-app`). You can use any protocol you prefer (SSH/FTP/WebDAV…) to do so.
+2. [将你的应用上传](https://help.alwaysdata.com/en/remote-access/)到你的帐户中的独立目录（例如 `$HOME/www/my-app`）。你可以使用任何你喜欢的协议（SSH/FTP/WebDAV…）来执行此操作。
 
-3. On your admin panel, [create a new site](https://admin.alwaysdata.com/site/add/) for your app with the following features:
-   - *Addresses*: `[account_name].alwaysdata.net`
-   - *Type*: Node.js
-   - *Command*: `node ./output/server/index.mjs`
-   - *Working directory*: `www/my-app` (adapt it to your deployment path)
-   - *Environment*:
+3. 在你的管理面板上，为你的应用[创建一个新网站](https://admin.alwaysdata.com/site/add/)，并设置以下功能：
+   - *地址*: `[account_name].alwaysdata.net`
+   - *类型*: Node.js
+   - *命令*: `node ./output/server/index.mjs`
+   - *工作目录*: `www/my-app`（根据你的部署路径进行调整）
+   - *环境*:
 
      ```ini
      NITRO_PRESET=alwaysdata
      ```
 
-   - *Node.js version*: `Default version` is fine; pick no less than `20.0.0` (you can also [set your Node.js version globally](https://help.alwaysdata.com/en/languages/nodejs/configuration/#supported-versions))
-   - *Hot restart*: `SIGHUP`
+   - *Node.js 版本*: `默认版本` 可以；选择不低于 `20.0.0`（你也可以[全局设置你的 Node.js 版本](https://help.alwaysdata.com/en/languages/nodejs/configuration/#supported-versions)）
+   - *热重启*: `SIGHUP`
 
-   :read-more{title="Get more information about alwaysdata Node.js sites type" to="https://help.alwaysdata.com/en/languages/nodejs"}
+   :read-more{title="获取有关 alwaysdata Node.js 网站类型的更多信息" to="https://help.alwaysdata.com/en/languages/nodejs"}
 
-4. Your app is now live at `http(s)://[account_name].alwaysdata.net`.
+4. 你的应用现在可以在 `http(s)://[account_name].alwaysdata.net` 上访问。

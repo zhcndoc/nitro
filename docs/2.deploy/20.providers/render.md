@@ -1,24 +1,24 @@
 # Render.com
 
-> Deploy Nitro apps to Render.com.
+> 将 Nitro 应用部署到 Render.com。
 
-**Preset:** `render_com`
+**预设:** `render_com`
 
 :read-more{title="render.com" to="https://render.com"}
 
-## Set up application
+## 设置应用程序
 
-1. [Create a new Web Service](https://dashboard.render.com/select-repo?type=web) and select the repository that contains your code.
-2. Ensure the 'Node' environment is selected.
-3. Update the start command to `node .output/server/index.mjs`
-4. Click 'Advanced' and add an environment variable with `NITRO_PRESET` set to `render_com`. You may also need to add a `NODE_VERSION` environment variable set to `18` for the build to succeed ([docs](https://render.com/docs/node-version)).
-5. Click 'Create Web Service'.
+1. [创建一个新的 Web 服务](https://dashboard.render.com/select-repo?type=web) 并选择包含您代码的仓库。
+2. 确保选中 'Node' 环境。
+3. 将启动命令更新为 `node .output/server/index.mjs`
+4. 点击 '高级'，并添加一个环境变量 `NITRO_PRESET`，值设为 `render_com`。您可能还需要添加一个 `NODE_VERSION` 环境变量，值设为 `18`，以确保构建成功 ([文档](https://render.com/docs/node-version))。
+5. 点击 '创建 Web 服务'。
 
-## Infrastructure as Code (IaC)
+## 基础设施即代码 (IaC)
 
-1. Create a file called `render.yaml` with following content at the root of your repository.
+1. 在您的仓库根目录下创建一个名为 `render.yaml` 的文件，内容如下。
 
-> This file followed by [Infrastructure as Code](https://render.com/docs/infrastructure-as-code) on Render
+> 此文件遵循 [基础设施即代码](https://render.com/docs/infrastructure-as-code) 在 Render 上的规范
 
 ```yaml
 services:
@@ -33,6 +33,6 @@ services:
       value: render_com
 ```
 
-1. [Create a new Blueprint Instance](https://dashboard.render.com/select-repo?type=blueprint) and select the repository containing your `render.yaml` file.
+1. [创建一个新的 Blueprint 实例](https://dashboard.render.com/select-repo?type=blueprint) 并选择包含您的 `render.yaml` 文件的仓库。
 
-You should be good to go!
+您现在可以开始了！

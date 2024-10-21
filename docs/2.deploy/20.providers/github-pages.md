@@ -1,22 +1,22 @@
 # GitHub Pages
 
-> Deploy Nitro apps to GitHub Pages.
+> 将 Nitro 应用部署到 GitHub Pages。
 
-**Preset:** `github_pages`
+**预设：** `github_pages`
 
 :read-more{title="GitHub Pages" to="https://pages.github.com/"}
 
-## Setup
+## 设置
 
-Follow the steps to [create a GitHub Pages site](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site).
+按照步骤[创建 GitHub Pages 网站](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site)。
 
-## Deployment
+## 部署
 
-Here is an example GitHub Actions workflow to deploy your site to GitHub Pages using the `github_pages` preset:
+以下是一个示例 GitHub Actions 工作流，用于使用 `github_pages` 预设将您的网站部署到 GitHub Pages：
 
 ```yaml [.github/workflows/deploy.yml]
 # https://github.com/actions/deploy-pages#usage
-name: Deploy to GitHub Pages
+name: 部署到 GitHub Pages
 
 on:
   workflow_dispatch:
@@ -39,30 +39,30 @@ jobs:
         env:
           NITRO_PRESET: github_pages
 
-      - name: Upload artifact
+      - name: 上传构件
         uses: actions/upload-pages-artifact@v1
         with:
           path: ./.output/public
 
-  # Deployment job
+  # 部署作业
   deploy:
-    # Add a dependency to the build job
+    # 添加对构建作业的依赖
     needs: build
 
-    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    # 授予 GITHUB_TOKEN 进行 Pages 部署所需的权限
     permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
+      pages: write      # 用于部署到 Pages
+      id-token: write   # 用于验证部署来源是否合适
 
-    # Deploy to the github_pages environment
+    # 部署到 github_pages 环境
     environment:
       name: github_pages
       url: ${{ steps.deployment.outputs.page_url }}
 
-    # Specify runner + deployment step
+    # 指定运行器 + 部署步骤
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to GitHub Pages
+      - name: 部署到 GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
 ```

@@ -1,51 +1,51 @@
 # Vercel
 
-> Deploy Nitro apps to Vercel functions or edge.
+> 将 Nitro 应用部署到 Vercel 函数或边缘。
 
-**Preset:** `vercel`
+**预设:** `vercel`
 
-:read-more{title="Vercel Functions" to="https://vercel.com/docs/functions"}
+:read-more{title="Vercel 函数" to="https://vercel.com/docs/functions"}
 
 ::note
-Integration with this provider is possible with [zero configuration](/deploy/#zero-config-providers).
+与此提供商的集成可以通过 [零配置](/deploy/#zero-config-providers) 实现。
 ::
 
-## Deploy using git
+## 使用 git 部署
 
-1. Push your code to your git repository (GitHub, GitLab, Bitbucket).
-2. [Import your project](https://vercel.com/new) into Vercel.
-3. Vercel will detect that you are using Nitro and will enable the correct settings for your deployment.
-4. Your application is deployed!
+1. 将代码推送到您的 git 仓库（GitHub、GitLab、Bitbucket）。
+2. [将项目导入](https://vercel.com/new) 到 Vercel。
+3. Vercel 会检测到您正在使用 Nitro，并会为您的部署启用正确的设置。
+4. 您的应用程序已部署！
 
-After your project has been imported and deployed, all subsequent pushes to branches will generate [Preview Deployments](https://vercel.com/docs/concepts/deployments/environments#preview), and all changes made to the Production Branch (commonly “main”) will result in a [Production Deployment](https://vercel.com/docs/concepts/deployments/environments#production).
+在您的项目导入并部署后，所有后续推送到分支将生成 [预览部署](https://vercel.com/docs/concepts/deployments/environments#preview)，对生产分支（通常是“main”）所做的所有更改将导致 [生产部署](https://vercel.com/docs/concepts/deployments/environments#production)。
 
-Learn more about Vercel’s [Git Integration](https://vercel.com/docs/concepts/git).
+了解更多关于 Vercel 的 [Git 集成](https://vercel.com/docs/concepts/git)。
 
 ## Monorepo
 
-Monorepo is supported by Vercel. However a custom "[Root Directory](https://vercel.com/docs/deployments/configure-a-build#root-directory)" must be specified in "Project Settings > General" tab. Also make sure that "Include source files outside of the Root Directory" is checked.
+Vercel 支持单模块仓库。但是必须在“项目设置 > 常规”标签中指定自定义 “[根目录](https://vercel.com/docs/deployments/configure-a-build#root-directory)”。确保勾选“包括根目录外的源文件”。
 
-Examples of values for "Root Directory": `apps/web` or `packages/app`.
+“根目录”的值示例：`apps/web` 或 `packages/app`。
 
-## Vercel edge functions
+## Vercel 边缘函数
 
-**Preset:** `vercel_edge`
+**预设:** `vercel_edge`
 
-:read-more{title="Vercel Edge Functions" to="https://vercel.com/docs/concepts/functions/edge-functions"}
+:read-more{title="Vercel 边缘函数" to="https://vercel.com/docs/concepts/functions/edge-functions"}
 
-It is possible to deploy your nitro applications directly on [Vercel Edge Functions](https://vercel.com/docs/concepts/functions/edge-functions).
+可以将您的 Nitro 应用程序直接部署到 [Vercel 边缘函数](https://vercel.com/docs/concepts/functions/edge-functions)。
 
-In order to enable this target, please set `NITRO_PRESET` environment variable to `vercel_edge`.
+要启用此目标，请将 `NITRO_PRESET` 环境变量设置为 `vercel_edge`。
 
-## Vercel KV storage
+## Vercel KV 存储
 
-You can easily use [Vercel KV Storage](https://vercel.com/docs/storage/vercel-kv) with [Nitro Storage](/guide/storage).
+您可以轻松地将 [Vercel KV 存储](https://vercel.com/docs/storage/vercel-kv) 与 [Nitro 存储](/guide/storage) 一起使用。
 
 ::warning
-This feature is currently in beta. Please check [driver docs](https://unstorage.unjs.io/drivers/vercel-kv).
+此功能目前处于测试阶段。请查看 [驱动程序文档](https://unstorage.unjs.io/drivers/vercel-kv)。
 ::
 
-1. Install `@vercel/kv` dependency:
+1. 安装 `@vercel/kv` 依赖项：
 
 ```json [package.json]
 {
@@ -55,7 +55,7 @@ This feature is currently in beta. Please check [driver docs](https://unstorage.
 }
 ```
 
-Update your configuration:
+更新您的配置：
 
 ::code-group
 
@@ -80,10 +80,10 @@ export default defineNuxtConfig({
 ::
 
 ::note
-You need to either set `KV_REST_API_URL` and `KV_REST_API_TOKEN` environment variables or pass `url` and `token` to driver options. Check [driver docs](https://unstorage.unjs.io/drivers/vercel-kv) for more information about usage.
+您需要设置 `KV_REST_API_URL` 和 `KV_REST_API_TOKEN` 环境变量，或者将 `url` 和 `token` 传递到驱动程序选项中。有关使用的信息，请查看 [驱动程序文档](https://unstorage.unjs.io/drivers/vercel-kv)。
 ::
 
-You can now access data store in any event handler:
+现在您可以在任何事件处理程序中访问数据存储：
 
 ```ts
 export default defineEventHandler(async (event) => {
@@ -95,28 +95,28 @@ export default defineEventHandler(async (event) => {
 });
 ```
 
-## API routes
+## API 路由
 
-Nitro `/api` directory isn't compatible with Vercel.
-Instead, you have to use :
+Nitro 的 `/api` 目录与 Vercel 不兼容。
+相反，您必须使用：
 
-- `routes/api/` for standalone usage
-- `server/api/` with [Nuxt](https://nuxt.com).
+- `routes/api/` 进行独立使用
+- `server/api/` 与 [Nuxt](https://nuxt.com) 一起使用。
 
-## Custom build output configuration
+## 自定义构建输出配置
 
-You can provide additional [build output configuration](https://vercel.com/docs/build-output-api/v3) using `vercel.config` key inside `nitro.config`. It will be merged with built-in auto generated config.
+您可以通过在 `nitro.config` 中使用 `vercel.config` 键提供额外的 [构建输出配置](https://vercel.com/docs/build-output-api/v3)。它将与内置的自动生成配置合并。
 
-## On-Demand incremental static regeneration (ISR)
+## 按需增量静态再生 (ISR)
 
-On-demand revalidation allows you to purge the cache for an ISR route whenever you want, foregoing the time interval required with background revalidation.
+按需重新验证允许您随时清除 ISR 路由的缓存，舍弃背景重新验证所需的时间间隔。
 
-To revalidate a page on demand:
+要按需重新验证页面：
 
-1. Create an Environment Variable which will store a revalidation secret
-    - You can use the command `openssl rand -base64 32` or [Generate a Secret](https://generate-secret.vercel.app/32) to generate a random value.
+1. 创建一个环境变量以存储重新验证密钥
+    - 您可以使用命令 `openssl rand -base64 32` 或 [生成密钥](https://generate-secret.vercel.app/32) 来生成随机值。
 
-2. Update your configuration:
+2. 更新您的配置：
 
     ::code-group
 
@@ -144,4 +144,4 @@ To revalidate a page on demand:
 
     ::
 
-3. To trigger "On-Demand Incremental Static Regeneration (ISR)" and revalidate a path to a Prerender Function, make a GET or HEAD request to that path with a header of x-prerender-revalidate: `bypassToken`. When that Prerender Function endpoint is accessed with this header set, the cache will be revalidated. The next request to that function should return a fresh response.
+3. 要触发“按需增量静态再生 (ISR)”并重新验证路径到 Prerender 函数，请使用带有 x-prerender-revalidate: `bypassToken` 头部向该路径发出 GET 或 HEAD 请求。当该 Prerender 函数端点使用此头部访问时，缓存将被重新验证。下一个对该函数的请求应返回一个新的响应。

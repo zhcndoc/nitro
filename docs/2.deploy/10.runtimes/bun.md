@@ -4,13 +4,13 @@ icon: simple-icons:bun
 
 # Bun
 
-> Run Nitro apps with Bun runtime.
+> 使用 Bun 运行时运行 Nitro 应用。
 
-**Preset:** `bun`
+**预设:** `bun`
 
-Nitro output is compatible with Bun runtime. While using default [Node.js](/deploy/runtimes/node) you can also run the output in bun, using `bun` preset has advantage of better optimizations.
+Nitro 输出与 Bun 运行时兼容。在使用默认的 [Node.js](/deploy/runtimes/node) 时，您也可以在 Bun 中运行输出，使用 `bun` 预设具有更好的优化优势。
 
-After building with bun preset using `bun` as preset, you can run server in production using:
+使用 `bun` 作为预设构建后，您可以通过以下命令在生产环境中运行服务器：
 
 ```bash
 bun run ./.output/server/index.mjs

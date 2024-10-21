@@ -4,32 +4,32 @@ icon: game-icons:cold-heart
 
 # WinterJS
 
-**Preset:** `winterjs`
+**预设:** `winterjs`
 
-You can easily build Nitro powered applications to run with [wasmerio/winterjs](https://github.com/wasmerio/winterjs) runtime.
+您可以轻松构建基于 Nitro 的应用程序，以便与 [wasmerio/winterjs](https://github.com/wasmerio/winterjs) 运行时一起运行。
 
-[WinterJS](https://github.com/wasmerio/winterjs) is a JavaScript Service Workers server written in Rust, that uses the SpiderMonkey runtime to execute JavaScript (the same runtime that Firefox uses) ([announcement](https://wasmer.io/posts/announcing-winterjs-service-workers)).
+[WinterJS](https://github.com/wasmerio/winterjs) 是用 Rust 编写的 JavaScript 服务工作者服务器，使用 SpiderMonkey 运行时执行 JavaScript（与 Firefox 使用的运行时相同） ([公告](https://wasmer.io/posts/announcing-winterjs-service-workers))。
 
 
 ::warning
-🌙 WinterJS is currently supported in **nightly release channel**. Read the docs for using [Nightly Release Channel](/guide/getting-started#nightly-release-channel).
+🌙 WinterJS 目前支持 **夜间发布渠道**。请阅读文档以了解如何使用 [夜间发布渠道](/guide/getting-started#nightly-release-channel)。
 ::
 
 
 ::warning
-🚧 WinterJS runtime is unstable and under heavy development. Follow [unjs/nitro#1861](https://github.com/unjs/nitro/issues/1861) for status and information.
+🚧 WinterJS 运行时不稳定，正在进行大量开发。请关注 [unjs/nitro#1861](https://github.com/unjs/nitro/issues/1861) 获取状态和信息。
 ::
 
 
-In order to build for this runtime, use `NITRO_PRESET="winterjs"` environment variable:
+为了构建该运行时，请使用 `NITRO_PRESET="winterjs"` 环境变量：
 
 ```sh
 NITRO_PRESET="winterjs" npm run build
 ```
 
-Make sure you have `wasmer` installed locally ([install wasmer](https://docs.wasmer.io/install))
+确保您在本地安装了 `wasmer` （[安装 wasmer](https://docs.wasmer.io/install)）
 
-Run locally:
+本地运行：
 
 ```sh
 wasmer run wasmer/winterjs --forward-host-env --net --mapdir app:.output app/server/index.mjs

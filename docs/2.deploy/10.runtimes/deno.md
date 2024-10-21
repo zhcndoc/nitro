@@ -4,20 +4,20 @@ icon: simple-icons:deno
 
 # Deno
 
-> Run Nitro apps with [Deno](https://deno.com/) runtime.
+> 使用 [Deno](https://deno.com/) 运行 Nitro 应用。
 
-**Preset:** `deno_server`
+**预设:** `deno_server`
 
-You can build your Nitro server using Node.js to run within [Deno Runtime](https://deno.com/runtime) in a custom server.
+您可以使用 Node.js 构建 Nitro 服务器，以在自定义服务器中运行于 [Deno 运行时](https://deno.com/runtime)。
 
 ```bash
-# Build with the deno NITRO preset
+# 使用 deno NITRO 预设进行构建
 NITRO_PRESET=deno_server npm run build
 
-# Start production server
+# 启动生产服务器
 deno run --unstable --allow-net --allow-read --allow-env .output/server/index.ts
 ```
 
-## Denoy Deploy
+## Deno 部署
 
 :read-more{to="/deploy/providers/deno-deploy"}

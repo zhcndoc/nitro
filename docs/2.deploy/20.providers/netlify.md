@@ -1,52 +1,52 @@
 # Netlify
 
-> Deploy Nitro apps to Netlify functions or edge.
+> 将 Nitro 应用部署到 Netlify 函数或边缘。
 
-**Preset:** `netlify`
+**预设:** `netlify`
 
-:read-more{title="Netlify Functions" to="https://www.netlify.com/platform/core/functions/"}
+:read-more{title="Netlify 函数" to="https://www.netlify.com/platform/core/functions/"}
 
 ::note
-Integration with this provider is possible with [zero configuration](/deploy/#zero-config-providers).
+与此提供商的集成可以通过 [零配置](/deploy/#zero-config-providers) 实现。
 ::
 
-Normally, the deployment to Netlify does not require any configuration.
-Nitro will auto-detect that you are in a [Netlify](https://www.netlify.com) build environment and build the correct version of your server.
+通常，部署到 Netlify 不需要任何配置。
+Nitro 将自动检测您处于 [Netlify](https://www.netlify.com) 构建环境，并构建正确版本的服务器。
 
-For new sites, Netlify will detect that you are using Nitro and set the publish directory to `dist` and build command to `npm run build`.
+对于新网站，Netlify 将检测您正在使用 Nitro，并将发布目录设置为 `dist`，构建命令设置为 `npm run build`。
 
-If you are upgrading an existing site you should check these and update them if needed.
+如果您正在升级现有网站，您应检查这些设置，并在需要时进行更新。
 
-If you want to add custom redirects, you can do so with [`routeRules`](/config#routerules) or by adding a [`_redirects`](https://docs.netlify.com/routing/redirects/#syntax-for-the-redirects-file) file to your `public` directory.
+如果您想添加自定义重定向，可以使用 [`routeRules`](/config#routerules) 或通过在 `public` 目录中添加一个 [`_redirects`](https://docs.netlify.com/routing/redirects/#syntax-for-the-redirects-file) 文件来实现。
 
-For deployment, just push to your git repository [as you would normally do for Netlify](https://docs.netlify.com/configure-builds/get-started/).
+对于部署，只需按照通常的方式将代码推送到您的 git 仓库 [进行 Netlify 部署](https://docs.netlify.com/configure-builds/get-started/)。
 
 ::note{type="note"}
-Make sure the publish directory is set to `dist` when creating a new project.
+确保在创建新项目时，将发布目录设置为 `dist`。
 ::
 
-## Netlify edge functions
+## Netlify 边缘函数
 
-**Preset:** `netlify_edge`
+**预设:** `netlify_edge`
 
-Netlify Edge Functions use Deno and the powerful V8 JavaScript runtime to let you run globally distributed functions for the fastest possible response times.
+Netlify 边缘函数使用 Deno 和强大的 V8 JavaScript 运行时，让您能够运行全球分布的函数，以获取最快的响应时间。
 
-:read-more{title="Netlify Edge functions" to="https://docs.netlify.com/edge-functions/overview/"}
+:read-more{title="Netlify 边缘函数" to="https://docs.netlify.com/edge-functions/overview/"}
 
-Nitro output can directly run the server at the edge. Closer to your users.
+Nitro 输出可以直接在边缘运行服务器，更接近您的用户。
 
 ::note{type="note"}
-Make sure the publish directory is set to `dist` when creating a new project.
+确保在创建新项目时，将发布目录设置为 `dist`。
 ::
 
-## On-demand builders
+## 按需构建器
 
-**Preset:** `netlify_builder`
+**预设:** `netlify_builder`
 
-On-demand Builders are serverless functions used to generate web content as needed that’s automatically cached on Netlify’s Edge CDN. They enable you to build pages for your site when a user visits them for the first time and then cache them at the edge for subsequent visits.
+按需构建器是无服务器函数，用于根据需要生成网页内容，并自动缓存到 Netlify 的边缘 CDN。它们使您能够在用户首次访问页面时为您的网站生成页面，并在边缘缓存以供后续访问。
 
-:read-more{title="Netlify On-demand Builders" to="https://docs.netlify.com/configure-builds/on-demand-builders/"}
+:read-more{title="Netlify 按需构建器" to="https://docs.netlify.com/configure-builds/on-demand-builders/"}
 
-## Custom deploy configuration
+## 自定义部署配置
 
-You can provide additional deploy configuration using the `netlify` key inside `nitro.config`. It will be merged with built-in auto-generated config. Currently the only supported value is `images.remote_images`, for [configuring Netlify Image CDN](https://docs.netlify.com/image-cdn/create-integration/).
+您可以使用 `nitro.config` 中的 `netlify` 键提供额外的部署配置。它将与内置的自动生成配置合并。目前唯一支持的值是 `images.remote_images`，用于 [配置 Netlify 图片 CDN](https://docs.netlify.com/image-cdn/create-integration/)。

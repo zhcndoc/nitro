@@ -1,26 +1,26 @@
 # AWS Lambda
 
-> Deploy Nitro apps to AWS Lambda.
+> 将 Nitro 应用程序部署到 AWS Lambda。
 
-**Preset:** `aws_lambda`
+**预设:** `aws_lambda`
 
 :read-more{title="AWS Lambda" to="https://aws.amazon.com/lambda/"}
 
-Nitro provides a built-in preset to generate output format compatible with [AWS Lambda](https://aws.amazon.com/lambda/).
-The output entrypoint in `.output/server/index.mjs` is compatible with [AWS Lambda format](https://docs.aws.amazon.com/lex/latest/dg/lambda-input-response-format.html).
+Nitro 提供了一个内置的预设，可以生成与 [AWS Lambda](https://aws.amazon.com/lambda/) 兼容的输出格式。
+`.output/server/index.mjs` 中的输出入口点与 [AWS Lambda 格式](https://docs.aws.amazon.com/lex/latest/dg/lambda-input-response-format.html) 兼容。
 
-It can be used programmatically or as part of a deployment.
+它可以通过编程方式使用或作为部署的一部分。
 
 ```ts
 import { handler } from './.output/server'
 
-// Use programmatically
+// 以编程方式使用
 const { statusCode, headers, body } = handler({ rawPath: '/' })
 ```
 
-## Inlining chunks
+## 内联块
 
-Nitro output, by default uses dynamic chunks for lazy loading code only when needed. However this sometimes can not be ideal for performance. (See discussions in [unjs/nitro#650](https://github.com/unjs/nitro/pull/650)). You can enabling chunk inlining behavior using [`inlineDynamicImports`](/config#inlinedynamicimports) config.
+Nitro 输出默认使用动态块，仅在需要时懒加载代码。然而，这在某些情况下可能不适合性能。（参见 [unjs/nitro#650](https://github.com/unjs/nitro/pull/650) 的讨论）。您可以通过 [`inlineDynamicImports`](/config#inlinedynamicimports) 配置来启用块内联行为。
 
 ::code-group
 
@@ -41,17 +41,17 @@ export default defineNuxtConfig({
 ::
 
 
-## Streaming support (experimental)
+## 流式支持（实验性）
 
-**Preset:** `aws_lambda_streaming`
+**预设:** `aws_lambda_streaming`
 
-Nitro supports an experimental preset to generate output format compatible with [AWS Lambda](https://aws.amazon.com/lambda/) with streaming invoke turned on.
+Nitro 支持一个实验性的预设，以生成与 [AWS Lambda](https://aws.amazon.com/lambda/) 兼容的输出格式，并启用流式调用。
 
-:read-more{title="Introducing AWS Lambda response streaming" to="https://aws.amazon.com/blogs/compute/introducing-aws-lambda-response-streaming/"}
+:read-more{title="引入 AWS Lambda 响应流式处理" to="https://aws.amazon.com/blogs/compute/introducing-aws-lambda-response-streaming/"}
 
 > [!NOTE]
-> This preset available via [nightly channel](https://nitro.unjs.io/guide/nightly) to try.
+> 此预设可通过 [nightly channel](https://nitro.unjs.io/guide/nightly) 进行尝试。
 
 > [!IMPORTANT]
-> This preset is not production ready and might be renamed! Please don't advice users or document to indirectly use it.
+> 此预设尚未准备好投入生产，可能会重命名！请不要建议用户或文档间接使用它。
 
