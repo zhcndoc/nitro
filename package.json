@@ -173,6 +173,7 @@
     "@azure/static-web-apps-cli": "^1.1.10",
     "@cloudflare/workers-types": "^4.20241018.0",
     "@deno/types": "^0.0.1",
+    "@netlify/edge-functions": "^2.11.0",
     "@scalar/api-reference": "^1.25.46",
     "@types/archiver": "^6.0.2",
     "@types/aws-lambda": "^8.10.145",

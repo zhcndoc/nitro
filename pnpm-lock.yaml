@@ -232,6 +232,9 @@ importers:
       '@deno/types':
         specifier: ^0.0.1
         version: 0.0.1
+      '@netlify/edge-functions':
+        specifier: ^2.11.0
+        version: 2.11.0
       '@scalar/api-reference':
         specifier: ^1.25.46
         version: 1.25.46(@hyperjump/browser@1.1.6)(tailwindcss@3.4.13)(typescript@5.6.3)
@@ -1191,6 +1194,9 @@ packages:
   '@mapbox/node-pre-gyp@1.0.11':
     resolution: {integrity: sha512-Yhlar6v9WQgUp/He7BdgzOz8lqMQ8sU+jkCq7Wx8Myc5YFJLbEe7lgui/V7G1qB1DJykHSGwreceSaD60Y0PUQ==}
     hasBin: true
+
+  '@netlify/edge-functions@2.11.0':
+    resolution: {integrity: sha512-DZrDHdPX44Cj7T9geKdiIwHB6OScL7QFL10voC8TApgEwY/NhKfABBGF2cbUIfbAh3IAMBeikelT8PU0MqYnyg==}
 
   '@netlify/functions@2.8.2':
     resolution: {integrity: sha512-DeoAQh8LuNPvBE4qsKlezjKj0PyXDryOFJfJKo3Z1qZLKzQ21sT314KQKPVjfvw6knqijj+IO+0kHXy/TJiqNA==}
@@ -6920,6 +6926,8 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
+
+  '@netlify/edge-functions@2.11.0': {}
 
   '@netlify/functions@2.8.2':
     dependencies:
