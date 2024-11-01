@@ -38,7 +38,7 @@ export interface Context {
   // [key: string]: unknown;
 }
 
-// https://github.com/unjs/nitro/pull/1240
+// https://github.com/nitrojs/nitro/pull/1240
 export const describeIf = (
   condition: boolean,
   title: string,
@@ -583,7 +583,7 @@ export function testNitro(
       ];
 
       // TODO: Node presets do not split cookies
-      // https://github.com/unjs/nitro/issues/1462
+      // https://github.com/nitrojs/nitro/issues/1462
       // (vercel and deno-server uses node only for tests only)
       const notSplittingPresets = [
         "node-listener",

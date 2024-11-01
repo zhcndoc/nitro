@@ -126,7 +126,7 @@ export interface NitroOptions extends PresetOptions {
     /**
      * Allow env expansion in runtime config
      *
-     * @see https://github.com/unjs/nitro/pull/2043
+     * @see https://github.com/nitrojs/nitro/pull/2043
      */
     envExpansion?: boolean;
     /**

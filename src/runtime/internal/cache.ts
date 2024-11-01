@@ -65,7 +65,7 @@ export function defineCachedFunction<T, ArgsT extends unknown[] = any[]>(
           useNitroApp().captureError(error, { event, tags: ["cache"] });
         })) as unknown) || {};
 
-    // https://github.com/unjs/nitro/issues/2160
+    // https://github.com/nitrojs/nitro/issues/2160
     if (typeof entry !== "object") {
       entry = {};
       const error = new Error("Malformed data read from cache.");
@@ -261,7 +261,7 @@ export function defineCachedEventHandler<
       if (entry.value.body === undefined) {
         return false;
       }
-      // https://github.com/unjs/nitro/pull/1857
+      // https://github.com/nitrojs/nitro/pull/1857
       if (
         entry.value.headers.etag === "undefined" ||
         entry.value.headers["last-modified"] === "undefined"

@@ -153,7 +153,7 @@ describe("nitro:preset:netlify", async () => {
         ).not.toBeDefined();
       });
 
-      // Regression test for https://github.com/unjs/nitro/issues/2431
+      // Regression test for https://github.com/nitrojs/nitro/issues/2431
       it("matches paths with a query string", async () => {
         const { headers } = await callHandler({
           url: "/rules/isr-ttl?foo=bar",
