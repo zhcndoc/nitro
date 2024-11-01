@@ -1,7 +1,7 @@
 blank_issues_enabled: true
 contact_links:
   - name: 📚 Nitro Documentation
-    url: https://nitro.unjs.io/
+    url: https://nitro.build/
     about: Check the documentation for usage of Nuxt 3
   - name: 💬 Discussions
     url: https://github.com/nitrojs/nitro/discussions

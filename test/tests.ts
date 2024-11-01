@@ -274,13 +274,13 @@ export function testNitro(
 
     const obj = await callHandler({ url: "/rules/redirect/obj" });
     expect(obj.status).toBe(308);
-    expect(obj.headers.location).toBe("https://nitro.unjs.io/");
+    expect(obj.headers.location).toBe("https://nitro.build/");
 
     const wildcard = await callHandler({
       url: "/rules/redirect/wildcard/nuxt",
     });
     expect(wildcard.status).toBe(307);
-    expect(wildcard.headers.location).toBe("https://nitro.unjs.io/nuxt");
+    expect(wildcard.headers.location).toBe("https://nitro.build/nuxt");
   });
 
   it("binary response", async () => {

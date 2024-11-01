@@ -104,7 +104,7 @@ You can use [runtime hooks](/guide/plugins#nitro-runtime-hooks) bellow in order 
 :read-more{to="/guide/plugins#nitro-runtime-hooks"}
 
 > [!NOTE]
-> This feature is currently available in [nightly channel](https://nitro.unjs.io/guide/nightly) only.
+> This feature is currently available in [nightly channel](https://nitro.build/guide/nightly) only.
 
 - [`cloudflare:scheduled`](https://developers.cloudflare.com/workers/runtime-apis/handlers/scheduled/)
 - [`cloudflare:email`](https://developers.cloudflare.com/email-routing/email-workers/runtime-api/)

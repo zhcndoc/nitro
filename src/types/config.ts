@@ -132,19 +132,19 @@ export interface NitroOptions extends PresetOptions {
     /**
      * Enable experimental WebSocket support
      *
-     * @see https://nitro.unjs.io/guide/websocket
+     * @see https://nitro.build/guide/websocket
      */
     websocket?: boolean;
     /**
      * Enable experimental Database support
      *
-     * @see https://nitro.unjs.io/guide/database
+     * @see https://nitro.build/guide/database
      */
     database?: boolean;
     /**
      * Enable experimental Tasks support
      *
-     * @see https://nitro.unjs.io/guide/tasks
+     * @see https://nitro.build/guide/tasks
      */
     tasks?: boolean;
   };

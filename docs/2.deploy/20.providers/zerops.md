@@ -7,7 +7,7 @@
 :read-more{title="zerops.io" to="https://zerops.io"}
 
 > [!NOTE]
-> This preset available via [nightly channel](https://nitro.unjs.io/guide/nightly) to try.
+> This preset available via [nightly channel](https://nitro.build/guide/nightly) to try.
 
 Zerops supports deploying both static and server-side rendered apps with a simple configuration file in your project root.
 

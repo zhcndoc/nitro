@@ -3,7 +3,7 @@ name: Nitro
 shortDescription: Next Generation Server Toolkit
 description: Create web servers with everything you need and deploy them wherever you prefer.
 github: nitrojs/nitro
-url: https://nitro.unjs.io
+url: https://nitro.build
 themeColor: "red"
 automd: true
 redirects:

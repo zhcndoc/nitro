@@ -7,7 +7,7 @@
 :read-more{title="Genezio" to="https://genezio.com"}
 
 > [!NOTE]
-> This preset available via [nightly channel](https://nitro.unjs.io/guide/nightly) to try.
+> This preset available via [nightly channel](https://nitro.build/guide/nightly) to try.
 
 
 ## 1. Project Setup

@@ -50,7 +50,7 @@ Nitro supports an experimental preset to generate output format compatible with 
 :read-more{title="Introducing AWS Lambda response streaming" to="https://aws.amazon.com/blogs/compute/introducing-aws-lambda-response-streaming/"}
 
 > [!NOTE]
-> This preset available via [nightly channel](https://nitro.unjs.io/guide/nightly) to try.
+> This preset available via [nightly channel](https://nitro.build/guide/nightly) to try.
 
 > [!IMPORTANT]
 > This preset is not production ready and might be renamed! Please don't advice users or document to indirectly use it.
