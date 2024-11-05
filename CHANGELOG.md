@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## v2.10.3
+
+[compare changes](https://github.com/nitrojs/nitro/compare/v2.10.2...v2.10.3)
+
+### 🩹 Fixes
+
+- Allow adding custom `Vary` to static assets handler ([#2835](https://github.com/nitrojs/nitro/pull/2835))
+- **netlify:** Only include env polyfill in `netlify-edge` ([#2851](https://github.com/nitrojs/nitro/pull/2851))
+- Scan env specific handlers without method in their name ([#2852](https://github.com/nitrojs/nitro/pull/2852))
+- **config:** Add back default storage mounts ([#2853](https://github.com/nitrojs/nitro/pull/2853))
+
+### 📖 Documentation
+
+- **cloudflare:** Fix typo ([#2849](https://github.com/nitrojs/nitro/pull/2849))
+
+### 🌊 Types
+
+- **cache:** Resolved value is not nullable ([#2848](https://github.com/nitrojs/nitro/pull/2848))
+
+### ❤️ Contributors
+
+- Pooya Parsa <pyapar@gmail.com>
+- Sandro Circi ([@sandros94](http://github.com/sandros94))
+- Jaga Santagostino <jagasantagostino@gmail.com>
+- Philippe Serhal <philippe.serhal@netlify.com>
+- Danila Rodichkin ([@daniluk4000](http://github.com/daniluk4000))
+
 ## v2.10.2
 
 [compare changes](https://github.com/nitrojs/nitro/compare/v2.10.1...v2.10.2)
