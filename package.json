@@ -82,16 +82,15 @@
     "dev:start": "node playground/.output/server/index.mjs",
     "lint": "eslint --cache . && prettier -c .",
     "lint:fix": "eslint --cache --fix . && prettier -w .",
-    "nitro": "NODE_OPTIONS=\"--enable-source-maps\" jiti ./src/cli/index.ts",
+    "nitro": "jiti ./src/cli/index.ts",
     "prepack": "pnpm build",
     "gen-mirror": "pnpm jiti scripts/gen-mirror.ts",
     "gen-presets": "pnpm jiti scripts/gen-presets.ts",
     "release": "pnpm test && pnpm build && changelogen --release && pnpm publish && git push --follow-tags",
     "stub": "unbuild --stub",
-    "test": "pnpm lint && pnpm vitest-es run --silent",
+    "test": "pnpm lint && pnpm vitest run",
     "test:fixture:types": "pnpm stub && jiti ./test/scripts/gen-fixture-types.ts && cd test/fixture && tsc --noEmit",
-    "test:types": "tsc --noEmit && pnpm test:fixture:types",
-    "vitest-es": "NODE_OPTIONS=\"--enable-source-maps --experimental-vm-modules\" vitest"
+    "test:types": "tsc --noEmit && pnpm test:fixture:types"
   },
   "resolutions": {
     "nitropack": "link:.",
