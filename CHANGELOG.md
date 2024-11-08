@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## v2.10.4
+
+[compare changes](https://github.com/nitrojs/nitro/compare/v2.10.3...v2.10.4)
+
+### 🔥 Performance
+
+- **raw:** Avoid extra `this.resolve` when possible ([#2857](https://github.com/nitrojs/nitro/pull/2857))
+
+### 📖 Documentation
+
+- **config:** Tiny typos ([#2859](https://github.com/nitrojs/nitro/pull/2859))
+
+### 🏡 Chore
+
+- Remove extra `NODE_OPTIONS` from scripts ([50ff48a6](https://github.com/nitrojs/nitro/commit/50ff48a6))
+- Update ci script ([f9c269fb](https://github.com/nitrojs/nitro/commit/f9c269fb))
+
+### ✅ Tests
+
+- Add tests for #2838, #2836 ([#2838](https://github.com/nitrojs/nitro/issues/2838), [#2836](https://github.com/nitrojs/nitro/issues/2836))
+- Fix windows issue ([924eaa52](https://github.com/nitrojs/nitro/commit/924eaa52))
+- Enable dev tests on ci ([#2858](https://github.com/nitrojs/nitro/pull/2858))
+
+### ❤️ Contributors
+
+- @beer ([@iiio2](http://github.com/iiio2))
+- Pooya Parsa ([@pi0](http://github.com/pi0))
+- Arkadiusz Sygulski <arkadiusz@sygulski.pl>
+
 ## v2.10.3
 
 [compare changes](https://github.com/nitrojs/nitro/compare/v2.10.2...v2.10.3)
