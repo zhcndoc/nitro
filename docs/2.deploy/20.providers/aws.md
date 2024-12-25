@@ -20,7 +20,7 @@ const { statusCode, headers, body } = handler({ rawPath: '/' })
 
 ## 内联块
 
-Nitro 输出默认使用动态块，仅在需要时懒加载代码。然而，这在某些情况下可能不适合性能。（参见 [unjs/nitro#650](https://github.com/unjs/nitro/pull/650) 的讨论）。您可以通过 [`inlineDynamicImports`](/config#inlinedynamicimports) 配置来启用块内联行为。
+Nitro 输出默认使用动态块，仅在需要时懒加载代码。然而，这在某些情况下可能不适合性能。（参见 [nitrojs/nitro#650](https://github.com/nitrojs/nitro/pull/650) 的讨论）。您可以通过 [`inlineDynamicImports`](/config#inlinedynamicimports) 配置来启用块内联行为。
 
 ::code-group
 
@@ -41,17 +41,16 @@ export default defineNuxtConfig({
 ::
 
 
-## 流式支持（实验性）
-
-**预设:** `aws_lambda_streaming`
-
-Nitro 支持一个实验性的预设，以生成与 [AWS Lambda](https://aws.amazon.com/lambda/) 兼容的输出格式，并启用流式调用。
+## 响应流式处理
 
 :read-more{title="引入 AWS Lambda 响应流式处理" to="https://aws.amazon.com/blogs/compute/introducing-aws-lambda-response-streaming/"}
 
-> [!NOTE]
-> 此预设可通过 [nightly channel](https://nitro.unjs.io/guide/nightly) 进行尝试。
+为了启用响应流式处理，请启用 `awsLambda.streaming` 标志：
 
-> [!IMPORTANT]
-> 此预设尚未准备好投入生产，可能会重命名！请不要建议用户或文档间接使用它。
-
+```ts [nitro.config.ts]
+export default defineNitroConfig({
+  awsLambda: {
+    streaming: true
+  }
+});
+```

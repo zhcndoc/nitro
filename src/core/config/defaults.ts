@@ -1,7 +1,6 @@
-import { runtimeDir } from "nitro/runtime/meta";
-import type { NitroConfig } from "nitro/types";
-import { resolve } from "pathe";
-import { join } from "pathe";
+import { runtimeDir } from "nitropack/runtime/meta";
+import type { NitroConfig } from "nitropack/types";
+import { join, resolve } from "pathe";
 import { isDebug, isTest } from "std-env";
 
 export const NitroDefaults: NitroConfig = {
@@ -10,6 +9,8 @@ export const NitroDefaults: NitroConfig = {
   timing: isDebug,
   logLevel: isTest ? 1 : 3,
   runtimeConfig: { app: {}, nitro: {} },
+  appConfig: {},
+  appConfigFiles: [],
 
   // Dirs
   scanDirs: [],
@@ -21,9 +22,7 @@ export const NitroDefaults: NitroConfig = {
   },
 
   // Features
-  experimental: {
-    asyncContext: true,
-  },
+  experimental: {},
   future: {},
   storage: {},
   devStorage: {},

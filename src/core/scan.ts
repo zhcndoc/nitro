@@ -1,5 +1,5 @@
 import { globby } from "globby";
-import type { Nitro } from "nitro/types";
+import type { Nitro } from "nitropack/types";
 import { join, relative } from "pathe";
 import { withBase, withLeadingSlash, withoutTrailingSlash } from "ufo";
 
@@ -7,10 +7,9 @@ export const GLOB_SCAN_PATTERN = "**/*.{js,mjs,cjs,ts,mts,cts,tsx,jsx}";
 type FileInfo = { path: string; fullPath: string };
 
 const suffixRegex =
-  /\.(connect|delete|get|head|options|patch|post|put|trace)(\.(dev|prod|prerender))?$/;
+  /(\.(?<method>connect|delete|get|head|options|patch|post|put|trace))?(\.(?<env>dev|prod|prerender))?$/;
 
 // prettier-ignore
-// biome-ignore format: keep inline for better readability
 type MatchedMethodSuffix = "connect" | "delete" | "get" | "head" | "options" | "patch" | "post" | "put" | "trace";
 type MatchedEnvSuffix = "dev" | "prod" | "prerender";
 
@@ -96,18 +95,19 @@ export async function scanServerRoutes(
   return files.map((file) => {
     let route = file.path
       .replace(/\.[A-Za-z]+$/, "")
+      .replace(/\(([^(/\\]+)\)[/\\]/g, "")
       .replace(/\[\.{3}]/g, "**")
       .replace(/\[\.{3}(\w+)]/g, "**:$1")
-      .replace(/\[(\w+)]/g, ":$1");
+      .replace(/\[([^/\]]+)]/g, ":$1");
     route = withLeadingSlash(withoutTrailingSlash(withBase(route, prefix)));
 
     const suffixMatch = route.match(suffixRegex);
     let method: MatchedMethodSuffix | undefined;
     let env: MatchedEnvSuffix | undefined;
-    if (suffixMatch?.index) {
-      route = route.slice(0, Math.max(0, suffixMatch.index));
-      method = suffixMatch[1] as MatchedMethodSuffix;
-      env = suffixMatch[3] as MatchedEnvSuffix;
+    if (suffixMatch?.index && suffixMatch?.index >= 0) {
+      route = route.slice(0, suffixMatch.index);
+      method = suffixMatch.groups?.method as MatchedMethodSuffix | undefined;
+      env = suffixMatch.groups?.env as MatchedEnvSuffix | undefined;
     }
 
     route = route.replace(/\/index$/, "") || "/";
@@ -140,20 +140,13 @@ export async function scanTasks(nitro: Nitro) {
 }
 
 export async function scanModules(nitro: Nitro) {
-  const files = await scanFiles(nitro, "modules", [
-    "*/index.{js,mjs,cjs,ts,mts,cts}",
-    "*.{js,mjs,cjs,ts,mts,cts}",
-  ]);
+  const files = await scanFiles(nitro, "modules");
   return files.map((f) => f.fullPath);
 }
 
-async function scanFiles(
-  nitro: Nitro,
-  name: string,
-  patterns: string | string[] = [GLOB_SCAN_PATTERN]
-): Promise<FileInfo[]> {
+async function scanFiles(nitro: Nitro, name: string): Promise<FileInfo[]> {
   const files = await Promise.all(
-    nitro.options.scanDirs.map((dir) => scanDir(nitro, dir, name, patterns))
+    nitro.options.scanDirs.map((dir) => scanDir(nitro, dir, name))
   ).then((r) => r.flat());
   return files;
 }
@@ -161,16 +154,9 @@ async function scanFiles(
 async function scanDir(
   nitro: Nitro,
   dir: string,
-  name: string,
-  patterns: string | string[]
+  name: string
 ): Promise<FileInfo[]> {
-  const globbyPattern: string[] = [];
-  // Normalize patterns to an array
-  for (const pattern of Array.isArray(patterns) ? patterns : [patterns]) {
-    globbyPattern.push(join(name, pattern));
-  }
-
-  const fileNames = await globby(globbyPattern, {
+  const fileNames = await globby(join(name, GLOB_SCAN_PATTERN), {
     cwd: dir,
     dot: true,
     ignore: nitro.options.ignore,

@@ -1,4 +1,4 @@
-import { useStorage } from "nitro/runtime";
+import { useStorage } from "nitropack/runtime";
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);

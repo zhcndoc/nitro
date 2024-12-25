@@ -42,12 +42,12 @@ export default defineBuildConfig({
     { input: "src/types/index.ts" },
   ],
   alias: {
-    nitro: "nitro",
-    "nitro/meta": resolve(srcDir, "../meta.ts"),
-    "nitro/runtime/meta": resolve(srcDir, "../runtime-meta.mjs"),
+    nitropack: "nitropack",
+    "nitropack/meta": resolve(srcDir, "../meta.ts"),
+    "nitropack/runtime/meta": resolve(srcDir, "../runtime-meta.mjs"),
     ...Object.fromEntries(
       subpaths.map((subpath) => [
-        `nitro/${subpath}`,
+        `nitropack/${subpath}`,
         resolve(srcDir, `${subpath}/index.ts`),
       ])
     ),
@@ -64,17 +64,12 @@ export default defineBuildConfig({
   },
   externals: [
     "nitro",
-    "nitro/runtime/meta",
-    ...subpaths.map((subpath) => `nitro/${subpath}`),
+    "nitropack",
+    "nitropack/runtime/meta",
+    ...subpaths.map((subpath) => `nitropack/${subpath}`),
     "firebase-functions",
     "@scalar/api-reference",
   ],
-  stubOptions: {
-    jiti: {
-      // TOODO: remove when unbuild upgraded
-      interopDefault: true,
-    },
-  },
   rollup: {
     output: {
       chunkFileNames(chunk: any) {

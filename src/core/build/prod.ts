@@ -1,10 +1,11 @@
 import { promises as fsp } from "node:fs";
 import { formatCompatibilityDate } from "compatx";
-import { writeFile } from "nitro/kit";
-import { version as nitroVersion } from "nitro/meta";
-import type { Nitro, NitroBuildInfo, RollupConfig } from "nitro/types";
+import { writeFile } from "nitropack/kit";
+import { version as nitroVersion } from "nitropack/meta";
+import type { Nitro, NitroBuildInfo, RollupConfig } from "nitropack/types";
 import { dirname, join, relative, resolve } from "pathe";
 import * as rollup from "rollup";
+import { presetsWithConfig } from "../../presets/_types.gen";
 import { scanHandlers } from "../scan";
 import { generateFSTree } from "../utils/fs-tree";
 import { nitroServerName } from "../utils/nitro";
@@ -44,6 +45,11 @@ export async function buildProduction(
     commands: {
       preview: nitro.options.commands.preview,
       deploy: nitro.options.commands.deploy,
+    },
+    config: {
+      ...Object.fromEntries(
+        presetsWithConfig.map((key) => [key, nitro.options[key]])
+      ),
     },
   };
   await writeFile(buildInfoPath, JSON.stringify(buildInfo, null, 2));

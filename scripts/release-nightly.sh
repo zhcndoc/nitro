@@ -8,7 +8,7 @@ set -xe
 git restore -s@ -SW  -- .
 
 # Bump according to changelog
-pnpm changelogen --bump -r 3.0.0-beta
+pnpm changelogen --bump
 
 # Bump versions to nightly
 pnpm jiti ./scripts/bump-nightly
@@ -31,8 +31,8 @@ fi
 # Release packages
 
 echo "Publishing main package..."
-npm publish --access public --tolerate-republish --tag 3x
+npm publish --access public --tolerate-republish
 
 echo "Publishing mirror package..."
 cd .mirror
-npm publish --access public --tolerate-republish --tag 3x
+npm publish --access public --tolerate-republish

@@ -1,7 +1,7 @@
 import type { ConsolaInstance } from "consola";
 import type { RouterMethod } from "h3";
 import type { Hookable } from "hookable";
-import type { PresetName } from "nitro/presets";
+import type { PresetName, PresetOptions } from "nitropack/presets";
 import type { Unimport } from "unimport";
 import type { Storage } from "unstorage";
 import type { NitroConfig, NitroOptions } from "./config";
@@ -35,7 +35,6 @@ export type NitroTypes = {
 };
 
 export interface NitroFrameworkInfo {
-  // eslint-disable-next-line @typescript-eslint/ban-types
   name?: "nitro" | (string & {});
   version?: string;
 }
@@ -57,4 +56,5 @@ export interface NitroBuildInfo {
     pid: number;
     workerAddress: { host: string; port: number; socketPath?: string };
   };
+  config?: Partial<PresetOptions>;
 }

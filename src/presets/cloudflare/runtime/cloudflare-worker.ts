@@ -1,7 +1,6 @@
 import "#nitro-internal-pollyfills";
-import { useNitroApp } from "nitro/runtime";
-import { useRuntimeConfig } from "nitro/runtime";
-import { requestHasBody } from "nitro/runtime/internal";
+import { useNitroApp, useRuntimeConfig } from "nitropack/runtime";
+import { requestHasBody } from "nitropack/runtime/internal";
 import { getPublicAssetMeta } from "#nitro-internal-virtual/public-assets";
 
 import {
@@ -23,11 +22,12 @@ const ws = import.meta._websocket
 
 async function handleEvent(event: FetchEvent) {
   // Websocket upgrade
+  // https://crossws.unjs.io/adapters/cloudflare
   if (
     import.meta._websocket &&
     event.request.headers.get("upgrade") === "websocket"
   ) {
-    return ws!.handleUpgrade(event.request as any, {}, event as any);
+    return ws!.handleUpgrade(event.request as any, {} /* env */, event as any);
   }
 
   try {

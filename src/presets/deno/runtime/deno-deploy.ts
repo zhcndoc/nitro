@@ -1,5 +1,6 @@
 import "#nitro-internal-pollyfills";
-import { useNitroApp } from "nitro/runtime";
+import "./_deno-env-polyfill";
+import { useNitroApp } from "nitropack/runtime";
 
 import type { Deno as _Deno } from "@deno/types";
 import wsAdapter from "crossws/adapters/deno";
@@ -11,6 +12,7 @@ const ws = import.meta._websocket
   : undefined;
 
 Deno.serve((request: Request, info: _Deno.ServeHandlerInfo) => {
+  // https://crossws.unjs.io/adapters/deno
   if (
     import.meta._websocket &&
     request.headers.get("upgrade") === "websocket"

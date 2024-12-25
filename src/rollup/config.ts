@@ -8,13 +8,13 @@ import json from "@rollup/plugin-json";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import { defu } from "defu";
 import { resolvePath, sanitizeFilePath } from "mlly";
-import { runtimeDependencies, runtimeDir } from "nitro/runtime/meta";
+import { runtimeDependencies, runtimeDir } from "nitropack/runtime/meta";
 import type {
   Nitro,
   NitroStaticBuildFlags,
   NodeExternalsOptions,
   RollupConfig,
-} from "nitro/types";
+} from "nitropack/types";
 import { hash } from "ohash";
 import { dirname, join, normalize, resolve } from "pathe";
 import type { Plugin } from "rollup";
@@ -24,9 +24,12 @@ import * as unenv from "unenv";
 import type { Preset } from "unenv";
 import unimportPlugin from "unimport/unplugin";
 import { rollup as unwasm } from "unwasm/plugin";
+import { appConfig } from "./plugins/app-config";
 import { database } from "./plugins/database";
+import { dynamicRequire } from "./plugins/dynamic-require";
 import { esbuild } from "./plugins/esbuild";
 import { externals } from "./plugins/externals";
+import { externals as legacyExternals } from "./plugins/externals-legacy";
 import { handlers } from "./plugins/handlers";
 import { handlersMeta } from "./plugins/handlers-meta";
 import { importMeta } from "./plugins/import-meta";
@@ -299,6 +302,22 @@ export const getRollupConfig = (nitro: Nitro): RollupConfig => {
     })
   );
 
+  // Dynamic Require Support
+  rollupConfig.plugins.push(
+    dynamicRequire({
+      dir: resolve(nitro.options.buildDir, "dist/server"),
+      inline:
+        nitro.options.node === false || nitro.options.inlineDynamicImports,
+      ignore: [
+        "client.manifest.mjs",
+        "server.js",
+        "server.cjs",
+        "server.mjs",
+        "server.manifest.mjs",
+      ],
+    })
+  );
+
   // Server assets
   rollupConfig.plugins.push(serverAssets(nitro));
 
@@ -310,6 +329,9 @@ export const getRollupConfig = (nitro: Nitro): RollupConfig => {
 
   // Database
   rollupConfig.plugins.push(database(nitro));
+
+  // App.config
+  rollupConfig.plugins.push(appConfig(nitro));
 
   // Handlers
   rollupConfig.plugins.push(handlers(nitro));
@@ -370,8 +392,8 @@ export const plugins = [
         "#build": buildDir,
         "#nitro-internal-virtual/error-handler": nitro.options.errorHandler,
         "#internal/nitro": runtimeDir,
-        "nitropack/runtime": runtimeDir,
         "nitro/runtime": runtimeDir,
+        "nitropack/runtime": runtimeDir,
         "~": nitro.options.srcDir,
         "@/": nitro.options.srcDir,
         "~~": nitro.options.rootDir,
@@ -385,14 +407,14 @@ export const plugins = [
   if (nitro.options.noExternals) {
     rollupConfig.plugins.push({
       name: "no-externals",
-      async resolveId(id, from, options) {
+      async resolveId(id, from, resolveOpts) {
         if (
           nitro.options.node &&
           (id.startsWith("node:") || builtinModules.includes(id))
         ) {
           return { id, external: true };
         }
-        const resolved = await this.resolve(id, from, options);
+        const resolved = await this.resolve(id, from, resolveOpts);
         if (!resolved) {
           const _resolved = await resolvePath(id, {
             url: nitro.options.nodeModulesDirs,
@@ -418,8 +440,11 @@ export const plugins = [
       },
     });
   } else {
+    const externalsPlugin = nitro.options.experimental.legacyExternals
+      ? legacyExternals
+      : externals;
     rollupConfig.plugins.push(
-      externals(
+      externalsPlugin(
         defu(nitro.options.externals, <NodeExternalsOptions>{
           outDir: nitro.options.output.serverDir,
           moduleDirectories: nitro.options.nodeModulesDirs,
@@ -435,7 +460,7 @@ export const plugins = [
             "@@/",
             "virtual:",
             "nitro/runtime",
-            "nitro/runtime",
+            "nitropack/runtime",
             dirname(nitro.options.entry),
             ...(nitro.options.experimental.wasm
               ? [(id: string) => id?.endsWith(".wasm")]
@@ -485,6 +510,7 @@ export const plugins = [
   // https://github.com/rollup/plugins/tree/master/packages/commonjs
   rollupConfig.plugins.push(
     commonjs({
+      strictRequires: "auto", // TODO: set to true (default) in v3
       esmExternals: (id) => !id.startsWith("unenv/"),
       requireReturnsDefault: "auto",
       ...nitro.options.commonJS,

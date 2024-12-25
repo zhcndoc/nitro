@@ -2,7 +2,7 @@
 name: Nitro 中文文档
 shortDescription: 下一代服务器工具包
 description: 创建具有所有必需功能的网络服务器，并将其部署到您喜欢的地方。
-github: zhcndoc/nitro
+github: nitrojs/nitro
 url: https://nitro.zhcndoc.com
 themeColor: "red"
 automd: true
@@ -13,7 +13,7 @@ landing:
     playOnline:
       label: "在线演示"
       icon: "i-simple-icons-lightning"
-      to: "https://stackblitz.com/github/unjs/nitro/tree/main/examples/hello-world"
+      to: "https://stackblitz.com/github/nitrojs/nitro/tree/main/examples/hello-world"
   contributors: true
   featuresTitle: "现代 Web 的服务器"
   features:

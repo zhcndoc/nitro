@@ -1,11 +1,12 @@
 import { promises as fsp } from "node:fs";
-import { defineNitroPreset } from "nitro/kit";
-import type { Nitro } from "nitro/types";
+import { defineNitroPreset } from "nitropack/kit";
+import type { Nitro } from "nitropack/types";
 import { dirname, join } from "pathe";
 import netlifyLegacyPresets from "./legacy/preset";
 import {
   generateNetlifyFunction,
   getGeneratorString,
+  getStaticPaths,
   writeHeaders,
   writeRedirects,
 } from "./utils";
@@ -85,6 +86,7 @@ const netlifyEdge = defineNitroPreset(
           functions: [
             {
               path: "/*",
+              excludedPath: getStaticPaths(nitro.options.publicAssets),
               name: "edge server handler",
               function: "server",
               generator: getGeneratorString(nitro),

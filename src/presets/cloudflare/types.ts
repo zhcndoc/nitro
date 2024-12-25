@@ -1,4 +1,11 @@
-import type { ExecutionContext } from "@cloudflare/workers-types";
+import type {
+  ExecutionContext,
+  ForwardableEmailMessage,
+  MessageBatch,
+  ScheduledController,
+  TraceItem,
+} from "@cloudflare/workers-types";
+import type { DurableObject } from "cloudflare:workers";
 import type { Config as WranglerConfig } from "./types.wrangler";
 
 /**
@@ -52,49 +59,52 @@ export interface CloudflareOptions {
   };
 }
 
-/** @experimental */
-export interface CloudflareEmailContext {
-  readonly from?: string;
-  readonly to?: string;
-  readonly headers?: Headers;
-  readonly raw?: ReadableStream;
-  readonly rawSize?: number;
+type DurableObjectState = ConstructorParameters<typeof DurableObject>[0];
 
-  setReject?(reason: string): void;
-  forward?(rcptTo: string, headers?: Headers): Promise<void>;
-  reply?(message: CloudflareEmailContext): Promise<void>;
-}
-
-export interface CloudflareQueueRetryOptions {
-  delaySeconds?: number;
-}
-
-export interface CloudflareMessageBody<Body = unknown> {
-  readonly id: string;
-  readonly timestamp: Date;
-  readonly body: Body;
-  adk(): void;
-  retry(options?: CloudflareQueueRetryOptions): void;
-}
-
-export interface CloudflareMessageBatch<Body = unknown> {
-  readonly queue: string;
-  readonly messages: CloudflareMessageBody<Body>[];
-  ackAll(): void;
-  retryAll(options?: CloudflareQueueRetryOptions): void;
-}
-
-declare module "nitro/types" {
+declare module "nitropack/types" {
   export interface NitroRuntimeHooks {
+    // https://developers.cloudflare.com/workers/runtime-apis/handlers/scheduled/
+    "cloudflare:scheduled": (_: {
+      controller: ScheduledController;
+      env: unknown;
+      context: ExecutionContext;
+    }) => void;
+    // https://developers.cloudflare.com/email-routing/email-workers/runtime-api
     "cloudflare:email": (_: {
-      event: CloudflareEmailContext;
-      env: any;
+      message: ForwardableEmailMessage;
+      /** @deprecated please use `message` */
+      event: ForwardableEmailMessage;
+      env: unknown;
       context: ExecutionContext;
     }) => void;
+    // https://developers.cloudflare.com/queues/configuration/javascript-apis/#consumer
     "cloudflare:queue": (_: {
-      event: CloudflareEmailContext;
-      env: any;
+      batch: MessageBatch;
+      /** @deprecated please use `batch` */
+      event: MessageBatch;
+      env: unknown;
       context: ExecutionContext;
     }) => void;
+    // https://developers.cloudflare.com/workers/runtime-apis/handlers/tail/
+    "cloudflare:tail": (_: {
+      traces: TraceItem[];
+      env: unknown;
+      context: ExecutionContext;
+    }) => void;
+    "cloudflare:trace": (_: {
+      traces: TraceItem[];
+      env: unknown;
+      context: ExecutionContext;
+    }) => void;
+
+    "cloudflare:durable:init": (
+      durable: DurableObject,
+      _: {
+        state: DurableObjectState;
+        env: unknown;
+      }
+    ) => void;
+
+    "cloudflare:durable:alarm": (durable: DurableObject) => void;
   }
 }

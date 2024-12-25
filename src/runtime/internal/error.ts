@@ -1,6 +1,11 @@
 // import ansiHTML from 'ansi-html'
-import { send, setResponseHeader, setResponseStatus } from "h3";
-import type { NitroErrorHandler } from "nitro/types";
+import {
+  send,
+  setResponseHeader,
+  setResponseHeaders,
+  setResponseStatus,
+} from "h3";
+import type { NitroErrorHandler } from "nitropack/types";
 import { isJsonRequest, normalizeError } from "./utils";
 
 export function defineNitroErrorHandler(
@@ -51,6 +56,22 @@ export default defineNitroErrorHandler(
         error.message + "\n" + stack.map((l) => "  " + l.text).join("  \n")
       );
     }
+
+    if (statusCode === 404) {
+      setResponseHeader(event, "Cache-Control", "no-cache");
+    }
+
+    // Security headers
+    setResponseHeaders(event, {
+      // Disable the execution of any js
+      "Content-Security-Policy": "script-src 'none'; frame-ancestors 'none';",
+      // Prevent browser from guessing the MIME types of resources.
+      "X-Content-Type-Options": "nosniff",
+      // Prevent error page from being embedded in an iframe
+      "X-Frame-Options": "DENY",
+      // Prevent browsers from sending the Referer header
+      "Referrer-Policy": "no-referrer",
+    });
 
     setResponseStatus(event, statusCode, statusMessage);
 

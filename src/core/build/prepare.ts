@@ -1,6 +1,5 @@
 import fsp from "node:fs/promises";
-import fse from "fs-extra";
-import type { Nitro } from "nitro/types";
+import type { Nitro } from "nitropack";
 
 export async function prepare(nitro: Nitro) {
   await prepareDir(nitro.options.output.dir);
@@ -13,6 +12,6 @@ export async function prepare(nitro: Nitro) {
 }
 
 async function prepareDir(dir: string) {
+  await fsp.rm(dir, { recursive: true, force: true });
   await fsp.mkdir(dir, { recursive: true });
-  await fse.emptyDir(dir);
 }

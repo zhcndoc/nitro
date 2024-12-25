@@ -11,9 +11,13 @@ import {
   toNodeListener,
 } from "h3";
 import { createHooks } from "hookable";
-import type { CaptureError, NitroApp, NitroRuntimeHooks } from "nitro/types";
-import type { NitroAsyncContext } from "nitro/types";
-import type { $Fetch, NitroFetchRequest } from "nitro/types";
+import type {
+  CaptureError,
+  NitroApp,
+  NitroRuntimeHooks,
+} from "nitropack/types";
+import type { NitroAsyncContext } from "nitropack/types";
+import type { $Fetch, NitroFetchRequest } from "nitropack/types";
 import { Headers, createFetch } from "ofetch";
 import {
   createCall,
@@ -117,12 +121,12 @@ function createNitroApp(): NitroApp {
       // Assign bound fetch to context
       event.fetch = (req, init) =>
         fetchWithEvent(event, req, init, { fetch: localFetch });
-      event.$fetch = ((req, init) =>
+      event.$fetch = (req, init) =>
         fetchWithEvent(event, req, init as RequestInit, {
           fetch: $fetch as any,
-        })) as $Fetch<unknown, NitroFetchRequest>;
+        });
 
-      // https://github.com/unjs/nitro/issues/1420
+      // https://github.com/nitrojs/nitro/issues/1420
       event.waitUntil = (promise) => {
         if (!event.context.nitro._waitUntilPromises) {
           event.context.nitro._waitUntilPromises = [];
@@ -181,18 +185,24 @@ function createNitroApp(): NitroApp {
     captureError,
   };
 
+  return app;
+}
+
+function runNitroPlugins(nitroApp: NitroApp) {
   for (const plugin of plugins) {
     try {
-      plugin(app);
+      plugin(nitroApp);
     } catch (error: any) {
-      captureError(error, { tags: ["plugin"] });
+      nitroApp.captureError(error, { tags: ["plugin"] });
       throw error;
     }
   }
-
-  return app;
 }
 
 export const nitroApp: NitroApp = createNitroApp();
 
-export const useNitroApp = () => nitroApp;
+export function useNitroApp() {
+  return nitroApp;
+}
+
+runNitroPlugins(nitroApp);

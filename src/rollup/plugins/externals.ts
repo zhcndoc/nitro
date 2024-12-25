@@ -8,10 +8,10 @@ import {
   parseNodeModulePath,
   resolvePath,
 } from "mlly";
-import { isDirectory } from "nitro/kit";
-import type { NodeExternalsOptions } from "nitro/types";
+import { isDirectory } from "nitropack/kit";
+import type { NodeExternalsOptions } from "nitropack/types";
 import { dirname, isAbsolute, join, normalize, relative, resolve } from "pathe";
-import type { PackageJson, PackageJsonExports } from "pkg-types";
+import type { PackageJson } from "pkg-types";
 import { readPackageJSON, writePackageJSON } from "pkg-types";
 import type { Plugin } from "rollup";
 import semver from "semver";
@@ -186,7 +186,7 @@ export function externals(opts: NodeExternalsOptions): Plugin {
 
       // Trace used files using nft
       const _fileTrace = await nodeFileTrace([...trackedExternals], {
-        // https://github.com/unjs/nitro/pull/1562
+        // https://github.com/nitrojs/nitro/pull/1562
         conditions: (opts.exportConditions || []).filter(
           (c) => !["require", "import", "default"].includes(c)
         ),

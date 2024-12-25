@@ -2,15 +2,15 @@ import type {
   CacheOptions,
   CaptureError,
   CapturedErrorContext,
-} from "nitro/types";
-import type { $Fetch, NitroFetchRequest } from "./fetch/fetch";
+} from "nitropack/types";
+import type { Base$Fetch, NitroFetchRequest } from "./fetch/fetch";
 
 export type H3EventFetch = (
   request: NitroFetchRequest,
   init?: RequestInit
 ) => Promise<Response>;
 
-export type H3Event$Fetch = $Fetch<unknown, NitroFetchRequest>;
+export type H3Event$Fetch = Base$Fetch<unknown, NitroFetchRequest>;
 
 declare module "h3" {
   interface H3Event {
@@ -18,7 +18,6 @@ declare module "h3" {
     fetch: H3EventFetch;
     /** @experimental Calls fetch with same context and request headers */
     $fetch: H3Event$Fetch;
-    /** @experimental See https://github.com/unjs/nitro/issues/1420 */
     waitUntil: (promise: Promise<unknown>) => void;
     /** @experimental */
     captureError: CaptureError;

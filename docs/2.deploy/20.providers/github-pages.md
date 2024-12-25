@@ -56,7 +56,7 @@ jobs:
 
     # 部署到 github_pages 环境
     environment:
-      name: github_pages
+      name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
     # 指定运行器 + 部署步骤

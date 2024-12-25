@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { consola } from "consola";
 import { createJiti } from "jiti";
 import { findTypeExports } from "mlly";
-import type { NitroPreset, NitroPresetMeta } from "nitro/types";
+import type { NitroPreset, NitroPresetMeta } from "nitropack/types";
 import { camelCase, kebabCase, pascalCase, snakeCase } from "scule";
 import { subpaths } from "../build.config";
 
@@ -22,12 +22,11 @@ const presetDirs: string[] = readdirSync(presetsDir, { withFileTypes: true })
 
 // --- Load presets ---
 const jiti = createJiti(presetsDir, {
-  interopDefault: true,
   alias: {
-    nitro: fileURLToPath(new URL("../src/core/index.ts", import.meta.url)),
+    nitropack: fileURLToPath(new URL("../src/core/index.ts", import.meta.url)),
     ...Object.fromEntries(
       subpaths.map((pkg) => [
-        `nitro/${pkg}`,
+        `nitropack/${pkg}`,
         fileURLToPath(new URL(`../src/${pkg}/index.ts`, import.meta.url)),
       ])
     ),
@@ -36,7 +35,9 @@ const jiti = createJiti(presetsDir, {
 const allPresets: (NitroPreset & { _meta?: NitroPresetMeta })[] = [];
 for (const preset of presetDirs) {
   const presetPath = resolve(presetsDir, preset, "preset.ts");
-  const _presets = (await jiti.import(presetPath)) as NitroPreset[];
+  const _presets = await jiti
+    .import(presetPath)
+    .then((mod) => (mod as any).default || mod);
   allPresets.push(..._presets);
 }
 
@@ -101,6 +102,8 @@ ${presetsWithType
   .map((preset) => `  ${camelCase(preset)}: ${pascalCase(preset)}Options;`)
   .join("\n")}
 }
+
+export const presetsWithConfig = ${JSON.stringify(presetsWithType.map((p) => camelCase(p)))} as const;
 
 export type PresetName = ${names.map((name) => `"${name}"`).join(" | ")};
 

@@ -76,7 +76,7 @@ output_location: '.output/public'
 
 ::important
 如果您遇到任何问题，请确保您使用 Node.js 16+ 运行时。您可以在 Azure 文档中找到 [如何设置 Node 版本](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-node?tabs=v2#setting-the-node-version) 的更多信息。
-有关常见问题，请参见 [unjs/nitro#2114](https://github.com/unjs/nitro/issues/2114)。
+有关常见问题，请参见 [nitrojs/nitro#2114](https://github.com/nitrojs/nitro/issues/2114)。
 ::
 
 ### 本地预览

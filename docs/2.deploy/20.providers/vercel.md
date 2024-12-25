@@ -145,3 +145,31 @@ Nitro 的 `/api` 目录与 Vercel 不兼容。
     ::
 
 3. 要触发“按需增量静态再生 (ISR)”并重新验证路径到 Prerender 函数，请使用带有 x-prerender-revalidate: `bypassToken` 头部向该路径发出 GET 或 HEAD 请求。当该 Prerender 函数端点使用此头部访问时，缓存将被重新验证。下一个对该函数的请求应返回一个新的响应。
+
+### 通过路由规则进行细粒度 ISR 配置
+
+默认情况下，查询参数被缓存忽略。
+
+您可以传递一个选项对象到 `isr` 路由规则来配置缓存行为。
+
+- `expiration`: 在秒内缓存资产将被重新生成之前的时间。将值设置为 `false`（或 `isr: true` 路由规则）意味着它将永远不会过期。
+- `group`: 资产的组号。具有相同组号的预渲染资产将同时重新验证。
+- `allowQuery`: 将独立缓存的查询字符串参数名称列表。
+  - 如果为空数组，则不考虑查询值的缓存。
+  - 如果为 `undefined`，每个唯一的查询值将独立缓存。
+  - 对于通配符 `/**` 路由规则，`url` 总是被添加。
+
+- `passQuery`: 当为 `true` 时，查询字符串将出现在传递给调用函数的 `request` 参数中。`allowQuery` 过滤器仍然适用。
+
+```ts
+export default defineNitroConfig({
+  routeRules: {
+    "/products/**": {
+      isr: {
+        allowQuery: ["q"],
+        passQuery: true,
+      },
+    },
+  },
+});
+```

@@ -1,5 +1,5 @@
 import type { EventHandler, H3Error, H3Event, RouterMethod } from "h3";
-import type { PresetName } from "nitro/presets";
+import type { PresetName } from "nitropack/presets";
 import type { OperationObject } from "openapi-typescript";
 
 type MaybeArray<T> = T | T[];
@@ -47,10 +47,7 @@ export interface NitroEventHandler {
   /*
    * Environments to include this handler
    */
-  env?: MaybeArray<
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    "dev" | "prod" | "prerender" | PresetName | (string & {})
-  >;
+  env?: MaybeArray<"dev" | "prod" | "prerender" | PresetName | (string & {})>;
 }
 
 export interface NitroDevEventHandler {

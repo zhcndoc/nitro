@@ -7,7 +7,15 @@ import type { LogLevel } from "consola";
 import type { ConnectorName } from "db0";
 import type { NestedHooks } from "hookable";
 import type { ProxyServerOptions } from "httpxy";
-import type { PresetName, PresetNameInput, PresetOptions } from "nitro/presets";
+import type {
+  NitroRuntimeConfigApp as NitroTypesRuntimeConfigApp,
+  NitroRuntimeConfig as NitroTypeskRuntimeConfig,
+} from "nitropack";
+import type {
+  PresetName,
+  PresetNameInput,
+  PresetOptions,
+} from "nitropack/presets";
 import type { TSConfig } from "pkg-types";
 import type { PluginVisualizerOptions } from "rollup-plugin-visualizer";
 import type { Preset as UnenvPreset } from "unenv";
@@ -25,6 +33,7 @@ import type { NitroHooks } from "./hooks";
 import type { NitroModuleInput } from "./module";
 import type { NitroFrameworkInfo } from "./nitro";
 import type { NitroOpenAPIConfig } from "./openapi";
+export type { NitroOpenAPIConfig } from "./openapi";
 import type { NitroPreset } from "./preset";
 import type { EsbuildOptions, NodeExternalsOptions } from "./rollup";
 import type { RollupConfig } from "./rollup";
@@ -50,6 +59,8 @@ export interface NitroOptions extends PresetOptions {
   static: boolean;
   logLevel: LogLevel;
   runtimeConfig: NitroRuntimeConfig;
+  appConfig: AppConfig;
+  appConfigFiles: string[];
 
   // Dirs
   workspaceDir: string;
@@ -84,6 +95,7 @@ export interface NitroOptions extends PresetOptions {
   wasm?: UnwasmPluginOptions;
   openAPI?: NitroOpenAPIConfig;
   experimental: {
+    legacyExternals?: boolean;
     openAPI?: boolean;
     /**
      * See https://github.com/microsoft/TypeScript/pull/51669
@@ -108,27 +120,31 @@ export interface NitroOptions extends PresetOptions {
      */
     sourcemapMinify?: false;
     /**
+     * Backward compatibility support for Node fetch (required for Node < 18)
+     */
+    nodeFetchCompat?: boolean;
+    /**
      * Allow env expansion in runtime config
      *
-     * @see https://github.com/unjs/nitro/pull/2043
+     * @see https://github.com/nitrojs/nitro/pull/2043
      */
     envExpansion?: boolean;
     /**
      * Enable experimental WebSocket support
      *
-     * @see https://nitro.unjs.io/guide/websocket
+     * @see https://nitro.build/guide/websocket
      */
     websocket?: boolean;
     /**
      * Enable experimental Database support
      *
-     * @see https://nitro.unjs.io/guide/database
+     * @see https://nitro.build/guide/database
      */
     database?: boolean;
     /**
      * Enable experimental Tasks support
      *
-     * @see https://nitro.unjs.io/guide/tasks
+     * @see https://nitro.build/guide/tasks
      */
     tasks?: boolean;
   };
@@ -271,6 +287,11 @@ export interface LoadConfigOptions {
 // Partial types
 // ------------------------------------------------------------
 
+// App config
+export interface AppConfig {
+  [key: string]: any;
+}
+
 // Public assets
 export interface PublicAssetDir {
   baseURL?: string;
@@ -302,7 +323,6 @@ export interface StorageMounts {
 }
 
 // Database
-// eslint-disable-next-line @typescript-eslint/ban-types
 export type DatabaseConnectionName = "default" | (string & {});
 export type DatabaseConnectionConfig = {
   connector: ConnectorName;
@@ -317,20 +337,6 @@ export type DatabaseConnectionConfigs = Record<
 
 // Runtime config
 
-export interface NitroRuntimeConfigApp {
-  baseURL: string;
-  [key: string]: any;
-}
+export interface NitroRuntimeConfigApp extends NitroTypesRuntimeConfigApp {}
 
-export interface NitroRuntimeConfig {
-  app: NitroRuntimeConfigApp;
-  nitro: {
-    envPrefix?: string;
-    envExpansion?: boolean;
-    routeRules?: {
-      [path: string]: NitroRouteConfig;
-    };
-    openAPI?: NitroOpenAPIConfig;
-  };
-  [key: string]: any;
-}
+export interface NitroRuntimeConfig extends NitroTypeskRuntimeConfig {}

@@ -1,5 +1,5 @@
 import "#nitro-internal-pollyfills";
-import { useNitroApp } from "nitro/runtime";
+import { useNitroApp } from "nitropack/runtime";
 import { normalize } from "pathe";
 
 const nitroApp = useNitroApp();

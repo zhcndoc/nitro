@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { transform } from "esbuild";
 import type { Expression, Literal } from "estree";
-import type { Nitro, NitroEventHandler } from "nitro/types";
+import type { Nitro, NitroEventHandler } from "nitropack/types";
 import { extname } from "pathe";
 import type { Plugin } from "rollup";
 
@@ -18,12 +18,16 @@ const esbuildLoaders = {
 export function handlersMeta(nitro: Nitro) {
   return {
     name: "nitro:handlers-meta",
-    async resolveId(id) {
+    async resolveId(id, importer, resolveOpts) {
       if (id.startsWith("\0")) {
         return;
       }
       if (id.endsWith(`?meta`)) {
-        const resolved = await this.resolve(id.replace(`?meta`, ``));
+        const resolved = await this.resolve(
+          id.replace(`?meta`, ``),
+          importer,
+          resolveOpts
+        );
         if (!resolved) {
           return;
         }

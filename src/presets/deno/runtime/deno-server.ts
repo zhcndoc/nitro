@@ -1,7 +1,8 @@
 import "#nitro-internal-pollyfills";
-import { useNitroApp } from "nitro/runtime";
-import { useRuntimeConfig } from "nitro/runtime";
-import { startScheduleRunner } from "nitro/runtime/internal";
+import "./_deno-env-polyfill";
+import { useNitroApp } from "nitropack/runtime";
+import { useRuntimeConfig } from "nitropack/runtime";
+import { startScheduleRunner } from "nitropack/runtime/internal";
 
 import type { Deno as _Deno } from "@deno/types";
 import wsAdapter from "crossws/adapters/deno";
@@ -43,7 +44,7 @@ const serveOptions: _Deno.ServeOptions & Partial<_Deno.ServeTlsOptions> = {
   },
 };
 
-// https://github.com/unjs/nitro/pull/2373
+// https://github.com/nitrojs/nitro/pull/2373
 if (!serveOptions.key || !serveOptions.cert) {
   delete serveOptions.key;
   delete serveOptions.cert;
@@ -57,6 +58,7 @@ const ws = import.meta._websocket
   : undefined;
 
 async function handler(request: Request, info: any) {
+  // https://crossws.unjs.io/adapters/deno
   if (
     import.meta._websocket &&
     request.headers.get("upgrade") === "websocket"

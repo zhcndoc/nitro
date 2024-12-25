@@ -12,12 +12,7 @@ icon: game-icons:cold-heart
 
 
 ::warning
-🌙 WinterJS 目前支持 **夜间发布渠道**。请阅读文档以了解如何使用 [夜间发布渠道](/guide/getting-started#nightly-release-channel)。
-::
-
-
-::warning
-🚧 WinterJS 运行时不稳定，正在进行大量开发。请关注 [unjs/nitro#1861](https://github.com/unjs/nitro/issues/1861) 获取状态和信息。
+🚧 WinterJS 运行时不稳定，正在进行大量开发。请关注 [nitrojs/nitro#1861](https://github.com/nitrojs/nitro/issues/1861) 获取状态和信息。
 ::
 
 

@@ -41,14 +41,14 @@ describe("nitro:preset:vercel", async () => {
             "routes": [
               {
                 "headers": {
-                  "Location": "https://nitro.unjs.io/",
+                  "Location": "https://nitro.build/",
                 },
                 "src": "/rules/redirect/obj",
                 "status": 308,
               },
               {
                 "headers": {
-                  "Location": "https://nitro.unjs.io/$1",
+                  "Location": "https://nitro.build/$1",
                 },
                 "src": "/rules/redirect/wildcard/(.*)",
                 "status": 307,
@@ -150,6 +150,20 @@ describe("nitro:preset:vercel", async () => {
             "version": 3,
           }
         `);
+      });
+
+      it("should generate prerender config", async () => {
+        const isrRouteConfig = await fsp.readFile(
+          resolve(
+            ctx.outDir,
+            "functions/__nitro--rules-isr.prerender-config.json"
+          ),
+          "utf8"
+        );
+        expect(JSON.parse(isrRouteConfig)).toMatchObject({
+          expiration: false,
+          allowQuery: ["q", "url"],
+        });
       });
     }
   );

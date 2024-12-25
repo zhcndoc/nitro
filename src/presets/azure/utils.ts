@@ -1,8 +1,8 @@
 import { createWriteStream } from "node:fs";
 import fsp from "node:fs/promises";
 import archiver from "archiver";
-import { writeFile } from "nitro/kit";
-import type { Nitro } from "nitro/types";
+import { writeFile } from "nitropack/kit";
+import type { Nitro } from "nitropack/types";
 import { join, resolve } from "pathe";
 
 export async function writeFunctionsRoutes(nitro: Nitro) {
@@ -124,7 +124,7 @@ export async function writeSWARoutes(nitro: Nitro) {
     const existingRouteIndex = config.routes.findIndex(
       (_route) => _route.route === route
     );
-    if (existingRouteIndex > -1) {
+    if (existingRouteIndex !== -1) {
       config.routes.splice(existingRouteIndex, 1);
     }
     config.routes.unshift({
@@ -210,7 +210,7 @@ function _zipDirectory(dir: string, outfile: string): Promise<undefined> {
 
   return new Promise((resolve, reject) => {
     archive
-      .directory(dir, false)
+      .glob("**/*", { cwd: dir, nodir: true, dot: true, follow: true })
       .on("error", (err: Error) => reject(err))
       .pipe(stream);
 

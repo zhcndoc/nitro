@@ -1,11 +1,11 @@
 {
-  "name": "nitro-docs",
+  "name": "nitropack",
   "private": true,
   "scripts": {
     "dev": "undocs dev",
     "build": "undocs build"
   },
   "devDependencies": {
-    "undocs": "^0.2.28"
+    "undocs": "^0.2.30"
   }
 }

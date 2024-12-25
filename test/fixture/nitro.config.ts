@@ -1,9 +1,13 @@
 import { fileURLToPath } from "node:url";
-import { defineNitroConfig } from "nitro/config";
+import { defineNitroConfig } from "nitropack/config";
 
 export default defineNitroConfig({
   compressPublicAssets: true,
-  compatibilityDate: "2024-06-12",
+  compatibilityDate: "2024-09-19",
+  framework: {
+    name: "nitro",
+    version: "2.x",
+  },
   imports: {
     presets: [
       {
@@ -19,6 +23,10 @@ export default defineNitroConfig({
       handler: "~/api/hello.ts",
       // @ts-expect-error #2382
       method: "GET",
+    },
+    {
+      route: "/api/hello2",
+      handler: "~/api/hello.ts",
     },
   ],
   devProxy: {
@@ -72,14 +80,14 @@ export default defineNitroConfig({
     },
     "/rules/dynamic": { cache: false, isr: false },
     "/rules/redirect": { redirect: "/base" },
-    "/rules/isr/**": { isr: true },
+    "/rules/isr/**": { isr: { allowQuery: ["q"] } },
     "/rules/isr-ttl/**": { isr: 60 },
     "/rules/swr/**": { swr: true },
     "/rules/swr-ttl/**": { swr: 60 },
     "/rules/redirect/obj": {
-      redirect: { to: "https://nitro.unjs.io/", statusCode: 308 },
+      redirect: { to: "https://nitro.build/", statusCode: 308 },
     },
-    "/rules/redirect/wildcard/**": { redirect: "https://nitro.unjs.io/**" },
+    "/rules/redirect/wildcard/**": { redirect: "https://nitro.build/**" },
     "/rules/nested/**": { redirect: "/base", headers: { "x-test": "test" } },
     "/rules/nested/override": { redirect: { to: "/other" } },
     "/rules/_/noncached/cached": { swr: true },

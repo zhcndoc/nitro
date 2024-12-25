@@ -1,5 +1,5 @@
 import "#nitro-internal-pollyfills";
-import { useNitroApp } from "nitro/runtime";
+import { useNitroApp } from "nitropack/runtime";
 
 import { Server } from "node:http";
 import { toNodeListener } from "h3";

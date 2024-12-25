@@ -1,6 +1,6 @@
 import "#nitro-internal-pollyfills";
-import { useNitroApp } from "nitro/runtime";
-import { requestHasBody, runCronTasks } from "nitro/runtime/internal";
+import { useNitroApp } from "nitropack/runtime";
+import { requestHasBody, runCronTasks } from "nitropack/runtime/internal";
 import { isPublicAssetURL } from "#nitro-internal-virtual/public-assets";
 
 import type {
@@ -36,11 +36,16 @@ export default {
     context: EventContext<CFPagesEnv, string, any>
   ) {
     // Websocket upgrade
+    // https://crossws.unjs.io/adapters/cloudflare
     if (
       import.meta._websocket &&
       request.headers.get("upgrade") === "websocket"
     ) {
-      return ws!.handleUpgrade(request as any, env, context);
+      return ws!.handleUpgrade(
+        request as any,
+        env,
+        context as unknown as ExecutionContext
+      );
     }
 
     const url = new URL(request.url);

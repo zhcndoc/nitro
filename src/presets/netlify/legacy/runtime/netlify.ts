@@ -1,7 +1,6 @@
 import "#nitro-internal-pollyfills";
-import "./_deno-env-polyfill";
 import type { Handler } from "@netlify/functions";
-import { getRouteRulesForPath } from "nitro/runtime/internal";
+import { getRouteRulesForPath } from "nitropack/runtime/internal";
 import { withQuery } from "ufo";
 import { lambda } from "./netlify-lambda";
 
@@ -15,7 +14,7 @@ export const handler: Handler = async function handler(event, context) {
 
   if (routeRules.isr) {
     const builder = await import("@netlify/functions").then(
-      (r) => r.builder || r.default.builder
+      (r) => r.builder || (r as any).default.builder
     );
     const ttl = typeof routeRules.isr === "number" ? routeRules.isr : false;
     const builderHandler = ttl
