@@ -31,8 +31,8 @@ importers:
         specifier: ^6.1.0
         version: 6.1.0(rollup@4.29.1)
       '@rollup/plugin-node-resolve':
-        specifier: ^15.3.1
-        version: 15.3.1(rollup@4.29.1)
+        specifier: ^16.0.0
+        version: 16.0.0(rollup@4.29.1)
       '@rollup/plugin-replace':
         specifier: ^6.0.2
         version: 6.0.2(rollup@4.29.1)
@@ -1402,15 +1402,6 @@ packages:
     engines: {node: '>=14.0.0'}
     peerDependencies:
       rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
-    peerDependenciesMeta:
-      rollup:
-        optional: true
-
-  '@rollup/plugin-node-resolve@15.3.1':
-    resolution: {integrity: sha512-tgg6b91pAybXHJQMAAwW9VuWBO6Thi+q7BCNARLwSqlmsHz0XYURtGvh/AuwSADXSI4h/2uHbs7s4FzlZDGSGA==}
-    engines: {node: '>=14.0.0'}
-    peerDependencies:
-      rollup: ^2.78.0||^3.0.0||^4.0.0
     peerDependenciesMeta:
       rollup:
         optional: true
@@ -7196,16 +7187,6 @@ snapshots:
   '@rollup/plugin-json@6.1.0(rollup@4.29.1)':
     dependencies:
       '@rollup/pluginutils': 5.1.4(rollup@4.29.1)
-    optionalDependencies:
-      rollup: 4.29.1
-
-  '@rollup/plugin-node-resolve@15.3.1(rollup@4.29.1)':
-    dependencies:
-      '@rollup/pluginutils': 5.1.4(rollup@4.29.1)
-      '@types/resolve': 1.20.2
-      deepmerge: 4.3.1
-      is-module: 1.0.0
-      resolve: 1.22.10
     optionalDependencies:
       rollup: 4.29.1
 
