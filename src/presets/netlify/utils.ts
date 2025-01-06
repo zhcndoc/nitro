@@ -115,7 +115,7 @@ export { default } from "./main.mjs";
 export const config = {
   name: "server handler",
   generator: "${getGeneratorString(nitro)}",
-  path: "${joinURL(nitro.options.baseURL, "*")}",
+  path: "/*",
   excludedPath: ${JSON.stringify(getStaticPaths(nitro.options.publicAssets, nitro.options.baseURL))},
   preferStatic: true,
 };

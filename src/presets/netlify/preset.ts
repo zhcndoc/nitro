@@ -86,7 +86,7 @@ const netlifyEdge = defineNitroPreset(
           version: 1,
           functions: [
             {
-              path: `${joinURL(nitro.options.baseURL, "*")}`,
+              path: "/*",
               excludedPath: getStaticPaths(
                 nitro.options.publicAssets,
                 nitro.options.baseURL
