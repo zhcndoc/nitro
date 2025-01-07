@@ -46,8 +46,8 @@ importers:
         specifier: ^1.17.15
         version: 1.17.15
       '@vercel/nft':
-        specifier: ^0.27.10
-        version: 0.27.10(rollup@4.30.1)
+        specifier: ^0.29.0
+        version: 0.29.0(rollup@4.30.1)
       archiver:
         specifier: ^7.0.1
         version: 7.0.1
@@ -311,7 +311,7 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(typescript@5.7.2)(vue@3.5.13(typescript@5.7.2))
       undici:
-        specifier: ^6.21.0
+        specifier: ^6.20.1
         version: 6.21.0
       vitest:
         specifier: ^2.1.8
@@ -1893,9 +1893,9 @@ packages:
     peerDependencies:
       vue: '>=2.7 || >=3'
 
-  '@vercel/nft@0.27.10':
-    resolution: {integrity: sha512-zbaF9Wp/NsZtKLE4uVmL3FyfFwlpDyuymQM1kPbeT0mVOHKDQQNjnnfslB3REg3oZprmNFJuh3pkHBk2qAaizg==}
-    engines: {node: '>=16'}
+  '@vercel/nft@0.29.0':
+    resolution: {integrity: sha512-LAkWyznNySxZ57ibqEGKnWFPqiRxyLvewFyB9iCHFfMsZlVyiu8MNFbjrGk3eV0vuyim5HzBloqlvSrG4BpZ7g==}
+    engines: {node: '>=18'}
     hasBin: true
 
   '@vitest/coverage-v8@2.1.8':
@@ -7882,7 +7882,7 @@ snapshots:
       unhead: 1.11.15
       vue: 3.5.13(typescript@5.7.2)
 
-  '@vercel/nft@0.27.10(rollup@4.30.1)':
+  '@vercel/nft@0.29.0(rollup@4.30.1)':
     dependencies:
       '@mapbox/node-pre-gyp': 2.0.0-rc.0
       '@rollup/pluginutils': 5.1.4(rollup@4.30.1)
