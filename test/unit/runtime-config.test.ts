@@ -49,7 +49,8 @@ describe("normalizeRuntimeConfig", () => {
   });
 
   it("should throw a warning when runtimeConfig is not serializable", () => {
-    const warnSpy = vi.spyOn(console, "warn");
+    const originalWarn = console.warn;
+    const spyWarn = (console.warn = vi.fn());
     normalizeRuntimeConfig({
       ...nitroConfig,
       runtimeConfig: {
@@ -57,6 +58,7 @@ describe("normalizeRuntimeConfig", () => {
         brokenProperty: new Map(),
       },
     });
-    expect(warnSpy).toHaveBeenCalled();
+    console.warn = spyWarn;
+    expect(spyWarn).toHaveBeenCalledOnce();
   });
 });
