@@ -138,7 +138,7 @@ async function _loadUserConfig(
       });
       if (preset) {
         return {
-          config: preset,
+          config: klona(preset),
         };
       }
     },
