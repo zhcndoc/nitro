@@ -43,6 +43,10 @@ Nitro 输出可以直接在边缘运行服务器，更接近您的用户。
 
 **预设:** `netlify_builder`
 
+::warning
+**注意:** 此预设已被弃用。请使用带有 `isr` 路由规则的 `netlify` 预设。
+::
+
 按需构建器是无服务器函数，用于根据需要生成网页内容，并自动缓存到 Netlify 的边缘 CDN。它们使您能够在用户首次访问页面时为您的网站生成页面，并在边缘缓存以供后续访问。
 
 :read-more{title="Netlify 按需构建器" to="https://docs.netlify.com/configure-builds/on-demand-builders/"}
