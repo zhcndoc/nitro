@@ -41,17 +41,6 @@ export default defineBuildConfig({
     // Types
     { input: "src/types/index.ts" },
   ],
-  alias: {
-    nitropack: "nitropack",
-    "nitropack/meta": resolve(srcDir, "../meta.ts"),
-    "nitropack/runtime/meta": resolve(srcDir, "../runtime-meta.mjs"),
-    ...Object.fromEntries(
-      subpaths.map((subpath) => [
-        `nitropack/${subpath}`,
-        resolve(srcDir, `${subpath}/index.ts`),
-      ])
-    ),
-  },
   hooks: {
     async "build:prepare"(ctx) {
       for (const subpath of subpaths) {
