@@ -209,7 +209,7 @@ importers:
         version: 3.14.5(rollup@4.30.1)
       unstorage:
         specifier: ^1.14.4
-        version: 1.14.4(@azure/identity@4.5.0)(db0@0.2.1(better-sqlite3@11.7.2))(ioredis@5.4.2)
+        version: 1.14.4(db0@0.2.1(better-sqlite3@11.7.2))(ioredis@5.4.2)
       untyped:
         specifier: ^1.5.2
         version: 1.5.2
@@ -234,7 +234,7 @@ importers:
         version: 2.11.1
       '@scalar/api-reference':
         specifier: ^1.25.102
-        version: 1.25.102(@hyperjump/browser@1.1.6)(axios@1.7.9)(change-case@5.4.4)(tailwindcss@3.4.15)(typescript@5.7.3)
+        version: 1.25.102(@hyperjump/browser@1.2.0)(change-case@5.4.4)(tailwindcss@3.4.17)(typescript@5.7.3)
       '@types/archiver':
         specifier: ^6.0.3
         version: 6.0.3
@@ -311,7 +311,7 @@ importers:
         specifier: ^3.3.0
         version: 3.3.0(typescript@5.7.3)(vue@3.5.13(typescript@5.7.3))
       undici:
-        specifier: ^6.21.0
+        specifier: ^6.20.1
         version: 6.21.0
       vitest:
         specifier: ^2.1.8
@@ -462,10 +462,6 @@ packages:
   '@azure/identity@3.4.2':
     resolution: {integrity: sha512-0q5DL4uyR0EZ4RXQKD8MadGH6zTIcloUoS/RVbCpNpej4pwte0xpqYxk8K97Py2RiuUvI7F4GXpoT4046VfufA==}
     engines: {node: '>=14.0.0'}
-
-  '@azure/identity@4.5.0':
-    resolution: {integrity: sha512-EknvVmtBuSIic47xkOqyNabAme0RYTw52BTMz8eBgU1ysTyMrD1uOoM+JdS0J/4Yfp98IBT3osqq3BfwSaNaGQ==}
-    engines: {node: '>=18.0.0'}
 
   '@azure/logger@1.1.4':
     resolution: {integrity: sha512-4IXXzcCdLdlXuCG+8UKEwLA1T1NHqUfanhXYHiQTn+6sfWCZXduqbtXDGceg3Ce5QxTGo7EqmbV6Bi+aqKuClQ==}
@@ -1096,8 +1092,8 @@ packages:
     resolution: {integrity: sha512-c7hNEllBlenFTHBky65mhq8WD2kbN9Q6gk0bTk8lSBvc554jpXSkST1iePudpt7+A/AQvuHs9EMqjHDXMY1lrA==}
     engines: {node: '>=18.18'}
 
-  '@hyperjump/browser@1.1.6':
-    resolution: {integrity: sha512-i27uPV7SxK1GOn7TLTRxTorxchYa5ur9JHgtl6TxZ1MHuyb9ROAnXxEeu4q4H1836Xb7lL2PGPsaa5Jl3p+R6g==}
+  '@hyperjump/browser@1.2.0':
+    resolution: {integrity: sha512-xv7u4Ddbhnd9a4yi8V0bNYQrimL0SuBW2T+l4eSEKedxhIBVqxuZ6Vulm6+rPtcvg79LyhWxH4fB/J056qaSMQ==}
     engines: {node: '>=18.0.0'}
 
   '@hyperjump/json-pointer@1.1.0':
@@ -2190,9 +2186,6 @@ packages:
 
   axios@0.25.0:
     resolution: {integrity: sha512-cD8FOb0tRH3uuEe6+evtAbgJtfxr7ly3fQjYcMcuPlgkwVS9xboaVIpcDV+cYQe+yGykgwZCs1pzjntcGa6l5g==}
-
-  axios@1.7.9:
-    resolution: {integrity: sha512-LhLcE7Hbiryz8oMDdDptSrWowmB4Bl6RCt6sIJKpRB4XtVf0iEgewX3au/pJqm+Py1kCASkb/FFKjxQaLtxJvw==}
 
   b4a@1.6.7:
     resolution: {integrity: sha512-OnAYlL5b7LEkALw87fUVafQw5rVR9RjwGd4KUwNQ6DrrNmaVaUCgLipfVlzrPQ4tWOR9P0IXGNOx50jYCCdSJg==}
@@ -3901,10 +3894,6 @@ packages:
     engines: {node: '>=16'}
     hasBin: true
 
-  lilconfig@2.1.0:
-    resolution: {integrity: sha512-utWOt/GHzuUxnLKxB6dk81RoOeoNeHgbrXiuGk4yyF5qlRz+iIVWu56E2fqGHFrXz0QNUhLB/8nKqvRH66JKGQ==}
-    engines: {node: '>=10'}
-
   lilconfig@3.1.3:
     resolution: {integrity: sha512-/vlFKAoH5Cgt3Ie+JLhRbwOsCQePABiU3tJ1egGvyQ+33R/vcwM2Zl2QR/LzjsBeItPt3oSVXapn+m4nQDvpzw==}
     engines: {node: '>=14'}
@@ -4934,9 +4923,6 @@ packages:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
     engines: {node: '>= 0.10'}
 
-  proxy-from-env@1.1.0:
-    resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
-
   pump@3.0.2:
     resolution: {integrity: sha512-tUPXtzlGM8FE3P0ZL6DVs/3P58k9nk8/jZeQCurTJylQA8qFYzHFfhBJkuqyE0FifOsQ0uKWekiZ5g8wtr28cw==}
 
@@ -5450,8 +5436,8 @@ packages:
   tailwind-merge@2.6.0:
     resolution: {integrity: sha512-P+Vu1qXfzediirmHOC3xKGAYeZtPcV9g76X+xg2FD4tYgR71ewMA35Y3sCz3zhiN/dwefRpJX0yBcgwi1fXNQA==}
 
-  tailwindcss@3.4.15:
-    resolution: {integrity: sha512-r4MeXnfBmSOuKUWmXe6h2CcyfzJCEk4F0pptO5jlnYSIViUkVmsawj80N5h2lO3gwcmSb4n3PuN+e+GC1Guylw==}
+  tailwindcss@3.4.17:
+    resolution: {integrity: sha512-w33E2aCvSDP0tW9RZuNXadXlkHXqFzSkQew/aIa2i/Sj8fThxwovwlXHSPXTbAHwEIhBFXAedUhP2tueAKP8Og==}
     engines: {node: '>=14.0.0'}
     hasBin: true
 
@@ -6214,26 +6200,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@azure/identity@4.5.0':
-    dependencies:
-      '@azure/abort-controller': 2.1.2
-      '@azure/core-auth': 1.9.0
-      '@azure/core-client': 1.9.2
-      '@azure/core-rest-pipeline': 1.18.2
-      '@azure/core-tracing': 1.2.0
-      '@azure/core-util': 1.11.0
-      '@azure/logger': 1.1.4
-      '@azure/msal-browser': 3.28.0
-      '@azure/msal-node': 2.16.2
-      events: 3.3.0
-      jws: 4.0.0
-      open: 8.4.2
-      stoppable: 1.1.0
-      tslib: 2.8.1
-    transitivePeerDependencies:
-      - supports-color
-    optional: true
-
   '@azure/logger@1.1.4':
     dependencies:
       tslib: 2.8.1
@@ -6851,9 +6817,9 @@ snapshots:
     dependencies:
       '@hapi/hoek': 9.3.0
 
-  '@headlessui/tailwindcss@0.2.1(tailwindcss@3.4.15)':
+  '@headlessui/tailwindcss@0.2.1(tailwindcss@3.4.17)':
     dependencies:
-      tailwindcss: 3.4.15
+      tailwindcss: 3.4.17
 
   '@headlessui/vue@1.7.23(vue@3.5.13(typescript@5.7.3))':
     dependencies:
@@ -6873,18 +6839,19 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.1': {}
 
-  '@hyperjump/browser@1.1.6':
+  '@hyperjump/browser@1.2.0':
     dependencies:
       '@hyperjump/json-pointer': 1.1.0
       '@hyperjump/uri': 1.2.2
       content-type: 1.0.5
       just-curry-it: 5.3.0
+      type-is: 1.6.18
 
   '@hyperjump/json-pointer@1.1.0': {}
 
-  '@hyperjump/json-schema@1.10.0(@hyperjump/browser@1.1.6)':
+  '@hyperjump/json-schema@1.10.0(@hyperjump/browser@1.2.0)':
     dependencies:
-      '@hyperjump/browser': 1.1.6
+      '@hyperjump/browser': 1.2.0
       '@hyperjump/json-pointer': 1.1.0
       '@hyperjump/pact': 1.3.0
       '@hyperjump/uri': 1.2.2
@@ -7287,19 +7254,19 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.30.1':
     optional: true
 
-  '@scalar/api-client@2.2.31(@hyperjump/browser@1.1.6)(axios@1.7.9)(change-case@5.4.4)(tailwindcss@3.4.15)(typescript@5.7.3)':
+  '@scalar/api-client@2.2.31(@hyperjump/browser@1.2.0)(change-case@5.4.4)(tailwindcss@3.4.17)(typescript@5.7.3)':
     dependencies:
-      '@headlessui/tailwindcss': 0.2.1(tailwindcss@3.4.15)
+      '@headlessui/tailwindcss': 0.2.1(tailwindcss@3.4.17)
       '@headlessui/vue': 1.7.23(vue@3.5.13(typescript@5.7.3))
       '@scalar/components': 0.13.13(typescript@5.7.3)
       '@scalar/draggable': 0.1.8(typescript@5.7.3)
       '@scalar/icons': 0.1.2(typescript@5.7.3)
-      '@scalar/import': 0.2.16(@hyperjump/browser@1.1.6)
-      '@scalar/oas-utils': 0.2.96(@hyperjump/browser@1.1.6)
+      '@scalar/import': 0.2.16(@hyperjump/browser@1.2.0)
+      '@scalar/oas-utils': 0.2.96(@hyperjump/browser@1.2.0)
       '@scalar/object-utils': 1.1.12
       '@scalar/openapi-parser': 0.10.3
       '@scalar/openapi-types': 0.1.5
-      '@scalar/postman-to-openapi': 0.1.19(@hyperjump/browser@1.1.6)
+      '@scalar/postman-to-openapi': 0.1.19(@hyperjump/browser@1.2.0)
       '@scalar/themes': 0.9.59
       '@scalar/types': 0.0.25
       '@scalar/use-codemirror': 0.11.57(typescript@5.7.3)
@@ -7307,7 +7274,7 @@ snapshots:
       '@scalar/use-toasts': 0.7.8(typescript@5.7.3)
       '@scalar/use-tooltip': 1.0.5(typescript@5.7.3)
       '@vueuse/core': 10.11.1(vue@3.5.13(typescript@5.7.3))
-      '@vueuse/integrations': 11.3.0(axios@1.7.9)(change-case@5.4.4)(focus-trap@7.6.4)(fuse.js@7.0.0)(vue@3.5.13(typescript@5.7.3))
+      '@vueuse/integrations': 11.3.0(change-case@5.4.4)(focus-trap@7.6.4)(fuse.js@7.0.0)(vue@3.5.13(typescript@5.7.3))
       focus-trap: 7.6.4
       fuse.js: 7.0.0
       js-cookie: 3.0.5
@@ -7338,14 +7305,14 @@ snapshots:
       - typescript
       - universal-cookie
 
-  '@scalar/api-reference@1.25.102(@hyperjump/browser@1.1.6)(axios@1.7.9)(change-case@5.4.4)(tailwindcss@3.4.15)(typescript@5.7.3)':
+  '@scalar/api-reference@1.25.102(@hyperjump/browser@1.2.0)(change-case@5.4.4)(tailwindcss@3.4.17)(typescript@5.7.3)':
     dependencies:
       '@floating-ui/vue': 1.1.6(vue@3.5.13(typescript@5.7.3))
       '@headlessui/vue': 1.7.23(vue@3.5.13(typescript@5.7.3))
-      '@scalar/api-client': 2.2.31(@hyperjump/browser@1.1.6)(axios@1.7.9)(change-case@5.4.4)(tailwindcss@3.4.15)(typescript@5.7.3)
+      '@scalar/api-client': 2.2.31(@hyperjump/browser@1.2.0)(change-case@5.4.4)(tailwindcss@3.4.17)(typescript@5.7.3)
       '@scalar/code-highlight': 0.0.19
       '@scalar/components': 0.13.13(typescript@5.7.3)
-      '@scalar/oas-utils': 0.2.96(@hyperjump/browser@1.1.6)
+      '@scalar/oas-utils': 0.2.96(@hyperjump/browser@1.2.0)
       '@scalar/openapi-parser': 0.10.3
       '@scalar/openapi-types': 0.1.5
       '@scalar/snippetz': 0.2.10
@@ -7430,17 +7397,17 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@scalar/import@0.2.16(@hyperjump/browser@1.1.6)':
+  '@scalar/import@0.2.16(@hyperjump/browser@1.2.0)':
     dependencies:
-      '@scalar/oas-utils': 0.2.96(@hyperjump/browser@1.1.6)
+      '@scalar/oas-utils': 0.2.96(@hyperjump/browser@1.2.0)
       '@scalar/openapi-parser': 0.10.3
       yaml: 2.7.0
     transitivePeerDependencies:
       - '@hyperjump/browser'
 
-  '@scalar/oas-utils@0.2.96(@hyperjump/browser@1.1.6)':
+  '@scalar/oas-utils@0.2.96(@hyperjump/browser@1.2.0)':
     dependencies:
-      '@hyperjump/json-schema': 1.10.0(@hyperjump/browser@1.1.6)
+      '@hyperjump/json-schema': 1.10.0(@hyperjump/browser@1.2.0)
       '@scalar/object-utils': 1.1.12
       '@scalar/openapi-types': 0.1.5
       '@scalar/themes': 0.9.59
@@ -7470,9 +7437,9 @@ snapshots:
 
   '@scalar/openapi-types@0.1.5': {}
 
-  '@scalar/postman-to-openapi@0.1.19(@hyperjump/browser@1.1.6)':
+  '@scalar/postman-to-openapi@0.1.19(@hyperjump/browser@1.2.0)':
     dependencies:
-      '@scalar/oas-utils': 0.2.96(@hyperjump/browser@1.1.6)
+      '@scalar/oas-utils': 0.2.96(@hyperjump/browser@1.2.0)
       '@scalar/openapi-types': 0.1.5
     transitivePeerDependencies:
       - '@hyperjump/browser'
@@ -8036,13 +8003,12 @@ snapshots:
       - '@vue/composition-api'
       - vue
 
-  '@vueuse/integrations@11.3.0(axios@1.7.9)(change-case@5.4.4)(focus-trap@7.6.4)(fuse.js@7.0.0)(vue@3.5.13(typescript@5.7.3))':
+  '@vueuse/integrations@11.3.0(change-case@5.4.4)(focus-trap@7.6.4)(fuse.js@7.0.0)(vue@3.5.13(typescript@5.7.3))':
     dependencies:
       '@vueuse/core': 11.3.0(vue@3.5.13(typescript@5.7.3))
       '@vueuse/shared': 11.3.0(vue@3.5.13(typescript@5.7.3))
       vue-demi: 0.14.10(vue@3.5.13(typescript@5.7.3))
     optionalDependencies:
-      axios: 1.7.9
       change-case: 5.4.4
       focus-trap: 7.6.4
       fuse.js: 7.0.0
@@ -8245,15 +8211,6 @@ snapshots:
       follow-redirects: 1.15.9
     transitivePeerDependencies:
       - debug
-
-  axios@1.7.9:
-    dependencies:
-      follow-redirects: 1.15.9
-      form-data: 4.0.1
-      proxy-from-env: 1.1.0
-    transitivePeerDependencies:
-      - debug
-    optional: true
 
   b4a@1.6.7: {}
 
@@ -10237,8 +10194,6 @@ snapshots:
       isomorphic.js: 0.2.5
     optional: true
 
-  lilconfig@2.1.0: {}
-
   lilconfig@3.1.3: {}
 
   limiter@1.1.5: {}
@@ -11410,9 +11365,6 @@ snapshots:
       forwarded: 0.2.0
       ipaddr.js: 1.9.1
 
-  proxy-from-env@1.1.0:
-    optional: true
-
   pump@3.0.2:
     dependencies:
       end-of-stream: 1.4.4
@@ -12015,7 +11967,7 @@ snapshots:
 
   tailwind-merge@2.6.0: {}
 
-  tailwindcss@3.4.15:
+  tailwindcss@3.4.17:
     dependencies:
       '@alloc/quick-lru': 5.2.0
       arg: 5.0.2
@@ -12026,7 +11978,7 @@ snapshots:
       glob-parent: 6.0.2
       is-glob: 4.0.3
       jiti: 1.21.7
-      lilconfig: 2.1.0
+      lilconfig: 3.1.3
       micromatch: 4.0.8
       normalize-path: 3.0.0
       object-hash: 3.0.0
@@ -12358,7 +12310,7 @@ snapshots:
       acorn: 8.14.0
       webpack-virtual-modules: 0.6.2
 
-  unstorage@1.14.4(@azure/identity@4.5.0)(db0@0.2.1(better-sqlite3@11.7.2))(ioredis@5.4.2):
+  unstorage@1.14.4(db0@0.2.1(better-sqlite3@11.7.2))(ioredis@5.4.2):
     dependencies:
       anymatch: 3.1.3
       chokidar: 3.6.0
@@ -12369,7 +12321,6 @@ snapshots:
       ofetch: 1.4.1
       ufo: 1.5.4
     optionalDependencies:
-      '@azure/identity': 4.5.0
       db0: 0.2.1(better-sqlite3@11.7.2)
       ioredis: 5.4.2
 
