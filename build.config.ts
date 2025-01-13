@@ -59,6 +59,21 @@ export default defineBuildConfig({
     "firebase-functions",
     "@scalar/api-reference",
   ],
+  stubOptions: {
+    jiti: {
+      alias: {
+        nitropack: "nitropack",
+        "nitropack/meta": resolve(srcDir, "../meta.ts"),
+        "nitropack/runtime/meta": resolve(srcDir, "../runtime-meta.mjs"),
+        ...Object.fromEntries(
+          subpaths.map((subpath) => [
+            `nitropack/${subpath}`,
+            resolve(srcDir, `${subpath}/index.ts`),
+          ])
+        ),
+      },
+    },
+  },
   rollup: {
     output: {
       chunkFileNames(chunk: any) {
