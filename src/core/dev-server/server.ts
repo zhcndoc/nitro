@@ -241,11 +241,25 @@ export function createDevServer(nitro: Nitro): NitroDevServer {
   app.use(
     eventHandler(async (event) => {
       await reloadPromise;
-      const address = getWorkerAddress();
-      if (!address) {
-        const error = lastError || createError("Worker not ready");
-        return errorHandler(error, event);
+      let address = getWorkerAddress();
+
+      // Wait for worker to be ready or error to occur
+      for (let i = 0; i < 10 && !address && !lastError; i++) {
+        await (reloadPromise ||
+          new Promise((resolve) => setTimeout(resolve, 200)));
+        address = getWorkerAddress();
       }
+      if (!address || lastError) {
+        return errorHandler(
+          lastError ||
+            createError({
+              statusCode: 503,
+              message: "Worker not ready",
+            }),
+          event
+        );
+      }
+
       await proxy.handle(event, { target: address as any }).catch((error) => {
         lastError = error;
         throw error;
