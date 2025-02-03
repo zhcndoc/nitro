@@ -2,7 +2,12 @@ import { defineNitroPreset } from "nitropack/kit";
 import { writeFile } from "nitropack/kit";
 import type { Nitro } from "nitropack/types";
 import { resolve } from "pathe";
-import { writeCFPagesFiles, writeCFPagesStaticFiles } from "./utils";
+import {
+  writeWranglerConfig,
+  writeCFRoutes,
+  writeCFPagesHeaders,
+  writeCFPagesRedirects,
+} from "./utils";
 
 export type { CloudflareOptions as PresetOptions } from "./types";
 
@@ -17,14 +22,20 @@ const cloudflareExternals = [
   "cloudflare:workflows",
 ] as const;
 
+// TODO: Remove when wrangler -C support landed
+// https://github.com/cloudflare/workers-sdk/pull/7994
+const isWindows = process.platform === "win32";
+const commandWithDir = (command: string) =>
+  isWindows ? `cmd /c "cd ./ && ${command}"` : `(cd ./ && ${command})`;
+
 const cloudflarePages = defineNitroPreset(
   {
     extends: "cloudflare",
     entry: "./runtime/cloudflare-pages",
     exportConditions: ["workerd"],
     commands: {
-      preview: "npx wrangler pages dev ./",
-      deploy: "npx wrangler pages deploy ./",
+      preview: commandWithDir("npx wrangler pages dev"),
+      deploy: commandWithDir("npx wrangler pages deploy"),
     },
     output: {
       dir: "{{ rootDir }}/dist",
@@ -52,7 +63,10 @@ const cloudflarePages = defineNitroPreset(
     },
     hooks: {
       async compiled(nitro: Nitro) {
-        await writeCFPagesFiles(nitro);
+        await writeWranglerConfig(nitro, true /* pages */);
+        await writeCFRoutes(nitro);
+        await writeCFPagesHeaders(nitro);
+        await writeCFPagesRedirects(nitro);
       },
     },
   },
@@ -71,12 +85,14 @@ const cloudflarePagesStatic = defineNitroPreset(
       publicDir: "{{ output.dir }}/{{ baseURL }}",
     },
     commands: {
-      preview: "npx wrangler pages dev dist",
-      deploy: "npx wrangler pages deploy dist",
+      preview: commandWithDir("npx wrangler pages dev"),
+      deploy: commandWithDir("npx wrangler pages deploy"),
     },
     hooks: {
       async compiled(nitro: Nitro) {
-        await writeCFPagesStaticFiles(nitro);
+        await writeWranglerConfig(nitro, true /* pages */);
+        await writeCFPagesHeaders(nitro);
+        await writeCFPagesRedirects(nitro);
       },
     },
   },
@@ -173,8 +189,8 @@ const cloudflareModule = defineNitroPreset(
     entry: "./runtime/cloudflare-module",
     exportConditions: ["workerd"],
     commands: {
-      preview: "npx wrangler dev ./server/index.mjs --assets ./public/",
-      deploy: "npx wrangler deploy",
+      preview: commandWithDir("npx wrangler dev"),
+      deploy: commandWithDir("npx wrangler deploy"),
     },
     unenv: {
       external: [...cloudflareExternals],
@@ -192,6 +208,7 @@ const cloudflareModule = defineNitroPreset(
     },
     hooks: {
       async compiled(nitro: Nitro) {
+        await writeWranglerConfig(nitro, false /* module */);
         await writeFile(
           resolve(nitro.options.output.dir, "package.json"),
           JSON.stringify({ private: true, main: "./server/index.mjs" }, null, 2)
