@@ -8,19 +8,9 @@ import {
   writeCFPagesHeaders,
   writeCFPagesRedirects,
 } from "./utils";
+import { hybridNodePlugin, unenvCfPreset } from "./unenv/preset";
 
 export type { CloudflareOptions as PresetOptions } from "./types";
-
-const cloudflareExternals = [
-  // https://developers.cloudflare.com/email-routing/email-workers/reply-email-workers/
-  "cloudflare:email",
-  // https://developers.cloudflare.com/workers/runtime-apis/tcp-sockets/
-  "cloudflare:sockets",
-  // https://developers.cloudflare.com/durable-objects/get-started/walkthrough/
-  "cloudflare:workers",
-  // https://developers.cloudflare.com/workflows/build/workers-api/
-  "cloudflare:workflows",
-] as const;
 
 // TODO: Remove when wrangler -C support landed
 // https://github.com/cloudflare/workers-sdk/pull/7994
@@ -42,9 +32,7 @@ const cloudflarePages = defineNitroPreset(
       publicDir: "{{ output.dir }}/{{ baseURL }}",
       serverDir: "{{ output.dir }}/_worker.js",
     },
-    unenv: {
-      external: [...cloudflareExternals],
-    },
+    unenv: unenvCfPreset,
     alias: {
       // Hotfix: Cloudflare appends /index.html if mime is not found and things like ico are not in standard lite.js!
       // https://github.com/nitrojs/nitro/pull/933
@@ -55,6 +43,7 @@ const cloudflarePages = defineNitroPreset(
       esmImport: true,
     },
     rollupConfig: {
+      plugins: [hybridNodePlugin],
       output: {
         entryFileNames: "index.js",
         format: "esm",
@@ -116,9 +105,6 @@ const cloudflare = defineNitroPreset(
     wasm: {
       lazy: true,
     },
-    unenv: {
-      external: [...cloudflareExternals],
-    },
     hooks: {
       async compiled(nitro: Nitro) {
         await writeFile(
@@ -156,9 +142,6 @@ const cloudflareModuleLegacy = defineNitroPreset(
         inlineDynamicImports: false,
       },
     },
-    unenv: {
-      external: [...cloudflareExternals],
-    },
     wasm: {
       lazy: false,
       esmImport: true,
@@ -192,10 +175,9 @@ const cloudflareModule = defineNitroPreset(
       preview: commandWithDir("npx wrangler dev"),
       deploy: commandWithDir("npx wrangler deploy"),
     },
-    unenv: {
-      external: [...cloudflareExternals],
-    },
+    unenv: unenvCfPreset,
     rollupConfig: {
+      plugins: [hybridNodePlugin],
       output: {
         format: "esm",
         exports: "named",
@@ -231,9 +213,6 @@ const cloudflareDurable = defineNitroPreset(
   {
     extends: "cloudflare-module",
     entry: "./runtime/cloudflare-durable",
-    unenv: {
-      external: [...cloudflareExternals],
-    },
   },
   {
     name: "cloudflare-durable" as const,
