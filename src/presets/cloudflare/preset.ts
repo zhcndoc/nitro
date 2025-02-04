@@ -10,6 +10,8 @@ import {
 } from "./utils";
 import { hybridNodePlugin, unenvCfPreset } from "./unenv/preset";
 
+import cfLegacyPresets from "./preset-legacy";
+
 export type { CloudflareOptions as PresetOptions } from "./types";
 
 // TODO: Remove when wrangler -C support landed
@@ -93,79 +95,6 @@ const cloudflarePagesStatic = defineNitroPreset(
   }
 );
 
-const cloudflare = defineNitroPreset(
-  {
-    extends: "base-worker",
-    entry: "./runtime/cloudflare-worker",
-    exportConditions: ["workerd"],
-    commands: {
-      preview: "npx wrangler dev ./server/index.mjs --site ./public",
-      deploy: "npx wrangler deploy",
-    },
-    wasm: {
-      lazy: true,
-    },
-    hooks: {
-      async compiled(nitro: Nitro) {
-        await writeFile(
-          resolve(nitro.options.output.dir, "package.json"),
-          JSON.stringify({ private: true, main: "./server/index.mjs" }, null, 2)
-        );
-        await writeFile(
-          resolve(nitro.options.output.dir, "package-lock.json"),
-          JSON.stringify({ lockfileVersion: 1 }, null, 2)
-        );
-      },
-    },
-  },
-  {
-    name: "cloudflare-worker" as const,
-    aliases: ["cloudflare"] as const,
-    url: import.meta.url,
-  }
-);
-
-const cloudflareModuleLegacy = defineNitroPreset(
-  {
-    extends: "base-worker",
-    entry: "./runtime/cloudflare-module-legacy",
-    exportConditions: ["workerd"],
-    commands: {
-      preview: "npx wrangler dev ./server/index.mjs --site ./public",
-      deploy: "npx wrangler deploy",
-    },
-    rollupConfig: {
-      external: "__STATIC_CONTENT_MANIFEST",
-      output: {
-        format: "esm",
-        exports: "named",
-        inlineDynamicImports: false,
-      },
-    },
-    wasm: {
-      lazy: false,
-      esmImport: true,
-    },
-    hooks: {
-      async compiled(nitro: Nitro) {
-        await writeFile(
-          resolve(nitro.options.output.dir, "package.json"),
-          JSON.stringify({ private: true, main: "./server/index.mjs" }, null, 2)
-        );
-        await writeFile(
-          resolve(nitro.options.output.dir, "package-lock.json"),
-          JSON.stringify({ lockfileVersion: 1 }, null, 2)
-        );
-      },
-    },
-  },
-  {
-    name: "cloudflare-module-legacy" as const,
-    aliases: ["cloudflare-module"] as const,
-    url: import.meta.url,
-  }
-);
-
 const cloudflareModule = defineNitroPreset(
   {
     extends: "base-worker",
@@ -222,10 +151,9 @@ const cloudflareDurable = defineNitroPreset(
 );
 
 export default [
-  cloudflare,
-  cloudflareModuleLegacy,
-  cloudflareModule,
-  cloudflareDurable,
+  ...cfLegacyPresets,
   cloudflarePages,
   cloudflarePagesStatic,
+  cloudflareModule,
+  cloudflareDurable,
 ];
