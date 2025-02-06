@@ -63,8 +63,6 @@ export const getRollupConfig = (nitro: Nitro): RollupConfig => {
         ? {}
         : {
             debug: "unenv/npm/debug",
-            "consola/core": "consola/core",
-            consola: "unenv/npm/consola",
           }),
       ...(nitro.options.node === false
         ? {}
