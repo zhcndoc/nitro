@@ -20,7 +20,7 @@ import { dirname, join, normalize, resolve } from "pathe";
 import type { Plugin } from "rollup";
 import { visualizer } from "rollup-plugin-visualizer";
 import { isTest, isWindows } from "std-env";
-import * as unenv from "unenv";
+import { defineEnv } from "unenv";
 import type { Preset } from "unenv";
 import unimportPlugin from "unimport/unplugin";
 import { rollup as unwasm } from "unwasm/plugin";
@@ -54,23 +54,46 @@ export const getRollupConfig = (nitro: Nitro): RollupConfig => {
     ".jsx",
   ];
 
-  const nodePreset = nitro.options.node === false ? unenv.nodeless : unenv.node;
+  const isNodeless = nitro.options.node === false;
 
-  const builtinPreset: Preset = {
-    alias: {
-      // General
-      ...(nitro.options.dev
-        ? {}
-        : {
-            debug: "unenv/runtime/npm/debug",
-            "consola/core": "consola/core",
-            consola: "unenv/runtime/npm/consola",
-          }),
-      ...nitro.options.alias,
+  const { env } = defineEnv({
+    nodeCompat: isNodeless,
+    resolve: true,
+    presets: [
+      isNodeless
+        ? {
+            // Backward compatibility (remove in v2)
+            // https://github.com/unjs/unenv/pull/427
+            inject: {
+              performance: "unenv/polyfill/performance",
+            },
+            polyfill: [
+              "unenv/polyfill/globalthis-global",
+              "unenv/polyfill/process",
+              "unenv/polyfill/performance",
+            ],
+          }
+        : {},
+      nitro.options.unenv,
+    ],
+    overrides: {
+      alias: {
+        // General
+        ...(nitro.options.dev
+          ? {}
+          : {
+              debug: "unenv/npm/debug",
+            }),
+        ...(isNodeless
+          ? {}
+          : {
+              "node-mock-http/_polyfill/events": "node:events",
+              "node-mock-http/_polyfill/buffer": "node:buffer",
+            }),
+        ...nitro.options.alias,
+      },
     },
-  };
-
-  const env = unenv.env(nodePreset, builtinPreset, nitro.options.unenv);
+  });
 
   const buildServerDir = join(nitro.options.buildDir, "dist/server");
 
@@ -349,9 +372,9 @@ export const getRollupConfig = (nitro: Nitro): RollupConfig => {
   rollupConfig.plugins.push(
     virtual(
       {
-        "#nitro-internal-pollyfills": env.polyfill
-          .map((p) => `import '${p}';`)
-          .join("\n"),
+        "#nitro-internal-pollyfills":
+          env.polyfill.map((p) => `import '${p}';`).join("\n") ||
+          `/* No polyfills */`,
       },
       nitro.vfs
     )

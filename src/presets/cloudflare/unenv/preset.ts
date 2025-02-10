@@ -45,20 +45,33 @@ const resolvePresetRuntime = (m: string) => join(presetRuntimeDir, `${m}.mjs`);
 export const unenvCfPreset: Preset = {
   external: nodeCompatModules.map((m) => `node:${m}`),
   alias: {
-    // <id> => node:<id>
-    ...Object.fromEntries(nodeCompatModules.map((m) => [m, `node:${m}`])),
-    ...Object.fromEntries(hybridNodeCompatModules.map((m) => [m, `node:${m}`])),
-    // node:<id> => runtime/<id>.mjs (hybrid)
+    // (native)
     ...Object.fromEntries(
-      hybridNodeCompatModules.map((m) => [
-        `node:${m}`,
-        resolvePresetRuntime(m === "sys" ? "util" : m),
+      nodeCompatModules.flatMap((m) => [
+        [m, `node:${m}`],
+        [`node:${m}`, `node:${m}`],
       ])
+    ),
+    // (hybrid)
+    ...Object.fromEntries(
+      hybridNodeCompatModules.flatMap((m) => {
+        const resolved = resolvePresetRuntime(m);
+        return [
+          [`node:${m}`, resolved],
+          [m, resolved],
+        ];
+      })
     ),
     sys: resolvePresetRuntime("util"),
     "node:sys": resolvePresetRuntime("util"),
+    "node-mock-http/_polyfill/events": "node:events",
+    "node-mock-http/_polyfill/buffer": "node:buffer",
   },
   inject: {
+    // process: "TODO",
+    // console: "TODO",
+    Buffer: ["node:buffer", "Buffer"],
+    "global.Buffer": ["node:buffer", "Buffer"],
     "globalThis.Buffer": ["node:buffer", "Buffer"],
   },
 };
