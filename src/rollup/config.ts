@@ -21,7 +21,7 @@ import type { Plugin } from "rollup";
 import { visualizer } from "rollup-plugin-visualizer";
 import { isTest, isWindows } from "std-env";
 import { defineEnv } from "unenv";
-import type { Preset } from "unenv";
+import * as unenvPresets from "./unenv";
 import unimportPlugin from "unimport/unplugin";
 import { rollup as unwasm } from "unwasm/plugin";
 import { appConfig } from "./plugins/app-config";
@@ -60,36 +60,12 @@ export const getRollupConfig = (nitro: Nitro): RollupConfig => {
     nodeCompat: isNodeless,
     resolve: true,
     presets: [
-      isNodeless
-        ? {
-            // Backward compatibility (remove in v2)
-            // https://github.com/unjs/unenv/pull/427
-            inject: {
-              performance: "unenv/polyfill/performance",
-            },
-            polyfill: [
-              "unenv/polyfill/globalthis-global",
-              "unenv/polyfill/process",
-              "unenv/polyfill/performance",
-            ],
-          }
-        : {},
+      unenvPresets.common,
+      isNodeless ? unenvPresets.nodeless : unenvPresets.node,
       nitro.options.unenv,
     ],
     overrides: {
       alias: {
-        // General
-        ...(nitro.options.dev
-          ? {}
-          : {
-              debug: "unenv/npm/debug",
-            }),
-        ...(isNodeless
-          ? {}
-          : {
-              "node-mock-http/_polyfill/events": "node:events",
-              "node-mock-http/_polyfill/buffer": "node:buffer",
-            }),
         ...nitro.options.alias,
       },
     },
@@ -178,7 +154,7 @@ export const getRollupConfig = (nitro: Nitro): RollupConfig => {
         return relativePath.includes("node_modules");
       },
     },
-    external: env.external,
+    external: [...env.external],
     plugins: [],
     onwarn(warning, rollupWarn) {
       if (
