@@ -226,6 +226,17 @@
         "react-dom",
         "@algolia/client-search"
       ]
-    }
+    },
+    "ignoredBuiltDependencies": [
+      "keytar",
+      "protobufjs",
+      "vue-demi"
+    ],
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "better-sqlite3",
+      "esbuild",
+      "workerd"
+    ]
   }
 }
