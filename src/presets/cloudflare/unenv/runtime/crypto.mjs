@@ -1,3 +1,4 @@
+// https://github.com/cloudflare/workerd/blob/main/src/node/crypto.ts
 // https://github.com/cloudflare/workers-sdk/blob/main/packages/unenv-preset/src/runtime/node/crypto/index.ts
 
 import workerdCrypto from "#workerd/node:crypto";
@@ -100,6 +101,7 @@ export const {
   setFips,
   subtle,
   timingSafeEqual,
+  fips,
 } = workerdCrypto;
 
 export const getRandomValues = workerdCrypto.getRandomValues.bind(
@@ -112,8 +114,6 @@ export const webcrypto = {
   randomUUID,
   subtle,
 };
-
-const fips = workerdCrypto.fips;
 
 export default {
   Certificate,
