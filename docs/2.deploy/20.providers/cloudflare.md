@@ -229,10 +229,6 @@ SECRET="top-secret"
 
 您可以指定一个自定义的 `wrangler.toml` 文件并在其中定义变量。
 
-::note
-**注意：** `wrangler.toml` 在 cloudflare pages 中不受支持。
-::
-
 ::warning
 请注意，这不建议用于敏感数据。
 ::
