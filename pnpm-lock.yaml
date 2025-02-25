@@ -96,8 +96,8 @@ importers:
         specifier: ^1.8.1
         version: 1.8.1
       exsolve:
-        specifier: ^0.3.2
-        version: 0.3.2
+        specifier: ^0.4.1
+        version: 0.4.1
       fs-extra:
         specifier: ^11.3.0
         version: 11.3.0
@@ -251,7 +251,7 @@ importers:
         version: 2.11.1
       '@scalar/api-reference':
         specifier: ^1.25.122
-        version: 1.25.122(@hyperjump/browser@1.2.0)(axios@1.7.9)(change-case@5.4.4)(jwt-decode@4.0.0)(tailwindcss@4.0.7)(typescript@5.7.3)
+        version: 1.25.122(@hyperjump/browser@1.2.0)(axios@1.7.9)(change-case@5.4.4)(jwt-decode@4.0.0)(tailwindcss@4.0.9)(typescript@5.7.3)
       '@types/archiver':
         specifier: ^6.0.3
         version: 6.0.3
@@ -3076,8 +3076,8 @@ packages:
     resolution: {integrity: sha512-28HqgMZAmih1Czt9ny7qr6ek2qddF4FclbMzwhCREB6OFfH+rXAnuNCwo1/wFvrtbgsQDb4kSbX9de9lFbrXnA==}
     engines: {node: '>= 0.10.0'}
 
-  exsolve@0.3.2:
-    resolution: {integrity: sha512-pF98hbP6o5K0+Z6BqZIAYv0AsQFMVYI7JErH0rKveYRtYu2fRuzSwslDLmOL9f9bTn1X0ZOk3tmhLkFm6185/g==}
+  exsolve@0.4.1:
+    resolution: {integrity: sha512-4eEqlWpgrVFf6C7s6YyKPaBlZvx1Hbs+e2pnW25nr+qcdd9vytr/KhX2mRIB2kNfYdXhbmmvKFDHjzriPSdxhA==}
 
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
@@ -5409,8 +5409,8 @@ packages:
   tailwind-merge@2.6.0:
     resolution: {integrity: sha512-P+Vu1qXfzediirmHOC3xKGAYeZtPcV9g76X+xg2FD4tYgR71ewMA35Y3sCz3zhiN/dwefRpJX0yBcgwi1fXNQA==}
 
-  tailwindcss@4.0.7:
-    resolution: {integrity: sha512-yH5bPPyapavo7L+547h3c4jcBXcrKwybQRjwdEIVAd9iXRvy/3T1CC6XSQEgZtRySjKfqvo3Cc0ZF1DTheuIdA==}
+  tailwindcss@4.0.9:
+    resolution: {integrity: sha512-12laZu+fv1ONDRoNR9ipTOpUD7RN9essRVkX36sjxuRUInpN7hIiHN4lBd/SIFjbISvnXzp8h/hXzmU8SQQYhw==}
 
   tar-fs@2.1.2:
     resolution: {integrity: sha512-EsaAXwxmx8UB7FRKqeozqEPop69DXcmYwTQwXvyAPF352HJsPdkVhvTaDPYqfNgruveJIJy3TA2l+2zj8LJIJA==}
@@ -6794,9 +6794,9 @@ snapshots:
     dependencies:
       '@hapi/hoek': 9.3.0
 
-  '@headlessui/tailwindcss@0.2.2(tailwindcss@4.0.7)':
+  '@headlessui/tailwindcss@0.2.2(tailwindcss@4.0.9)':
     dependencies:
-      tailwindcss: 4.0.7
+      tailwindcss: 4.0.9
 
   '@headlessui/vue@1.7.23(vue@3.5.13(typescript@5.7.3))':
     dependencies:
@@ -7260,9 +7260,9 @@ snapshots:
       '@sagold/json-pointer': 5.1.2
       ebnf: 1.9.1
 
-  '@scalar/api-client@2.2.51(@hyperjump/browser@1.2.0)(axios@1.7.9)(change-case@5.4.4)(jwt-decode@4.0.0)(tailwindcss@4.0.7)(typescript@5.7.3)':
+  '@scalar/api-client@2.2.51(@hyperjump/browser@1.2.0)(axios@1.7.9)(change-case@5.4.4)(jwt-decode@4.0.0)(tailwindcss@4.0.9)(typescript@5.7.3)':
     dependencies:
-      '@headlessui/tailwindcss': 0.2.2(tailwindcss@4.0.7)
+      '@headlessui/tailwindcss': 0.2.2(tailwindcss@4.0.9)
       '@headlessui/vue': 1.7.23(vue@3.5.13(typescript@5.7.3))
       '@scalar/components': 0.13.25(typescript@5.7.3)
       '@scalar/draggable': 0.1.10(typescript@5.7.3)
@@ -7311,11 +7311,11 @@ snapshots:
       - typescript
       - universal-cookie
 
-  '@scalar/api-reference@1.25.122(@hyperjump/browser@1.2.0)(axios@1.7.9)(change-case@5.4.4)(jwt-decode@4.0.0)(tailwindcss@4.0.7)(typescript@5.7.3)':
+  '@scalar/api-reference@1.25.122(@hyperjump/browser@1.2.0)(axios@1.7.9)(change-case@5.4.4)(jwt-decode@4.0.0)(tailwindcss@4.0.9)(typescript@5.7.3)':
     dependencies:
       '@floating-ui/vue': 1.1.6(vue@3.5.13(typescript@5.7.3))
       '@headlessui/vue': 1.7.23(vue@3.5.13(typescript@5.7.3))
-      '@scalar/api-client': 2.2.51(@hyperjump/browser@1.2.0)(axios@1.7.9)(change-case@5.4.4)(jwt-decode@4.0.0)(tailwindcss@4.0.7)(typescript@5.7.3)
+      '@scalar/api-client': 2.2.51(@hyperjump/browser@1.2.0)(axios@1.7.9)(change-case@5.4.4)(jwt-decode@4.0.0)(tailwindcss@4.0.9)(typescript@5.7.3)
       '@scalar/code-highlight': 0.0.22
       '@scalar/components': 0.13.25(typescript@5.7.3)
       '@scalar/oas-utils': 0.2.107(@hyperjump/browser@1.2.0)
@@ -9199,7 +9199,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  exsolve@0.3.2: {}
+  exsolve@0.4.1: {}
 
   extend@3.0.2: {}
 
@@ -11876,7 +11876,7 @@ snapshots:
 
   tailwind-merge@2.6.0: {}
 
-  tailwindcss@4.0.7: {}
+  tailwindcss@4.0.9: {}
 
   tar-fs@2.1.2:
     dependencies:
