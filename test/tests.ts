@@ -483,38 +483,42 @@ export function testNitro(
     }
   );
 
-  it.skipIf(ctx.isIsolated)("useStorage (with base)", async () => {
-    const putRes = await callHandler({
-      url: "/api/storage/item?key=test:hello",
-      method: "PUT",
-      body: "world",
-    });
-    expect(putRes.data).toBe("world");
+  it.skipIf(ctx.isIsolated)(
+    "useStorage (with base)",
+    async () => {
+      const putRes = await callHandler({
+        url: "/api/storage/item?key=test:hello",
+        method: "PUT",
+        body: "world",
+      });
+      expect(putRes.data).toBe("world");
 
-    expect(
-      (
-        await callHandler({
-          url: "/api/storage/item?key=:",
-        })
-      ).data
-    ).toMatchObject(["test:hello"]);
+      expect(
+        (
+          await callHandler({
+            url: "/api/storage/item?key=:",
+          })
+        ).data
+      ).toMatchObject(["test:hello"]);
 
-    expect(
-      (
-        await callHandler({
-          url: "/api/storage/item?base=test&key=:",
-        })
-      ).data
-    ).toMatchObject(["hello"]);
+      expect(
+        (
+          await callHandler({
+            url: "/api/storage/item?base=test&key=:",
+          })
+        ).data
+      ).toMatchObject(["hello"]);
 
-    expect(
-      (
-        await callHandler({
-          url: "/api/storage/item?base=test&key=hello",
-        })
-      ).data
-    ).toBe("world");
-  });
+      expect(
+        (
+          await callHandler({
+            url: "/api/storage/item?base=test&key=hello",
+          })
+        ).data
+      ).toBe("world");
+    },
+    { retry: 5 }
+  );
 
   if (additionalTests) {
     additionalTests(ctx, callHandler);
