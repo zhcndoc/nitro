@@ -29,16 +29,6 @@ export const unenvWorkerdPreset: Preset = {
         ];
       })
     ),
-    sys: resolvePresetRuntime("util"),
-    "node:sys": resolvePresetRuntime("util"),
-    "node-mock-http/_polyfill/events": "node:events",
-    "node-mock-http/_polyfill/buffer": "node:buffer",
-  },
-  inject: {
-    process: resolvePresetRuntime("process"),
-    Buffer: ["node:buffer", "Buffer"],
-    "global.Buffer": ["node:buffer", "Buffer"],
-    "globalThis.Buffer": ["node:buffer", "Buffer"],
   },
 };
 
