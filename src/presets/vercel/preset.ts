@@ -6,7 +6,7 @@ import {
   generateFunctionFiles,
   generateStaticFiles,
 } from "./utils";
-import { hybridNodePlugin, unenvWorkerdPreset } from "../_unenv/preset-workerd";
+import { builtnNodeModules } from "../_unenv/node-compat/vercel";
 
 export type { VercelOptions as PresetOptions } from "./types";
 
@@ -55,9 +55,18 @@ const vercelEdge = defineNitroPreset(
       deploy: "",
       preview: "",
     },
-    unenv: unenvWorkerdPreset,
+    unenv: {
+      external: builtnNodeModules.flatMap((m) => `node:${m}`),
+      alias: {
+        ...Object.fromEntries(
+          builtnNodeModules.flatMap((m) => [
+            [m, `node:${m}`],
+            [`node:${m}`, `node:${m}`],
+          ])
+        ),
+      },
+    },
     rollupConfig: {
-      plugins: [hybridNodePlugin],
       output: {
         format: "module",
       },

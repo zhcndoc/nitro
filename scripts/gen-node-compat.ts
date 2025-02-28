@@ -1,7 +1,6 @@
 import { writeFile } from "node:fs/promises";
 
 const platforms = {
-  // Cloudflare are vercel-edge are almost identical
   cloudflare: {
     url: "https://platform-node-compat.pi0.workers.dev/?json",
     forceHybrid: ["console", "perf_hooks"],
@@ -9,8 +8,8 @@ const platforms = {
   },
   vercel: {
     url: "https://platform-node-compat.vercel.app/?json",
-    forceHybrid: ["console", "perf_hooks"],
-    forceBuiltin: ["assert", "assert/strict", "events", "net", "stream"],
+    // https://vercel.com/docs/functions/edge-middleware/edge-runtime#compatible-node.js-modules
+    forceBuiltin: ["async_hooks", "events", "buffer", "assert", "util"],
   },
   // Deno deploy and Netlify edge are almost identical
   deno: {
