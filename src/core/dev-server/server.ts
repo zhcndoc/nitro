@@ -28,6 +28,7 @@ import { servePlaceholder } from "serve-placeholder";
 import { joinURL } from "ufo";
 import { createVFSHandler } from "./vfs";
 import { debounce } from "perfect-debounce";
+import { isTest, isCI } from "std-env";
 import { createHTTPProxy } from "./proxy";
 
 export function createDevServer(nitro: Nitro): NitroDevServer {
@@ -154,7 +155,8 @@ class DevServer {
 
   async getWorker() {
     let retry = 0;
-    while (this.building || ++retry < 10) {
+    const maxRetries = isTest || isCI ? 100 : 10;
+    while (this.building || ++retry < maxRetries) {
       if ((this.workers.length === 0 || this.buildError) && !this.building) {
         return;
       }
@@ -162,7 +164,7 @@ class DevServer {
       if (activeWorker) {
         return activeWorker;
       }
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 600));
     }
   }
 
