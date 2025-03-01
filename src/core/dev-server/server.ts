@@ -290,7 +290,7 @@ class DevServer {
     return new Response(
       JSON.stringify(
         {
-          error: "The dev server is unavailable.",
+          error: "Dev server is unavailable.",
           hint: "Please reload the page and check the console for errors if the issue persists.",
         },
         null,
@@ -298,6 +298,7 @@ class DevServer {
       ),
       {
         status: 503,
+        statusText: "Dev server is unavailable",
         headers: {
           "Content-Type": "application/json",
           "Cache-Control": "no-store",
