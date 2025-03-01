@@ -13,8 +13,11 @@ const mixedProcess = new UnenvProcess({
   nextTick: workerdProcess.nextTick,
 });
 
-if (workerdProcess.getBuiltinModule) {
-  mixedProcess.getBuiltinModule = workerdProcess.getBuiltinModule;
+// https://github.com/cloudflare/workerd/blob/main/src/node/internal/process.ts#L94
+for (const key of ["exit", "getBuiltinModule", "platform"]) {
+  if (key in workerdProcess) {
+    mixedProcess[key] = workerdProcess[key];
+  }
 }
 
 export default mixedProcess;
