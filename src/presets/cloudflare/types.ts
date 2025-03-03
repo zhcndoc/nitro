@@ -35,13 +35,26 @@ export interface CloudflareOptions {
   wrangler?: WranglerConfig;
 
   /**
-   * Disable the automatic generation of .wrangler/deploy/config.json
+   * Enable native Node.js compatibility support.
+   *
+   * Requires `nodejs_compat` compatibility flag (Nitro enables it by default).
+   *
+   * If disabled, pure unenv polyfills will be used instead.
+   *
+   * Enabled by default with `compatibilityDate` >= `2025-03-01`.
+   */
+  nodeCompat?: boolean;
+
+  /**
+   * Disable the automatic generation of `.wrangler/deploy/config.json`.
+   *
+   * Enabled by default with `compatibilityDate` >= `2025-03-01` unless explicitly set to `false`.
    *
    * More info: https://developers.cloudflare.com/workers/wrangler/configuration#generated-wrangler-configuration
    */
   noWranglerDeployConfig?: boolean;
 
-  pages: {
+  pages?: {
     /**
      * Nitro will automatically generate a `_routes.json` that controls which files get served statically and
      * which get served by the Worker. Using this config will override the automatic `_routes.json`. Or, if the
