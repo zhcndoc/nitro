@@ -228,8 +228,8 @@ importers:
         specifier: ^0.3.9
         version: 0.3.9
       youch:
-        specifier: 4.1.0-beta.4
-        version: 4.1.0-beta.4
+        specifier: 4.1.0-beta.5
+        version: 4.1.0-beta.5
       youch-core:
         specifier: ^0.3.1
         version: 0.3.1
@@ -5895,8 +5895,8 @@ packages:
   youch@3.2.3:
     resolution: {integrity: sha512-ZBcWz/uzZaQVdCvfV4uk616Bbpf2ee+F/AvuKDR5EwX/Y4v06xWdtMluqTD7+KlZdM93lLm9gMZYo0sKBS0pgw==}
 
-  youch@4.1.0-beta.4:
-    resolution: {integrity: sha512-sknU8tgzmqx7PJBEqAdqBYjleLjHfNnFBTi3HwQTh6I+4OoJaIHkezxxUJ/ta7cpfgdG87bdYPCucVZV+GzhRA==}
+  youch@4.1.0-beta.5:
+    resolution: {integrity: sha512-92+bvKtAjm18S2o+IP0aLBpLtzY332Ji9geNLp07cLgHsK3aHVjWrg2eyE5LIKMv6j+GWu+Ehx4My7BTXxMbsA==}
     engines: {node: '>=20.6.0'}
 
   zhead@2.2.4:
@@ -12218,7 +12218,7 @@ snapshots:
       mustache: 4.2.0
       stacktracey: 2.1.8
 
-  youch@4.1.0-beta.4:
+  youch@4.1.0-beta.5:
     dependencies:
       '@poppinss/dumper': 0.6.2
       '@speed-highlight/core': 1.2.7

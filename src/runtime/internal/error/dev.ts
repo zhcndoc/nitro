@@ -35,9 +35,6 @@ export default defineNitroErrorHandler(
       const tags = [error.unhandled && "[unhandled]", error.fatal && "[fatal]"].filter(Boolean).join(" ")
 
       const columns = process.stderr.columns;
-      if (!columns) {
-        process.stdout.columns = 90; // Temporary workaround for youch wrapping issue
-      }
       const ansiError = await (
         await youch.toANSI(error)
       ).replaceAll(process.cwd(), ".");
