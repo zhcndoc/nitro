@@ -47,6 +47,8 @@ export function createDevServer(nitro: Nitro): NitroDevServer {
   };
 }
 
+let workerIdCtr = 0;
+
 class DevServer {
   nitro: Nitro;
   workerDir: string;
@@ -55,7 +57,6 @@ class DevServer {
   reloadPromise?: Promise<void>;
   watcher?: FSWatcher;
   workers: DevWorker[] = [];
-  workerIdCtr: number = 0;
 
   workerError?: unknown;
 
@@ -136,7 +137,7 @@ class DevServer {
     for (const worker of this.workers) {
       worker.close();
     }
-    const worker = new NodeDevWorker(++this.workerIdCtr, this.workerDir, {
+    const worker = new NodeDevWorker(++workerIdCtr, this.workerDir, {
       onClose: (worker, cause) => {
         this.workerError = cause;
         const index = this.workers.indexOf(worker);

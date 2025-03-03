@@ -6,7 +6,7 @@ import { startScheduleRunner } from "nitropack/runtime/internal";
 import { scheduledTasks, tasks } from "#nitro-internal-virtual/tasks";
 import { Server } from "node:http";
 import { join } from "node:path";
-import { parentPort } from "node:worker_threads";
+import { parentPort, threadId } from "node:worker_threads";
 import wsAdapter from "crossws/adapters/node";
 import {
   defineEventHandler,
@@ -34,7 +34,7 @@ function getAddress() {
     return 0;
   }
 
-  const socketName = `worker-${process.pid}-${NITRO_DEV_WORKER_ID}.sock`;
+  const socketName = `worker-${process.pid}-${threadId}-${NITRO_DEV_WORKER_ID}.sock`;
 
   switch (process.platform) {
     case "win32": {
