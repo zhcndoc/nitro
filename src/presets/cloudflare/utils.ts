@@ -238,7 +238,7 @@ export async function writeWranglerConfig(
     // Pages
     overrides.pages_build_output_dir = relative(
       wranglerConfigDir,
-      nitro.options.output.serverDir
+      nitro.options.output.dir
     );
   } else {
     // Modules
