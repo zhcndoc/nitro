@@ -231,6 +231,11 @@ export async function writeWranglerConfig(
   nitro: Nitro,
   cfTarget: "pages" | "module"
 ) {
+  // Skip if not enabled
+  if (!nitro.options.cloudflare?.deployConfig) {
+    return;
+  }
+
   // Compute path to generated wrangler.json
   const wranglerConfigDir = nitro.options.output.serverDir;
   const wranglerConfigPath = join(wranglerConfigDir, "wrangler.json");
