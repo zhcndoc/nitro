@@ -18,7 +18,7 @@ export default defineNitroErrorHandler(
 
     if (statusCode === 404) {
       const baseURL = import.meta.baseURL || "/";
-      if (baseURL.length > 1 && !url.pathname.startsWith(baseURL)) {
+      if (/^\/[^/]/.test(baseURL) && !url.pathname.startsWith(baseURL)) {
         return sendRedirect(
           event,
           `${baseURL}${url.pathname.slice(1)}${url.search}`
