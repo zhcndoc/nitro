@@ -819,6 +819,9 @@ export function testNitro(
       if (ctx.preset === "vercel-edge" && key === "crypto:createHash") {
         continue;
       }
+      if (ctx.preset === "deno-server" && key === "globals:BroadcastChannel") {
+        continue; // unstable API
+      }
       expect(data[key], key).toBe(true);
     }
   });

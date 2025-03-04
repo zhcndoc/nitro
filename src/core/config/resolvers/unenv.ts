@@ -26,7 +26,7 @@ export const nodeless: Preset = {
     setImmediate: ["node:timers", "setImmediate"],
     performance: "unenv/polyfill/performance",
     PerformanceObserver: ["node:perf_hooks", "PerformanceObserver"],
-    BroadcastChannel: "node:node:worker_threads",
+    BroadcastChannel: ["node:worker_threads", "BroadcastChannel"],
   },
   polyfill: [
     "unenv/polyfill/globalthis-global",

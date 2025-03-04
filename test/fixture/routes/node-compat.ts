@@ -9,6 +9,7 @@ const nodeCompatTests = {
     Buffer: () => Buffer && globalThis.Buffer && global.Buffer,
     // eslint-disable-next-line unicorn/prefer-global-this
     process: () => process && globalThis.process && global.process,
+    BroadcastChannel: () => !!new BroadcastChannel("test"),
   },
   crypto: {
     createHash: () => {
