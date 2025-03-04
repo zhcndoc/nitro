@@ -12,6 +12,7 @@ const resolvePresetRuntime = (m: string) => join(workerdDir, `${m}.mjs`);
 export const unenvCfExternals: Preset = {
   meta: {
     name: "nitro-cloudflare:externals",
+    url: import.meta.url,
   },
   external: [
     "cloudflare:email",
@@ -24,6 +25,7 @@ export const unenvCfExternals: Preset = {
 export const unenvWorkerdWithNodeCompat: Preset = {
   meta: {
     name: "nitro-cloudflare:node-compat",
+    url: import.meta.url,
   },
   external: builtnNodeModules.map((m) => `node:${m}`),
   alias: {

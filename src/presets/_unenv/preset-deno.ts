@@ -5,6 +5,10 @@ import { builtnNodeModules } from "./node-compat/deno";
 // https://platform-node-compat.netlify.app/
 
 export const unenvDenoPreset: Preset = {
+  meta: {
+    name: "nitro-deno",
+    url: import.meta.url,
+  },
   external: builtnNodeModules.map((m) => `node:${m}`),
   alias: {
     // (native)

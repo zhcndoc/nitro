@@ -4,6 +4,7 @@ import type { Preset } from "unenv";
 export const common: Preset = {
   meta: {
     name: "nitro-common",
+    url: import.meta.url,
   },
   alias: {
     "node-mock-http/_polyfill/events": "node:events",
@@ -17,6 +18,7 @@ export const common: Preset = {
 export const nodeless: Preset = {
   meta: {
     name: "nitro-nodeless",
+    url: import.meta.url,
   },
   inject: {
     global: "unenv/polyfill/globalthis",
