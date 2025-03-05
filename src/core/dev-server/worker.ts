@@ -55,8 +55,8 @@ export class NodeDevWorker implements DevWorker {
   handleEvent(event: H3Event) {
     if (!this.#address || !this.#proxy) {
       throw createError({
-        statusCode: 503,
-        message: "worker is not ready yet",
+        status: 503,
+        statusText: "Dev worker is unavailable",
       });
     }
     return this.#proxy.handleEvent(event, { target: this.#address });

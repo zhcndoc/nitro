@@ -28,6 +28,7 @@ import { servePlaceholder } from "serve-placeholder";
 import { joinURL } from "ufo";
 import { createVFSHandler } from "./vfs";
 import { debounce } from "perfect-debounce";
+import { isTest, isCI } from "std-env";
 import { createHTTPProxy } from "./proxy";
 
 export function createDevServer(nitro: Nitro): NitroDevServer {
@@ -46,6 +47,8 @@ export function createDevServer(nitro: Nitro): NitroDevServer {
   };
 }
 
+let workerIdCtr = 0;
+
 class DevServer {
   nitro: Nitro;
   workerDir: string;
@@ -54,7 +57,6 @@ class DevServer {
   reloadPromise?: Promise<void>;
   watcher?: FSWatcher;
   workers: DevWorker[] = [];
-  workerIdCtr: number = 0;
 
   workerError?: unknown;
 
@@ -135,7 +137,7 @@ class DevServer {
     for (const worker of this.workers) {
       worker.close();
     }
-    const worker = new NodeDevWorker(++this.workerIdCtr, this.workerDir, {
+    const worker = new NodeDevWorker(++workerIdCtr, this.workerDir, {
       onClose: (worker, cause) => {
         this.workerError = cause;
         const index = this.workers.indexOf(worker);
@@ -154,7 +156,8 @@ class DevServer {
 
   async getWorker() {
     let retry = 0;
-    while (this.building || ++retry < 10) {
+    const maxRetries = isTest || isCI ? 100 : 10;
+    while (this.building || ++retry < maxRetries) {
       if ((this.workers.length === 0 || this.buildError) && !this.building) {
         return;
       }
@@ -162,7 +165,7 @@ class DevServer {
       if (activeWorker) {
         return activeWorker;
       }
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 600));
     }
   }
 
@@ -288,7 +291,7 @@ class DevServer {
     return new Response(
       JSON.stringify(
         {
-          error: "The dev server is unavailable.",
+          error: "Dev server is unavailable.",
           hint: "Please reload the page and check the console for errors if the issue persists.",
         },
         null,
@@ -296,6 +299,7 @@ class DevServer {
       ),
       {
         status: 503,
+        statusText: "Dev server is unavailable",
         headers: {
           "Content-Type": "application/json",
           "Cache-Control": "no-store",

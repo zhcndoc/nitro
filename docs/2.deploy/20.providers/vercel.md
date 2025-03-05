@@ -1,6 +1,6 @@
 # Vercel
 
-> 将 Nitro 应用部署到 Vercel 函数或边缘。
+> 将 Nitro 应用程序部署到 Vercel 函数。
 
 **预设:** `vercel`
 
@@ -23,82 +23,13 @@
 
 ## Monorepo
 
-Vercel 支持单模块仓库。但是必须在“项目设置 > 常规”标签中指定自定义 “[根目录](https://vercel.com/docs/deployments/configure-a-build#root-directory)”。确保勾选“包括根目录外的源文件”。
+Monorepos 受到 Vercel 的支持。然而，必须在“项目设置 > 常规”选项卡中指定一个自定义的“[根目录](https://vercel.com/docs/deployments/configure-a-build#root-directory)”。确保选中“包括根目录外的源文件”。
 
-“根目录”的值示例：`apps/web` 或 `packages/app`。
-
-## Vercel 边缘函数
-
-**预设:** `vercel_edge`
-
-:read-more{title="Vercel 边缘函数" to="https://vercel.com/docs/concepts/functions/edge-functions"}
-
-可以将您的 Nitro 应用程序直接部署到 [Vercel 边缘函数](https://vercel.com/docs/concepts/functions/edge-functions)。
-
-要启用此目标，请将 `NITRO_PRESET` 环境变量设置为 `vercel_edge`。
-
-## Vercel KV 存储
-
-您可以轻松地将 [Vercel KV 存储](https://vercel.com/docs/storage/vercel-kv) 与 [Nitro 存储](/guide/storage) 一起使用。
-
-::warning
-此功能目前处于测试阶段。请查看 [驱动程序文档](https://unstorage.unjs.io/drivers/vercel-kv)。
-::
-
-1. 安装 `@vercel/kv` 依赖项：
-
-```json [package.json]
-{
-  "devDependencies": {
-    "@vercel/kv": "latest"
-  }
-}
-```
-
-更新您的配置：
-
-::code-group
-
-```ts [nitro.config.ts]
-export default defineNitroConfig({
-  storage: {
-    data: { driver: 'vercelKV' }
-  }
-})
-```
-
-```ts [nuxt.config.ts]
-export default defineNuxtConfig({
-  nitro: {
-    storage: {
-      data: { driver: 'vercelKV' }
-    }
-  }
-})
-```
-
-::
-
-::note
-您需要设置 `KV_REST_API_URL` 和 `KV_REST_API_TOKEN` 环境变量，或者将 `url` 和 `token` 传递到驱动程序选项中。有关使用的信息，请查看 [驱动程序文档](https://unstorage.unjs.io/drivers/vercel-kv)。
-::
-
-现在您可以在任何事件处理程序中访问数据存储：
-
-```ts
-export default defineEventHandler(async (event) => {
-  const dataStorage = useStorage("data");
-  await dataStorage.setItem("hello", "world");
-  return {
-    hello: await dataStorage.getItem("hello"),
-  };
-});
-```
+“根目录”的示例值：`apps/web` 或 `packages/app`。
 
 ## API 路由
 
-Nitro 的 `/api` 目录与 Vercel 不兼容。
-相反，您必须使用：
+Nitro `/api` 目录与 Vercel 不兼容。相反，您应该使用：
 
 - `routes/api/` 进行独立使用
 - `server/api/` 与 [Nuxt](https://nuxt.com) 一起使用。
@@ -173,3 +104,9 @@ export default defineNitroConfig({
   },
 });
 ```
+
+## Vercel edge functions
+
+**Preset:** `vercel_edge` (deprecated)
+
+We recommend migrating to the default Node.js runtime and enabling [Fluid compute](https://vercel.com/docs/functions/fluid-compute).

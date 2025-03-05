@@ -20,7 +20,7 @@ const denoDeploy = defineNitroPreset(
     unenv: unenvDenoPreset,
     rollupConfig: {
       preserveEntrySignatures: false,
-      external: (id) => id.startsWith("https://"),
+      external: (id) => id.startsWith("https://") || id.startsWith("node:"),
       output: {
         entryFileNames: "index.ts",
         manualChunks: (id) => "index",
