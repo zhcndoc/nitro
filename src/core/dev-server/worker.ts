@@ -59,7 +59,6 @@ export class NodeDevWorker implements DevWorker {
         statusText: "Dev worker is unavailable",
       });
     }
-    event._handled = true;
     await this.#proxy.handleEvent(event, { target: this.#address });
   }
 
