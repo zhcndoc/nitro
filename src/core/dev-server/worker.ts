@@ -52,14 +52,15 @@ export class NodeDevWorker implements DevWorker {
     );
   }
 
-  handleEvent(event: H3Event) {
+  async handleEvent(event: H3Event) {
     if (!this.#address || !this.#proxy) {
       throw createError({
         status: 503,
         statusText: "Dev worker is unavailable",
       });
     }
-    return this.#proxy.handleEvent(event, { target: this.#address });
+    event._handled = true;
+    await this.#proxy.handleEvent(event, { target: this.#address });
   }
 
   handleUpgrade(
