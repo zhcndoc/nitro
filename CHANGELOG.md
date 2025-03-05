@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## v2.11.1
+
+[compare changes](https://github.com/nitrojs/nitro/compare/v2.11.0...v2.11.1)
+
+### 🩹 Fixes
+
+- **dev:** Use full socket path for windows and linux ([#3152](https://github.com/nitrojs/nitro/pull/3152))
+- **dev:** Add random number to socket name ([#3153](https://github.com/nitrojs/nitro/pull/3153))
+- **dev:** Limit `/_vfs` to local ips only ([#3154](https://github.com/nitrojs/nitro/pull/3154))
+- **app:** Update `event` before calling `request` hook ([#3155](https://github.com/nitrojs/nitro/pull/3155))
+
+### ❤️ Contributors
+
+- Balázs Németh ([@zsilbi](https://github.com/zsilbi))
+- Pooya Parsa <pyapar@gmail.com>
+
 ## v2.11.0
 
 Check [release notes](https://github.com/nitrojs/nitro/releases/tag/v2.11.0)
