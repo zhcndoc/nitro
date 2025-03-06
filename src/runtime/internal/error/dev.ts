@@ -13,10 +13,17 @@ import nodeCrypto from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import consola from "consola";
-import * as _youch from "nitropack/internal/deps/youch";
-import type { ErrorParser } from "youch-core";
+import type { ErrorParser as ErrorParserT } from "youch-core";
+import type { Youch as YouchT } from "youch";
+// @ts-ignore
+import * as _youch from "youch-redist";
 import { SourceMapConsumer } from "source-map";
 import { defineNitroErrorHandler, type InternalHandlerResponse } from "./utils";
+
+const { Youch, ErrorParser } = _youch as {
+  Youch: { new (): YouchT };
+  ErrorParser: { new (): ErrorParserT };
+};
 
 export default defineNitroErrorHandler(
   async function defaultNitroErrorHandler(error, event) {
@@ -61,7 +68,7 @@ export async function defaultHandler(
   await loadStackTrace(error).catch(consola.error);
 
   // https://github.com/poppinss/youch
-  const youch = new _youch.Youch();
+  const youch = new Youch();
 
   // Console output
   if (isSensitive && !opts?.silent) {
@@ -135,7 +142,7 @@ export async function loadStackTrace(error: any) {
   if (!(error instanceof Error)) {
     return;
   }
-  const parsed = await new _youch.ErrorParser()
+  const parsed = await new ErrorParser()
     .defineSourceLoader(sourceLoader)
     .parse(error);
 
@@ -151,7 +158,7 @@ export async function loadStackTrace(error: any) {
   }
 }
 
-type SourceLoader = Parameters<ErrorParser["defineSourceLoader"]>[0];
+type SourceLoader = Parameters<ErrorParserT["defineSourceLoader"]>[0];
 type StackFrame = Parameters<SourceLoader>[0];
 async function sourceLoader(frame: StackFrame) {
   if (!frame.fileName || frame.fileType !== "fs" || frame.type === "native") {
