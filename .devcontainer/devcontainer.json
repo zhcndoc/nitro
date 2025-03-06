@@ -2,9 +2,7 @@
 // https://containers.dev/implementors/json_reference/
 {
   "name": "nitro-devcontainer",
-  "forwardPorts": [
-    3000
-  ],
+  "forwardPorts": [3000],
   "image": "node:22",
   "features": {},
   "customizations": {
@@ -19,7 +17,5 @@
     }
   },
   "postStartCommand": "npm i -fg corepack && corepack enable && pnpm install && pnpm build --stub",
-  "mounts": [
-    "type=volume,target=${containerWorkspaceFolder}/node_modules"
-  ]
+  "mounts": ["type=volume,target=${containerWorkspaceFolder}/node_modules"]
 }
