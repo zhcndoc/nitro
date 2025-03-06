@@ -33,6 +33,7 @@ export function createHTTPProxy(defaults: ProxyServerOptions = {}): HTTPProxy {
 
   const handleEvent = async (event: H3Event, opts: ProxyServerOptions = {}) => {
     try {
+      event._handled = true;
       await proxy.web(event.node.req, event.node.res, opts);
     } catch (error: any) {
       if (error?.code !== "ECONNRESET") {
