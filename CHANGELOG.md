@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## v2.11.3
+
+[compare changes](https://github.com/nitrojs/nitro/compare/v2.11.2...v2.11.3)
+
+### 🩹 Fixes
+
+- **cloudflare:** Support `wrangler.jsonc` ([#3162](https://github.com/nitrojs/nitro/pull/3162))
+
+### 💅 Refactors
+
+- Expose default error to custom handler ([#3161](https://github.com/nitrojs/nitro/pull/3161))
+- **dev:** Only show force close warn in debug mode ([06147e7a](https://github.com/nitrojs/nitro/commit/06147e7a))
+
+### 🏡 Chore
+
+- **release:** V2.11.2 ([e21ce69d](https://github.com/nitrojs/nitro/commit/e21ce69d))
+- Update devcontainer config ([92f1a37a](https://github.com/nitrojs/nitro/commit/92f1a37a))
+- Lowercase header ([e3866d04](https://github.com/nitrojs/nitro/commit/e3866d04))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
 ## v2.11.2
 
 [compare changes](https://github.com/nitrojs/nitro/compare/v2.11.1...v2.11.2)
