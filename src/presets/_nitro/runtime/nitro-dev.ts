@@ -9,6 +9,7 @@ import { join } from "node:path";
 import nodeCrypto from "node:crypto";
 import { parentPort, threadId } from "node:worker_threads";
 import wsAdapter from "crossws/adapters/node";
+import { isCI } from "std-env";
 import {
   defineEventHandler,
   getQuery,
@@ -120,18 +121,17 @@ function listen(
 
 function getSocketAddress() {
   const socketName = `worker-${process.pid}-${threadId}-${Math.round(Math.random() * 10_000)}-${NITRO_DEV_WORKER_ID}.sock`;
+  // Windows: pipe
   const socketPath = join(NITRO_DEV_WORKER_DIR, socketName);
-  switch (process.platform) {
-    case "win32": {
-      return join(String.raw`\\.\pipe\nitro`, socketPath);
-    }
-    case "linux": {
-      return `\0${socketPath}`;
-    }
-    default: {
-      return socketPath;
-    }
+  if (process.platform === "win32") {
+    return join(String.raw`\\.\pipe\nitro`, socketPath);
   }
+  // Linux: abstract namespace
+  if (process.platform === "linux" && !isCI) {
+    return `\0${socketPath}`;
+  }
+  // MacOS and CI: Unix socket
+  return socketPath;
 }
 
 async function shutdown() {
