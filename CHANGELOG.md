@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## v2.11.5
+
+[compare changes](https://github.com/nitrojs/nitro/compare/v2.11.4...v2.11.5)
+
+### 🩹 Fixes
+
+- **dev:** Use abstract sockets on linux with node.js >=20 ([#3178](https://github.com/nitrojs/nitro/pull/3178))
+- **dev:** Use os tmp dir for unix sockets ([#3179](https://github.com/nitrojs/nitro/pull/3179))
+
+### 📦 Build
+
+- Use upstream `youch` back ([#3175](https://github.com/nitrojs/nitro/pull/3175))
+
+### 🌊 Types
+
+- Mark `$global` optional for `NitroRouteMeta` ([#3174](https://github.com/nitrojs/nitro/pull/3174))
+
+### ❤️ Contributors
+
+- Pooya Parsa <pyapar@gmail.com>
+- Léo Pradel <pradel.leo@gmail.com>
+
 ## v2.11.4
 
 [compare changes](https://github.com/nitrojs/nitro/compare/v2.11.3...v2.11.4)
