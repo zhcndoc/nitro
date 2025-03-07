@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## v2.11.4
+
+[compare changes](https://github.com/nitrojs/nitro/compare/v2.11.3...v2.11.4)
+
+### 🩹 Fixes
+
+- **dev:** Auto fallback to port if socket listening failed ([#3165](https://github.com/nitrojs/nitro/pull/3165))
+- **dev:** Polyfill `globalThis.crypto` for Node.js 18 ([#3166](https://github.com/nitrojs/nitro/pull/3166))
+- **cli:** Add `globalThis.crypto` polyfill for Node.js 18 ([#3167](https://github.com/nitrojs/nitro/pull/3167))
+- **dev:** Polyfill `globalThis.crypto` for Node.js 18 ([#3168](https://github.com/nitrojs/nitro/pull/3168))
+- **dev:** Try normal socket for CI ([a4569493](https://github.com/nitrojs/nitro/commit/a4569493))
+
+### 📦 Build
+
+- Inline youch dependency ([#3169](https://github.com/nitrojs/nitro/pull/3169))
+- Use `youch-redist` ([#3172](https://github.com/nitrojs/nitro/pull/3172))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
 ## v2.11.3
 
 [compare changes](https://github.com/nitrojs/nitro/compare/v2.11.2...v2.11.3)
