@@ -158,10 +158,9 @@ export class NodeDevWorker implements DevWorker {
         const gracefulShutdownTimeoutSec =
           Number.parseInt(process.env.NITRO_SHUTDOWN_TIMEOUT || "", 10) || 5;
         const timeout = setTimeout(() => {
-          consola.warn(
-            `force closing dev worker after ${gracefulShutdownTimeoutSec} seconds...`
-          );
-          resolve();
+          if (process.env.DEBUG) {
+            consola.warn(`force closing dev worker...`);
+          }
         }, gracefulShutdownTimeoutSec * 1000);
 
         this.#worker?.on("message", (message) => {

@@ -1,102 +1,140 @@
 import {
+  type H3Event,
+  type H3Error,
   send,
-  sendRedirect,
   getRequestHeader,
   getRequestHeaders,
-  setResponseHeader,
-  setResponseStatus,
   getRequestURL,
   getResponseHeader,
+  setResponseHeaders,
+  setResponseStatus,
 } from "h3";
+import nodeCrypto from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import consola from "consola";
-import { ErrorParser } from "youch-core";
-import { Youch } from "youch";
+import type { ErrorParser as ErrorParserT } from "youch-core";
+import type { Youch as YouchT } from "youch";
+// @ts-ignore
+import * as _youch from "youch-redist";
 import { SourceMapConsumer } from "source-map";
-import { defineNitroErrorHandler, setSecurityHeaders } from "./utils";
+import { defineNitroErrorHandler, type InternalHandlerResponse } from "./utils";
+
+const { Youch, ErrorParser } = _youch as {
+  Youch: { new (): YouchT };
+  ErrorParser: { new (): ErrorParserT };
+};
 
 export default defineNitroErrorHandler(
   async function defaultNitroErrorHandler(error, event) {
-    const isSensitive = error.unhandled || error.fatal;
-    const statusCode = error.statusCode || 500;
-    const statusMessage = error.statusMessage || "Server Error";
-    // prettier-ignore
-    const url = getRequestURL(event, { xForwardedHost: true, xForwardedProto: true })
-
-    // Redirects with base URL
-    if (statusCode === 404) {
-      const baseURL = import.meta.baseURL || "/";
-      if (/^\/[^/]/.test(baseURL) && !url.pathname.startsWith(baseURL)) {
-        return sendRedirect(
-          event,
-          `${baseURL}${url.pathname.slice(1)}${url.search}`
-        );
-      }
-    }
-
-    // Load stack trace with source maps
-    await loadStackTrace(error).catch(consola.error);
-
-    // https://github.com/poppinss/youch
-    const youch = new Youch();
-
-    // Console output
-    if (isSensitive) {
-      // prettier-ignore
-      const tags = [error.unhandled && "[unhandled]", error.fatal && "[fatal]"].filter(Boolean).join(" ")
-
-      const columns = process.stderr.columns;
-      const ansiError = await (
-        await youch.toANSI(error)
-      ).replaceAll(process.cwd(), ".");
-      if (!columns) {
-        process.stderr.columns = columns;
-      }
-
-      consola.error(
-        `[request error] ${tags} [${event.method}] ${url}\n\n`,
-        ansiError
-      );
-    }
-
-    // Send response
-    setResponseStatus(event, statusCode, statusMessage);
-    setSecurityHeaders(event, true /* allow js */);
-    if (statusCode === 404 || !getResponseHeader(event, "cache-control")) {
-      setResponseHeader(event, "cache-control", "no-cache");
-    }
-    return getRequestHeader(event, "accept")?.includes("text/html")
-      ? send(
-          event,
-          await youch.toHTML(error, {
-            request: {
-              url: url.href,
-              method: event.method,
-              headers: getRequestHeaders(event),
-            },
-          }),
-          "text/html"
-        )
-      : send(
-          event,
-          JSON.stringify(
-            {
-              error: true,
-              url,
-              statusCode,
-              statusMessage,
-              message: error.message,
-              data: error.data,
-              stack: error.stack?.split("\n").map((line) => line.trim()),
-            },
-            null,
-            2
-          ),
-          "application/json"
-        );
+    const res = await defaultHandler(error, event);
+    setResponseHeaders(event, res.headers!);
+    setResponseStatus(event, res.status, res.statusText);
+    return send(
+      event,
+      typeof res.body === "string"
+        ? res.body
+        : JSON.stringify(res.body, null, 2)
+    );
   }
 );
+
+export async function defaultHandler(
+  error: H3Error,
+  event: H3Event,
+  opts?: { silent?: boolean; json?: boolean }
+): Promise<InternalHandlerResponse> {
+  const isSensitive = error.unhandled || error.fatal;
+  const statusCode = error.statusCode || 500;
+  const statusMessage = error.statusMessage || "Server Error";
+  // prettier-ignore
+  const url = getRequestURL(event, { xForwardedHost: true, xForwardedProto: true })
+
+  // Redirects with base URL
+  if (statusCode === 404) {
+    const baseURL = import.meta.baseURL || "/";
+    if (/^\/[^/]/.test(baseURL) && !url.pathname.startsWith(baseURL)) {
+      const redirectTo = `${baseURL}${url.pathname.slice(1)}${url.search}`;
+      return {
+        status: 302,
+        statusText: "Found",
+        headers: { location: redirectTo },
+        body: `Redirecting...`,
+      };
+    }
+  }
+
+  // Load stack trace with source maps
+  await loadStackTrace(error).catch(consola.error);
+
+  // https://github.com/poppinss/youch
+  const youch = new Youch();
+
+  // Console output
+  if (isSensitive && !opts?.silent) {
+    // prettier-ignore
+    const tags = [error.unhandled && "[unhandled]", error.fatal && "[fatal]"].filter(Boolean).join(" ")
+    const ansiError = await (
+      await youch.toANSI(error)
+    ).replaceAll(process.cwd(), ".");
+    consola.error(
+      `[request error] ${tags} [${event.method}] ${url}\n\n`,
+      ansiError
+    );
+  }
+
+  // Use HTML response only when user-agent expects it (browsers)
+  const useJSON =
+    opts?.json || !getRequestHeader(event, "accept")?.includes("text/html");
+
+  // Prepare headers
+  const headers: HeadersInit = {
+    "content-type": useJSON ? "application/json" : "text/html",
+    // Prevent browser from guessing the MIME types of resources.
+    "x-content-type-options": "nosniff",
+    // Prevent error page from being embedded in an iframe
+    "x-frame-options": "DENY",
+    // Prevent browsers from sending the Referer header
+    "referrer-policy": "no-referrer",
+    // Disable the execution of any js
+    "content-security-policy":
+      "script-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self';",
+  };
+  if (statusCode === 404 || !getResponseHeader(event, "cache-control")) {
+    headers["cache-control"] = "no-cache";
+  }
+
+  // Crypto polyfill for Node.18 (used by youch > @poppinss+dumper)
+  if (!globalThis.crypto && !useJSON) {
+    globalThis.crypto = nodeCrypto as unknown as Crypto;
+  }
+
+  // Prepare body
+  const body = useJSON
+    ? {
+        error: true,
+        url,
+        statusCode,
+        statusMessage,
+        message: error.message,
+        data: error.data,
+        stack: error.stack?.split("\n").map((line) => line.trim()),
+      }
+    : await youch.toHTML(error, {
+        request: {
+          url: url.href,
+          method: event.method,
+          headers: getRequestHeaders(event),
+        },
+      });
+
+  return {
+    status: statusCode,
+    statusText: statusMessage,
+    headers,
+    body,
+  };
+}
 
 // ---- Source Map support ----
 
@@ -120,7 +158,7 @@ export async function loadStackTrace(error: any) {
   }
 }
 
-type SourceLoader = Parameters<ErrorParser["defineSourceLoader"]>[0];
+type SourceLoader = Parameters<ErrorParserT["defineSourceLoader"]>[0];
 type StackFrame = Parameters<SourceLoader>[0];
 async function sourceLoader(frame: StackFrame) {
   if (!frame.fileName || frame.fileType !== "fs" || frame.type === "native") {

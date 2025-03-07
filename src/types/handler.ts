@@ -65,7 +65,21 @@ export interface NitroDevEventHandler {
   handler: EventHandler;
 }
 
+type MaybePromise<T> = T | Promise<T>;
+
 export type NitroErrorHandler = (
   error: H3Error,
-  event: H3Event
+  event: H3Event,
+  _: {
+    defaultHandler: (
+      error: H3Error,
+      event: H3Event,
+      opts?: { silent?: boolean; json?: boolean }
+    ) => MaybePromise<{
+      status: number;
+      statusText: string;
+      headers: Record<string, string>;
+      body: string | Record<string, any>;
+    }>;
+  }
 ) => void | Promise<void>;
