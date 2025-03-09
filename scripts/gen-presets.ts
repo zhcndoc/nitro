@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { consola } from "consola";
 import { createJiti } from "jiti";
 import { findTypeExports } from "mlly";
-import type { NitroPreset, NitroPresetMeta } from "nitropack/types";
+import type { NitroPreset, NitroPresetMeta } from "nitro/types";
 import { camelCase, kebabCase, pascalCase, snakeCase } from "scule";
 import { subpaths } from "../build.config";
 
@@ -26,7 +26,7 @@ const jiti = createJiti(presetsDir, {
     nitropack: fileURLToPath(new URL("../src/core/index.ts", import.meta.url)),
     ...Object.fromEntries(
       subpaths.map((pkg) => [
-        `nitropack/${pkg}`,
+        `nitro/${pkg}`,
         fileURLToPath(new URL(`../src/${pkg}/index.ts`, import.meta.url)),
       ])
     ),

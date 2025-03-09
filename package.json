@@ -1,6 +1,6 @@
 {
-  "name": "nitropack",
-  "version": "2.11.6",
+  "name": "nitro",
+  "version": "3.0.0-beta",
   "description": "Build and Deploy Universal JavaScript Servers",
   "repository": "nitrojs/nitro",
   "license": "MIT",
@@ -95,7 +95,7 @@
     "test:types": "tsc --noEmit && pnpm test:fixture:types"
   },
   "resolutions": {
-    "nitropack": "link:."
+    "nitro": "link:."
   },
   "dependencies": {
     "@cloudflare/kv-asset-handler": "^0.3.4",

@@ -1,8 +1,8 @@
 import consola from "consola";
+import type { NitroOptions } from "nitro/types";
 import { join } from "node:path";
-import type { NitroOptions } from "nitropack/types";
 import { nodeMajorVersion, provider } from "std-env";
-import { runtimeDir } from "nitropack/runtime/meta";
+import { runtimeDir } from "nitro/runtime/meta";
 
 export async function resolveFetchOptions(options: NitroOptions) {
   if (options.experimental.nodeFetchCompat === undefined) {
