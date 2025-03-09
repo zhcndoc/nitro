@@ -63,7 +63,7 @@ function getNitroImportsPreset(): Preset[] {
     },
     {
       from: "nitro/runtime/internal/config",
-      imports: ["useRuntimeConfig", "useAppConfig"],
+      imports: ["useRuntimeConfig"],
     },
     {
       from: "nitro/runtime/internal/plugin",

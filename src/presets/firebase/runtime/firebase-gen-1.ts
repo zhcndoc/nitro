@@ -1,13 +1,13 @@
 import "#nitro-internal-pollyfills";
 import { useNitroApp } from "nitro/runtime";
-import { useAppConfig } from "nitro/runtime";
 
 import functions from "firebase-functions";
 import { toNodeListener } from "h3";
 
 const nitroApp = useNitroApp();
 
-const firebaseConfig = useAppConfig().nitro.firebase;
+// TODO: add options support back using virtual template
+const firebaseConfig = {} as any;
 
 export const __firebaseServerFunctionName__ = functions
   .region(firebaseConfig.region ?? functions.RESET_VALUE)
