@@ -18,6 +18,24 @@ NITRO_PRESET=deno_server npm run build
 deno run --unstable --allow-net --allow-read --allow-env .output/server/index.ts
 ```
 
+要启用 Node.js 兼容性，您需要升级到 Deno v2，并在您的 nitro 配置文件中将兼容性日期设置为 `2025-01-30` 或更晚。
+
+::code-group
+
+```ts [nitro.config.ts]
+export default defineNitroConfig({
+    compatibilityDate: "2025-01-30",
+})
+```
+
+```ts [nuxt.config.ts]
+export default defineNuxtConfig({
+    compatibilityDate: "2025-01-30",
+})
+```
+
+::
+
 ## Deno 部署
 
 :read-more{to="/deploy/providers/deno-deploy"}

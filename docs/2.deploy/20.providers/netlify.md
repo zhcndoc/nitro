@@ -13,6 +13,24 @@
 通常，部署到 Netlify 不需要任何配置。
 Nitro 将自动检测您处于 [Netlify](https://www.netlify.com) 构建环境，并构建正确版本的服务器。
 
+要启用 Netlify Functions 2.0 并使用其功能（例如流响应和 [Netlify Blobs](https://docs.netlify.com/blobs/overview/)），您需要在您的 nitro 配置文件中将兼容性日期设置为 `2024-05-07` 或更晚。
+
+::code-group
+
+```ts [nitro.config.ts]
+export default defineNitroConfig({
+    compatibilityDate: "2024-05-07",
+})
+```
+
+```ts [nuxt.config.ts]
+export default defineNuxtConfig({
+    compatibilityDate: "2024-05-07",
+})
+```
+
+::
+
 对于新网站，Netlify 将检测您正在使用 Nitro，并将发布目录设置为 `dist`，构建命令设置为 `npm run build`。
 
 如果您正在升级现有网站，您应检查这些设置，并在需要时进行更新。
