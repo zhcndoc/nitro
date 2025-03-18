@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## v2.11.7
+
+[compare changes](https://github.com/nitrojs/nitro/compare/v2.11.6...v2.11.7)
+
+### 🩹 Fixes
+
+- **app:** Import user code last to avoid initialization order issues ([#3226](https://github.com/nitrojs/nitro/pull/3226))
+- Only inherit `waitUntil` and platform context in fetch ([#3224](https://github.com/nitrojs/nitro/pull/3224))
+- **dev:** Always throw proxy errors ([#3229](https://github.com/nitrojs/nitro/pull/3229))
+
+### 💅 Refactors
+
+- Update internal hash utils order ([#3227](https://github.com/nitrojs/nitro/pull/3227))
+- Update scalar types ([10c8e534](https://github.com/nitrojs/nitro/commit/10c8e534))
+- **cloudflare:** Update node.js compatibility ([#3230](https://github.com/nitrojs/nitro/pull/3230))
+- **netlify-edge:** Update node.js compatibility ([#3231](https://github.com/nitrojs/nitro/pull/3231))
+
+### 📖 Documentation
+
+- **deno-server:** Add `compatibilityDate` note ([#3190](https://github.com/nitrojs/nitro/pull/3190))
+- **netlify:** Add `compatibilityDate` note ([#3189](https://github.com/nitrojs/nitro/pull/3189))
+- Updated callout ([#3219](https://github.com/nitrojs/nitro/pull/3219))
+- **firebase:** Add firebase-app-hosting ([#3217](https://github.com/nitrojs/nitro/pull/3217))
+- Use `server/` dir ([#2775](https://github.com/nitrojs/nitro/pull/2775))
+
+### 🏡 Chore
+
+- Update readme and ci scripts ([350d7998](https://github.com/nitrojs/nitro/commit/350d7998))
+- Update readme ([c17d18c6](https://github.com/nitrojs/nitro/commit/c17d18c6))
+- Update dependencies ([c24f39c2](https://github.com/nitrojs/nitro/commit/c24f39c2))
+- Remove unused dependencies ([ff9c4f08](https://github.com/nitrojs/nitro/commit/ff9c4f08))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+- Gerome Grignon ([@geromegrignon](https://github.com/geromegrignon))
+- Yuangwang <yuangwang2@gmail.com>
+- Ollie W ([@ollie-bud](https://github.com/ollie-bud))
+- Restent Ou ([@gxres042](https://github.com/gxres042))
+
 ## v2.11.6
 
 [compare changes](https://github.com/nitrojs/nitro/compare/v2.11.5...v2.11.6)
