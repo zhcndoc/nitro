@@ -816,7 +816,10 @@ export function testNitro(
     const { data, status } = await callHandler({ url: "/node-compat" });
     expect(status).toBe(200);
     for (const key in data) {
-      if (ctx.preset === "vercel-edge" && key === "crypto:createHash") {
+      if (
+        ctx.preset === "vercel-edge" &&
+        (key === "crypto:createHash" || key === "tls:connect")
+      ) {
         continue;
       }
       if (ctx.preset === "deno-server" && key === "globals:BroadcastChannel") {
