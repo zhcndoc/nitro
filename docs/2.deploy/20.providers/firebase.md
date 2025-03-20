@@ -1,22 +1,16 @@
 # Firebase
 
-> 将 Nitro 应用部署到 Firebase 托管。
+> 将 Nitro 应用部署到 Firebase。
 
 ::note
 您需要使用 [**Blaze 计划**](https://firebase.google.com/pricing)（按需付费）才能开始。
 ::
 
-<!--
-
-## Firebase 应用托管 <sup>(beta)</sup>
+## Firebase 应用托管
 
 预设: `firebase_app_hosting`
 
 :read-more{title="Firebase 应用托管" to="https://firebase.google.com/docs/app-hosting"}
-
-::important
-Firebase 应用托管支持目前在 Nitro 的 [夜间发布通道](/guide/nightly) 中可用。
-::
 
 ::tip
 您可以使用 [零配置](/deploy/#zero-config-providers) 集成此提供者。
@@ -24,19 +18,23 @@ Firebase 应用托管支持目前在 Nitro 的 [夜间发布通道](/guide/night
 
 ### 项目设置
 
-1. 前往 Firebase [控制台](https://console.firebase.google.com/)并设置一个新项目。
+1. 前往 Firebase [控制台](https://console.firebase.google.com/) 并设置一个新项目。
 2. 从侧边栏选择 **构建 > 应用托管**。
     - 在此步骤中，您可能需要升级您的计费计划。
-3. 点击 **开始**。
+3. 点击 **开始使用**。
     - 选择一个区域。
     - 导入一个 GitHub 仓库（您需要链接您的 GitHub 账户）。
     - 配置部署设置（项目根目录和分支），并启用自动发布。
-    - 为部署选择一个唯一的 ID。
-4. 等待第一次发布完成。
+    - 为您的后端选择一个唯一的 ID。
+4. 点击完成并部署以创建您的首次发布。
 
--->
+当您使用 Firebase 应用托管进行部署时，应用托管预设将在构建时自动运行。
 
-## Firebase 托管
+## Firebase 托管（已弃用）
+
+::important
+此部署方法已弃用，且不推荐使用。Firebase 应用托管是推荐的在 Firebase 上部署 Nitro 应用的方法。
+::
 
 **预设:** `firebase`
 
