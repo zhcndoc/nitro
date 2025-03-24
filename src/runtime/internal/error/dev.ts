@@ -20,7 +20,10 @@ import { defineNitroErrorHandler, type InternalHandlerResponse } from "./utils";
 export default defineNitroErrorHandler(
   async function defaultNitroErrorHandler(error, event) {
     const res = await defaultHandler(error, event);
-    setResponseHeaders(event, res.headers!);
+    if (!event.node?.res.headersSent) {
+      // https://github.com/nitrojs/nitro/pull/3249
+      setResponseHeaders(event, res.headers!);
+    }
     setResponseStatus(event, res.status, res.statusText);
     return send(
       event,
