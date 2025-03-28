@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## v2.11.8
+
+[compare changes](https://github.com/nitrojs/nitro/compare/v2.11.7...v2.11.8)
+
+### 🩹 Fixes
+
+- **dev:** Conditionally set headers for error handler ([#3249](https://github.com/nitrojs/nitro/pull/3249))
+- **aws-lambda:** Aws-lambda-streaming set-cookie headers ([#3236](https://github.com/nitrojs/nitro/pull/3236))
+- **config:** Resolve `srcDir` relative to `rootDir` ([#3250](https://github.com/nitrojs/nitro/pull/3250))
+
+### 📦 Build
+
+- Inline openapi-typescript types ([#3252](https://github.com/nitrojs/nitro/pull/3252))
+
+### ❤️ Contributors
+
+- Pooya Parsa <pyapar@gmail.com>
+- McKittrick Kaminski ([@mckamyk](https://github.com/mckamyk))
+
 ## v2.11.7
 
 [compare changes](https://github.com/nitrojs/nitro/compare/v2.11.6...v2.11.7)
