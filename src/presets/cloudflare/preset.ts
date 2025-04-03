@@ -130,6 +130,7 @@ const cloudflareModule = defineNitroPreset(
   },
   {
     name: "cloudflare-module" as const,
+    stdName: "cloudflare_workers",
     url: import.meta.url,
   }
 );
