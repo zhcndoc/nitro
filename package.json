@@ -33,7 +33,7 @@
     "gen-node-compat": "pnpm node-ts scripts/gen-node-compat.ts",
     "gen-presets": "pnpm jiti scripts/gen-presets.ts",
     "lint": "eslint --cache . && prettier -c .",
-    "lint:fix": "eslint --cache --fix . && prettier -w .",
+    "lint:fix": "automd && eslint --cache --fix . && prettier -w .",
     "nitro": "jiti ./src/cli/index.ts",
     "node-ts": "node --disable-warning=ExperimentalWarning --experimental-strip-types",
     "prepack": "pnpm build",
