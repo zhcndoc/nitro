@@ -3,7 +3,7 @@ export default {
   generators: {
     compatDate: {
       async generate(ctx) {
-        const { compatibilityChanges } = await import("./src/meta/index.ts");
+        const { compatibilityChanges } = await import("./lib/meta.mjs");
 
         const table = [
           "| Compatibility date | Platform | Description |",
