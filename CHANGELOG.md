@@ -2,6 +2,49 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## v2.11.9
+
+[compare changes](https://github.com/nitrojs/nitro/compare/v2.11.8...v2.11.9)
+
+### 🩹 Fixes
+
+- **cludflare-module:** Respect `baseURL` for public output assets ([#3280](https://github.com/nitrojs/nitro/pull/3280))
+- **cludflare-module:** Remove baseURL prefix from deploy config dir ([#3283](https://github.com/nitrojs/nitro/pull/3283))
+- Add unenv aliases for `process/` and `string_decoder/` ([#3273](https://github.com/nitrojs/nitro/pull/3273))
+
+### 💅 Refactors
+
+- **openapi:** Allow extensible `x-` properties in `$globals` ([#3278](https://github.com/nitrojs/nitro/pull/3278))
+- Allow setting `dotenv` config for `loadOptions` ([#3274](https://github.com/nitrojs/nitro/pull/3274))
+- **cloudflare:** Detect workers build ci ([#3279](https://github.com/nitrojs/nitro/pull/3279))
+- **cloudflare:** Enable node compat and deploy config progressively on new workers CI ([#3284](https://github.com/nitrojs/nitro/pull/3284))
+- Soft warning for compatibility date ([#3292](https://github.com/nitrojs/nitro/pull/3292))
+- **cloudflare, deno-deploy:** Update node compat ([#3301](https://github.com/nitrojs/nitro/pull/3301))
+- **dev:** Update serve-static to v2 ([#3302](https://github.com/nitrojs/nitro/pull/3302))
+
+### 📖 Documentation
+
+- Add compatibility date info ([#3290](https://github.com/nitrojs/nitro/pull/3290))
+
+### 🏡 Chore
+
+- Update minor deps ([bfcf48d1](https://github.com/nitrojs/nitro/commit/bfcf48d1))
+- Update lockfile ([b8f86ef9](https://github.com/nitrojs/nitro/commit/b8f86ef9))
+- Update deps ([1e629eba](https://github.com/nitrojs/nitro/commit/1e629eba))
+- Update automd setup ([a5f24636](https://github.com/nitrojs/nitro/commit/a5f24636))
+- Update unimport to v5 ([8d607960](https://github.com/nitrojs/nitro/commit/8d607960))
+- Update deps ([a01d4e4f](https://github.com/nitrojs/nitro/commit/a01d4e4f))
+- **aws-lambda:** Update types ([ba8a099d](https://github.com/nitrojs/nitro/commit/ba8a099d))
+- Update lockfile ([7dde1094](https://github.com/nitrojs/nitro/commit/7dde1094))
+- Update playground ([7a9efb8c](https://github.com/nitrojs/nitro/commit/7a9efb8c))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+- Felix Gabler <felix.gabler98@gmail.com>
+- Daniel Roe ([@danielroe](https://github.com/danielroe))
+- Mukund Shah ([@mukundshah](https://github.com/mukundshah))
+
 ## v2.11.8
 
 [compare changes](https://github.com/nitrojs/nitro/compare/v2.11.7...v2.11.8)
