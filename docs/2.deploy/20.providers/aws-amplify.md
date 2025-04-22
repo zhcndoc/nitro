@@ -1,6 +1,6 @@
 # AWS Amplify
 
-> 部署 Nitro 应用到 AWS Amplify Hosting。
+> 将 Nitro 应用部署到 AWS Amplify Hosting。
 
 **预设:** `aws_amplify`
 
@@ -13,15 +13,15 @@
 ::
 
 1. 登录到 [AWS Amplify Hosting 控制台](https://console.aws.amazon.com/amplify/)
-2. 点击 "开始使用" > Amplify Hosting (托管您的 Web 应用)
-3. 选择并授权访问您的 Git 仓库提供商，并选择主分支
-4. 为您的应用选择一个名称，确保构建设置被自动检测，并在高级部分可选地设置环境变量
-5. 可选地，选择启用 SSR 日志记录，将服务器端日志记录到您的 Amazon CloudWatch 账户
+2. 点击 "开始使用" > Amplify Hosting (托管你的 web 应用)
+3. 选择并授权访问你的 Git 仓库提供商，并选择主分支
+4. 为你的应用程序选择一个名称，确保构建设置被自动检测，并在高级部分可选地设置环境变量
+5. 可选地选择启用 SSR 日志记录，以便将服务器端日志记录到你的 Amazon CloudWatch 帐户
 6. 确认配置并点击 "保存并部署"
 
 ## 高级配置
 
-您可以使用 `awsAmplify` 选项配置此预设的高级选项。
+你可以使用 `awsAmplify` 选项配置该预设的高级选项。
 
 ::code-group
 
@@ -51,7 +51,7 @@ export default defineNuxtConfig({
 
 ### `amplify.yml`
 
-您可能需要一个自定义的 `amplify.yml` 文件进行高级配置。以下是两个模板示例：
+你可能需要一个自定义的 `amplify.yml` 文件用于高级配置。以下是两个模板示例：
 
 ::code-group
 
@@ -72,7 +72,7 @@ frontend:
       - "**/*"
 ```
 
-```yml [amplify.yml (monorepo)]
+```yml [amplify.yml (单体仓库)]
 version: 1
 applications:
   - frontend:

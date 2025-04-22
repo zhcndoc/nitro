@@ -13,11 +13,6 @@ const platforms = {
       "stream",
     ],
   },
-  vercel: {
-    url: "https://platform-node-compat.vercel.app/?json",
-    // https://vercel.com/docs/functions/edge-middleware/edge-runtime#compatible-node.js-modules
-    forceBuiltin: ["async_hooks", "events", "buffer", "assert", "util"],
-  },
   // Deno deploy and Netlify edge are almost identical
   deno: {
     url: "https://platform-node-compat.deno.dev/?json",

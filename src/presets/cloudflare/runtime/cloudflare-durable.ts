@@ -2,7 +2,7 @@ import "#nitro-internal-pollyfills";
 import type * as CF from "@cloudflare/workers-types";
 import { DurableObject } from "cloudflare:workers";
 import wsAdapter from "crossws/adapters/cloudflare-durable";
-import { useNitroApp } from "nitropack/runtime";
+import { useNitroApp } from "nitro/runtime";
 import { isPublicAssetURL } from "#nitro-internal-virtual/public-assets";
 import { createHandler, fetchHandler } from "./_module-handler";
 
@@ -82,13 +82,6 @@ export class $DurableObject extends DurableObject {
     return fetchHandler(request, this.env, this.ctx, url, nitroApp, {
       durable: this,
     });
-  }
-
-  publish(topic: string, data: unknown, opts: any) {
-    if (!ws) {
-      throw new Error("WebSocket not available");
-    }
-    return ws.publish(topic, data, opts);
   }
 
   override alarm(): void | Promise<void> {

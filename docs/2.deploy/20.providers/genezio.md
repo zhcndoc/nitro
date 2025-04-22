@@ -1,13 +1,13 @@
 # Genezio
 
-> 将 Nitro 应用部署到 Genezio。
+> 部署 Nitro 应用到 Genezio。
 
 **预设:** `genezio`
 
 :read-more{title="Genezio" to="https://genezio.com"}
 
-> [!重要]
-> 🚧 此预设目前处于实验阶段。
+> [!IMPORTANT]
+> 🚧 此预设目前为实验性。
 
 ## 1. 项目设置
 
@@ -33,26 +33,26 @@ backend:
       - name: nitroServer
       # 函数代码的路径。
         path: server/
-        # 函数处理程序的名称
+        # 函数处理器的名称。
         handler: handler
         # 函数的入口点。
         entry: index.mjs
 ```
 
 ::read-more{to="https://genezio.com/docs/project-structure/genezio-configuration-file/"}
-要进一步根据您的需求自定义文件，您可以查看
+要进一步根据您的需求定制该文件，可以查阅
 [官方文档](https://genezio.com/docs/project-structure/genezio-configuration-file/)。
 ::
 
 ## 2. 部署您的项目
 
-使用 genezio nitro 预设进行构建：
+使用 genezio nitro 预设构建：
 
 ```bash
 NITRO_PRESET=genezio npm run build
 ```
 
-使用 [`genezio`](https://npmjs.com/package/genezio) CLI 部署：
+使用 [`genezio`](https://npmjs.com/package/genezio) cli 部署：
 
 :pm-x{command="genezio deploy"}
 
@@ -61,4 +61,4 @@ NITRO_PRESET=genezio npm run build
 ::
 
 ## 3. 监控您的项目
-您可以通过 [Genezio 应用仪表板](https://app.genez.io/dashboard) 来监控和管理您的应用程序。仪表板 URL 在部署后也会提供，允许您访问项目状态和日志的综合视图。
+您可以通过 [Genezio 应用仪表板](https://app.genez.io/dashboard) 监控和管理您的应用程序。部署后提供的仪表板 URL 允许您访问项目状态和日志的综合视图。

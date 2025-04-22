@@ -2,13 +2,13 @@
 
 > 将 Nitro 应用部署到 GitHub Pages。
 
-**预设：** `github_pages`
+**预设:** `github_pages`
 
 :read-more{title="GitHub Pages" to="https://pages.github.com/"}
 
 ## 设置
 
-按照步骤[创建 GitHub Pages 网站](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site)。
+按照步骤 [创建一个 GitHub Pages 网站](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site)。
 
 ## 部署
 
@@ -39,7 +39,7 @@ jobs:
         env:
           NITRO_PRESET: github_pages
 
-      - name: 上传构件
+      - name: 上传工件
         uses: actions/upload-pages-artifact@v1
         with:
           path: ./.output/public
@@ -49,10 +49,10 @@ jobs:
     # 添加对构建作业的依赖
     needs: build
 
-    # 授予 GITHUB_TOKEN 进行 Pages 部署所需的权限
+    # 授予 GITHUB_TOKEN 进行页面部署所需的权限
     permissions:
-      pages: write      # 用于部署到 Pages
-      id-token: write   # 用于验证部署来源是否合适
+      pages: write      # 以便部署到 Pages
+      id-token: write   # 以验证部署源自合适来源
 
     # 部署到 github_pages 环境
     environment:

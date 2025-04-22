@@ -13,8 +13,8 @@ import {
   createNitro,
   prepare,
   prerender,
-} from "nitropack/core";
-import type { Nitro, NitroConfig } from "nitropack/types";
+} from "nitro";
+import type { Nitro, NitroConfig } from "nitro/types";
 import { type FetchOptions, fetch } from "ofetch";
 import { join, resolve } from "pathe";
 import { isWindows, nodeMajorVersion } from "std-env";
@@ -132,7 +132,6 @@ export async function setupTest(
     output: {
       dir: ctx.outDir,
     },
-    timing: !ctx.isWorker,
   });
   const nitro = (ctx.nitro = await createNitro(config, {
     compatibilityDate: opts.compatibilityDate || formatDate(new Date()),
@@ -402,16 +401,6 @@ export function testNitro(
     expect(data.json.error).toBe(true);
   });
 
-  it.skipIf(isWindows && ctx.preset === "nitro-dev")(
-    "universal import.meta",
-    async () => {
-      const { status, data } = await callHandler({ url: "/api/import-meta" });
-      expect(status).toBe(200);
-      expect(data.testFile).toMatch(/[/\\]test.txt$/);
-      expect(data.hasEnv).toBe(true);
-    }
-  );
-
   it("handles custom server assets", async () => {
     const { data: html, status: htmlStatus } = await callHandler({
       url: "/file?filename=index.html",
@@ -547,24 +536,12 @@ export function testNitro(
       url: "/config",
     });
     expect(data).toMatchObject({
-      appConfig: {
-        dynamic: "from-middleware",
-        "app-config": true,
-        "nitro-config": true,
-        "server-config": true,
-      },
       runtimeConfig: {
         dynamic: "from-env",
         url: "https://test.com",
         app: {
           baseURL: "/",
         },
-      },
-      sharedAppConfig: {
-        dynamic: "initial",
-        "app-config": true,
-        "nitro-config": true,
-        "server-config": true,
       },
       sharedRuntimeConfig: {
         // Cloudflare environment variables are set after first request
@@ -580,16 +557,6 @@ export function testNitro(
       },
     });
   });
-
-  if (ctx.nitro!.options.timing) {
-    it("set server timing header", async () => {
-      const { status, headers } = await callHandler({
-        url: "/api/hello",
-      });
-      expect(status).toBe(200);
-      expect(headers["server-timing"]).toMatch(/-;dur=\d+;desc="Generate"/);
-    });
-  }
 
   it("static build flags", async () => {
     const { data } = await callHandler({ url: "/static-flags" });
@@ -655,7 +622,7 @@ export function testNitro(
       // https://github.com/nitrojs/nitro/issues/1462
       // (vercel and deno-server uses node only for tests only)
       const notSplittingPresets = [
-        "node-listener",
+        "node-middleware",
         "nitro-dev",
         "vercel",
         (nodeMajorVersion || 0) < 18 && "deno-server",
@@ -816,10 +783,7 @@ export function testNitro(
     const { data, status } = await callHandler({ url: "/node-compat" });
     expect(status).toBe(200);
     for (const key in data) {
-      if (
-        ctx.preset === "vercel-edge" &&
-        (key === "crypto:createHash" || key === "tls:connect")
-      ) {
+      if (ctx.preset === "vercel-edge" && key === "crypto:createHash") {
         continue;
       }
       if (ctx.preset === "deno-server" && key === "globals:BroadcastChannel") {

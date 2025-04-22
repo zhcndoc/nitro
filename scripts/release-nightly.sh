@@ -30,9 +30,9 @@ fi
 
 # Release packages
 
-# nitropack-nightly@latest => v2
+# nitro-nightly@latest => v3
 npm publish --access public --tolerate-republish --tag latest
 
-# nitro-nightly@2x => v2-mirror
+# nitropack-nightly@3x => v3-mirror
 cd .mirror
-npm publish --access public --tolerate-republish --tag 2x
+npm publish --access public --tolerate-republish --tag 3x

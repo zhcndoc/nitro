@@ -2,30 +2,21 @@
 
 <!-- automd:badges -->
 
-[![npm version](https://img.shields.io/npm/v/nitropack)](https://npmjs.com/package/nitropack)
-[![npm downloads](https://img.shields.io/npm/dm/nitropack)](https://npm.chart.dev/nitropack)
+[![npm version](https://img.shields.io/npm/v/nitro)](https://npmjs.com/package/nitro)
+[![npm downloads](https://img.shields.io/npm/dm/nitro)](https://npm.chart.dev/nitro)
 
 <!-- /automd -->
 
 Create web servers that run anywhere! 📖 [**documentation**](https://nitro.build)
 
-> [!NOTE]
-> You are on the **v2 support branch.** Checkout the [v3](https://github.com/nitrojs/nitro/tree/v3) branch for the current development.
+> [!IMPORTANT]
+> You are on the **v3 beta branch**. Checkout the [v2](https://github.com/nitrojs/nitro/tree/v2) branch for current stable.
+
+Check [migration guide](./docs/1.guide/00.migration.md) for migrating from Nitro v2 to Nitro v3.
 
 ## Contribution
 
-<details>
-  <summary>Local development</summary>
-
-- Clone this repository
-- Install the latest LTS version of [Node.js](https://nodejs.org/en/)
-- Enable [Corepack](https://github.com/nodejs/corepack) using `corepack enable`
-- Install dependencies using `pnpm install`
-- Run tests using `pnpm dev` or `pnpm test`
-
-</details>
-
-<!-- /automd -->
+Please check [Contribution guide](CONTRIBUTING.md).
 
 ## License
 

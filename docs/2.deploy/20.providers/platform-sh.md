@@ -1,6 +1,6 @@
 # Platform.sh
 
-> 将 Nitro 应用程序部署到 platform.sh
+> 将 Nitro 应用部署到 platform.sh
 
 **预设:** `platform_sh`
 
@@ -8,9 +8,9 @@
 
 ## 设置
 
-首先，在 platform.sh 上创建一个新项目，并将其链接到您希望自动部署的代码库。
+首先，在 platform.sh 上创建一个新项目，并将其链接到你想要自动部署的仓库。
 
-然后在代码库中创建 `.platform.app.yaml` 文件：
+然后在仓库中创建 `.platform.app.yaml` 文件：
 
 ```yaml [.platform.app.yaml]
 name: nitro-app

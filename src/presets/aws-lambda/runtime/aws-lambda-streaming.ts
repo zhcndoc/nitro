@@ -1,12 +1,12 @@
 import type { Readable } from "node:stream";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import "#nitro-internal-pollyfills";
-import { useNitroApp } from "nitropack/runtime";
+import { useNitroApp } from "nitro/runtime";
 import {
   normalizeCookieHeader,
   normalizeLambdaIncomingHeaders,
   normalizeLambdaOutgoingHeaders,
-} from "nitropack/runtime/internal";
+} from "nitro/runtime/internal";
 import { withQuery } from "ufo";
 import type { StreamingResponse } from "@netlify/functions";
 

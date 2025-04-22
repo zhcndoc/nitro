@@ -12,7 +12,7 @@
 
 ## 部署
 
-1. 这是一个示例 GitLab Pages 工作流，用于将您的网站部署到 GitLab Pages：
+1. 这是一个示例 GitLab Pages 工作流，将您的网站部署到 GitLab Pages：
 
 ```yaml [.gitlab-ci.yml]
 image: node:lts
