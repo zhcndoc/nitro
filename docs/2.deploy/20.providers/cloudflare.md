@@ -1,82 +1,79 @@
 # Cloudflare
 
-> 将 Nitro 应用部署到 Cloudflare Workers 和 Pages。
+> 部署 Nitro 应用到 Cloudflare。
 
-## Cloudflare Worker
+## Cloudflare Workers
 
 **预设:** `cloudflare_module`
 
 :read-more{title="Cloudflare Workers" to="https://developers.cloudflare.com/workers/"}
 
 ::note
-此预设使用 [模块工作器语法](https://developers.cloudflare.com/workers/learning/migrating-to-module-workers/) 进行部署。
+与此提供者的集成可以通过 [零配置](/deploy#zero-config-providers) 实现，支持 [workers builds (beta)](https://developers.cloudflare.com/workers/ci-cd/builds/)。
 ::
 
-::note
-此预设默认享受 [静态资源](https://developers.cloudflare.com/workers/static-assets/) 的好处。
+::important
+要将 Workers 与静态资产一起使用，您需要设置 Nitro 兼容日期为 `2024-09-19` 或更高。
 ::
 
-## Cloudflare Pages
+以下是将 Nitro 应用部署到 Cloudflare Workers 的示例 `nitro.config.ts` 文件。
 
-**预设:** `cloudflare_pages`
+::code-group
 
-:read-more{title="Cloudflare Pages" to="https://pages.cloudflare.com/"}
+```ts [nitro.config.ts]
+export default defineNitroConfig({
+    compatibilityDate: "2024-09-19",
+    preset: "cloudflare_module",
+    cloudflare: {
+      deployConfig: true,
+      nodeCompat: true
+    }
+})
+```
 
-::note
-可以通过 [零配置](/deploy#zero-config-providers) 集成此提供方。
+```ts [nuxt.config.ts]
+export default defineNuxtConfig({
+    compatibilityDate: "2024-09-19",
+    nitro: {
+      preset: "cloudflare_module",
+      cloudflare: {
+        deployConfig: true,
+        nodeCompat: true
+      }
+    }
+})
+```
 ::
 
-Nitro 自动生成一个 `_routes.json` 文件，该文件控制从文件提供的路由和从 Worker 脚本提供的路由。自动生成的路由文件可以通过配置选项 `cloudflare.pages.routes` 被覆盖 ([了解更多](https://developers.cloudflare.com/pages/platform/functions/routing/#functions-invocation-routes))。
+通过设置 `deployConfig: true`，Nitro 将自动为您生成一个正确配置的 `wrangler.json`。
+如果您需要添加 [Cloudflare Workers 配置](https://developers.cloudflare.com/workers/wrangler/configuration/)，例如 [bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/)，您可以：
 
-### 使用预设构建您的应用程序
+- 在您的 Nitro 配置中设置 `cloudflare: { wrangler : {} }`。这与 `wrangler.json` 的类型相同。
+- 提供您自己的 `wrangler.json`。Nitro 将与适当的设置合并您的配置，包括指向构建输出。
 
-预设仅适用于应用程序构建过程。
+### 本地预览
 
-如果您使用 [Cloudflare Pages GitHub/GitLab 集成](https://developers.cloudflare.com/pages/get-started/#connect-your-git-provider-to-pages)，且不需要在本地预览您的应用程序，则 Nitro 不需要任何类型的配置。当您推送到您的代码库时，Cloudflare Pages CI/CD 过程将自动构建您的项目，Nitro 将检测正确的环境并相应地构建您的应用程序。
+您可以使用 [Wrangler](https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler) 在本地预览您的应用：
 
-如果您希望在本地预览您的应用程序和/或手动部署它，在构建应用程序时需要让 Nitro 知道目标环境是 Cloudflare Pages，您可以通过两种方式实现：
+:pm-run{script="build"}
 
-- 在运行构建过程时，将 `NITRO_PRESET` 或 `SERVER_PRESET` 环境变量设置为 `cloudflare_pages`，如下所示：
+:pm-x{command="wrangler dev"}
 
-    ```bash
-    NITRO_PRESET=cloudflare_pages npm run build
-    ```
+### 手动部署
 
-- 或者通过更新您的 Nitro [预设配置](/config#preset):
+构建应用程序后，您可以使用 Wrangler 手动部署它。
 
-    ```json5
-    "preset": "cloudflare_pages",
-    ```
-
-    然后运行标准的构建命令：
-
-    :pm-run{script="build"}
-
-### Wrangler
-
-要在本地预览您的应用程序或手动部署它，您需要使用 [wrangler](https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler) 命令行工具，只需将其安装为 node 依赖项：
-
-:pm-install{name="wrangler"}
-
-### 本地预览您的应用
-
-构建应用程序后，您可以通过运行以下命令使用 wrangler 在本地预览它：
-
-:pm-x{command="wrangler pages dev dist"}
-
-### 使用 wrangler 从本地机器部署
-
-构建应用程序后，您可以使用 wrangler 手动部署它，首先确保您已登录 Cloudflare 账户：
+首先确保您已登录到 Cloudflare 账户：
 
 :pm-x{command="wrangler login"}
 
-然后您可以部署该应用程序：
+然后您可以用以下命令部署应用程序：
 
-:pm-x{command="wrangler pages deploy dist"}
+:pm-x{command="wrangler deploy"}
 
-## 运行时钩子
+### 运行时钩子
 
-您可以使用 [运行时钩子](/guide/plugins#nitro-runtime-hooks) 来扩展 [工作器处理程序](https://developers.cloudflare.com/workers/runtime-apis/handlers/)。
+您可以使用以下 [运行时钩子](/guide/plugins#nitro-runtime-hooks) 来扩展 [Worker 处理程序](https://developers.cloudflare.com/workers/runtime-apis/handlers/)。
 
 :read-more{to="/guide/plugins#nitro-runtime-hooks"}
 
@@ -86,52 +83,71 @@ Nitro 自动生成一个 `_routes.json` 文件，该文件控制从文件提供�
 - [`cloudflare:tail`](https://developers.cloudflare.com/workers/runtime-apis/handlers/tail/)
 - `cloudflare:trace`
 
-### 本地预览您的应用
 
-您可以使用 [wrangler](https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler) 来本地预览您的应用：
+## Cloudflare Pages
 
-```bash
-NITRO_PRESET=cloudflare npm run build
+**预设:** `cloudflare_pages`
 
-# 如果您在项目根目录添加了 'wrangler.toml' 文件，如上所示：
-npx wrangler dev
+:read-more{title="Cloudflare Pages" to="https://pages.cloudflare.com/"}
 
-# 如果您没有 'wrangler.toml'，则直接使用：
-npx wrangler dev .output/server/index.mjs --site .output/public
+::note
+与此提供者的集成可以通过 [零配置](/deploy#zero-config-providers) 实现。
+::
+
+::warning
+Cloudflare [Workers Module](#cloudflare-workers) 是推荐用于部署的新预设。如果您只需特定功能，请考虑使用 Pages。
+::
+
+以下是将 Nitro 应用部署到 Cloudflare Pages 的示例 `nitro.config.ts` 文件。
+
+::code-group
+
+```ts [nitro.config.ts]
+export default defineNitroConfig({
+    preset: "cloudflare_pages",
+    cloudflare: {
+      deployConfig: true,
+      nodeCompat:true
+    }
+})
 ```
 
-### 使用 wrangler 从本地机器部署
-
-安装 [wrangler](https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler) 并登录到您的 Cloudflare 账户：
-
-```bash
-npm i wrangler
-wrangler login
+```ts [nuxt.config.ts]
+export default defineNuxtConfig({
+    nitro: {
+      preset: "cloudflare_pages",
+      cloudflare: {
+        deployConfig: true,
+        nodeCompat:true
+      }
+    }
+})
 ```
+::
 
-使用 `cloudflare_module` 预设生成您的应用：
+Nitro 将自动生成一个 `_routes.json` 文件，该文件控制来自文件的路由和来自 Worker 脚本的路由。通过配置选项 `cloudflare.pages.routes` 可以覆盖自动生成的路由文件 ([了解更多](https://developers.cloudflare.com/pages/platform/functions/routing/#functions-invocation-routes))。
 
-```bash
-NITRO_PRESET=cloudflare_module npm run build
-```
+### 本地预览
 
-然后您可以在本地预览它：
+您可以使用 [Wrangler](https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler) 在本地预览您的应用：
 
-```bash
-# 如果您有一个 'wrangler.toml' 文件，如上所示：
-npx wrangler dev
+:pm-run{script="build"}
 
-# 如果您没有 'wrangler.toml'：
-npx wrangler dev .output/server/index.mjs --site .output/public
-```
+:pm-x{command="wrangler pages dev"}
 
-并发布：
+### 手动部署
 
-:pm-x{command="wrangler deploy"}
+构建应用程序后，您可以使用 Wrangler 手动部署它，首先确保您已登录到 Cloudflare 账户：
+
+:pm-x{command="wrangler login"}
+
+然后您可以用以下命令部署应用程序：
+
+:pm-x{command="wrangler pages deploy"}
 
 ## 使用 GitHub Actions 在 CI/CD 中部署
 
-无论您使用 Cloudflare Pages 还是 Cloudflare Workers，您都可以使用 [Wrangler GitHub actions](https://github.com/marketplace/actions/deploy-to-cloudflare-workers-with-wrangler) 来部署您的应用程序。
+无论您是使用 Cloudflare Pages 还是 Cloudflare Workers，您都可以使用 [Wrangler GitHub actions](https://github.com/marketplace/actions/deploy-to-cloudflare-workers-with-wrangler) 来部署您的应用。
 
 ::note
 **注意：** 请记得 [指示 Nitro 使用正确的预设](/deploy#changing-the-deployment-preset)（请注意，这在所有预设中都是必要的，包括 `cloudflare_pages`）。
@@ -184,14 +200,14 @@ SECRET="top-secret"
 
 ### 为生产环境指定变量
 
-对于生产环境，使用 Cloudflare 控制面板或 [`wrangler secret`](https://developers.cloudflare.com/workers/wrangler/commands/#secret) 命令设置环境变量和秘密。
+对于生产环境，请使用 Cloudflare 控制台或 [`wrangler secret`](https://developers.cloudflare.com/workers/wrangler/commands/#secret) 命令设置环境变量和机密。
 
-### 使用 `wrangler.toml` 指定变量
+### 使用 `wrangler.toml`/`wrangler.json` 指定变量
 
-您可以指定一个自定义的 `wrangler.toml` 文件并在其中定义变量。
+您可以指定自定义的 `wrangler.toml`/`wrangler.json` 文件，并在其中定义变量。
 
 ::warning
-请注意，这不推荐用于敏感数据。
+请注意，这不推荐用于敏感数据，例如机密。
 ::
 
 **示例：**
@@ -208,7 +224,7 @@ NITRO_HELLO_THERE="captain"
 SECRET="top-secret"
 ```
 
-## 直接访问 Cloudflare 绑定
+## 直接访问 Cloudflare bindings
 
 绑定允许您与 Cloudflare 平台上的资源交互，这些资源的示例包括键值数据存储 ([KVs](https://developers.cloudflare.com/kv/)) 和无服务器 SQL 数据库 ([D1s](https://developers.cloudflare.com/d1/))。
 
@@ -233,14 +249,14 @@ defineEventHandler(async (event) => {
 })
 ```
 
-### 在本地环境中访问绑定
-
-为了在本地开发模式中访问绑定，无论选择的预设是什么，建议使用一个 `wrangler.toml` 文件（以及一个 `.dev.vars` 的文件）结合 [`nitro-cloudflare-dev` 模块](https://github.com/nitrojs/nitro-cloudflare-dev)，如下所示。
+### 在本地开发中访问绑定
 
 > [!NOTE]
 > `nitro-cloudflare-dev` 模块是实验性的。Nitro 团队正在寻找更本地化的集成，这可能在不久的将来使该模块不再需要。
 
-为了在开发模式中访问绑定，我们首先在 `wrangler.toml` 文件中定义绑定，例如，您将如何定义一个变量和一个 KV 命名空间：
+为了在开发模式中访问绑定，我们首先定义绑定。您可以在 `wrangler.toml`/`wrangler.json` 文件中完成此操作，或在 Nitro 配置中的 `cloudflare.wrangler` 下直接完成（接受与 `wrangler.json` 相同的类型）。
+
+例如，在 `wrangler.toml` 中定义变量和 KV 命名空间：
 
 ```ini [wrangler.toml]
 [vars]
@@ -251,10 +267,32 @@ binding = "MY_KV"
 id = "xxx"
 ```
 
+或在您的 Nitro 配置中：
+
+```js [nitro.config.js]
+import nitroCloudflareBindings from "nitro-cloudflare-dev";
+
+export default defineNitroConfig({
+    cloudflare: {
+      wrangler: {
+        vars: {
+          MY_VARIABLE: "my-value"
+        },
+        kv_namespaces: [
+          {
+            binding: "MY_KV",
+            id: "xxx"
+          }
+        ]
+      }
+    }
+});
+```
+
 > [!NOTE]
 > 仅默认环境中的绑定被识别。
 
-接下来，我们安装 `nitro-cloudflare-dev` 模块以及所需的 `wrangler` 包（如果尚未安装）：
+接下来，我们安装 `nitro-cloudflare-dev` 模块和所需的 `wrangler` 包（如果尚未安装）：
 
 :pm-install{name="-D nitro-cloudflare-dev wrangler"}
 

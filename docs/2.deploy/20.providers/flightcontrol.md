@@ -7,7 +7,7 @@
 :read-more{title="flightcontrol.dev" to="https://flightcontrol.dev?ref=nitro"}
 
 ::note
-Flightcontrol 对 [Nuxt](https://nuxt.com/) 项目提供零配置支持。
+Flightcontrol 对 [Nuxt](https://nuxt.zhcndoc.com/) 项目提供零配置支持。
 ::
 
 ## 设置你的 Flightcontrol 账户
