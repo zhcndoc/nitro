@@ -1,0 +1,1 @@
+[{"_path":"/guide/fetch","title":"获取数据","description":"Nitro 提供了一个内置的 fetch API，可以用于从服务器端点或其他来源获取数据。它基于 unjs/ofetch 构建。"},{"_path":"/guide/plugins","title":"插件","description":"使用插件来扩展 Nitro 的运行时行为。"}]

@@ -1,0 +1,1 @@
+[{"_path":"/deploy/providers/cloudflare","title":"Cloudflare","description":"部署 Nitro 应用到 Cloudflare。"},{"_path":"/deploy/providers/digitalocean","title":"DigitalOcean","description":"将 Nitro 应用部署到 DigitalOcean。"}]

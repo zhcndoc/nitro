@@ -1,0 +1,1 @@
+[{"_path":"/deploy/runtimes/deno","title":"Deno","description":"使用 Deno 运行 Nitro 应用。"},{"_path":"/deploy/providers/aws","title":"AWS Lambda","description":"将 Nitro 应用部署到 AWS Lambda。"}]
