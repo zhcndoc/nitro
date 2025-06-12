@@ -2,17 +2,11 @@ import type { IncomingMessage, OutgoingMessage } from "node:http";
 import type { Duplex } from "node:stream";
 import type { GetPortInput } from "get-port-please";
 import type { FSWatcher } from "chokidar";
-import type { App } from "h3";
 import type { Listener, ListenOptions } from "listhen";
 import { NodeDevWorker, type DevWorker, type WorkerAddress } from "./worker";
 import type { Nitro, NitroBuildInfo, NitroDevServer } from "nitro/types";
-import {
-  createApp,
-  createError,
-  eventHandler,
-  fromNodeMiddleware,
-  toNodeListener,
-} from "h3";
+import { H3, HTTPError, defineHandler, fromNodeHandler } from "h3";
+import { toNodeHandler } from "srvx/node";
 import {
   default as devErrorHandler,
   defaultHandler as devErrorHandlerInternal,
@@ -53,7 +47,7 @@ let workerIdCtr = 0;
 class DevServer {
   nitro: Nitro;
   workerDir: string;
-  app: App;
+  app: H3;
   listeners: Listener[] = [];
   reloadPromise?: Promise<void>;
   watcher?: FSWatcher;
@@ -106,7 +100,10 @@ class DevServer {
   }
 
   async listen(port: GetPortInput, opts?: Partial<ListenOptions>) {
-    const listener = await listhen(toNodeListener(this.app), { port, ...opts });
+    const listener = await listhen(toNodeHandler(this.app.fetch), {
+      port,
+      ...opts,
+    });
     this.listeners.push(listener);
     listener.server.on("upgrade", (req, sock, head) =>
       this.handleUpgrade(req, sock, head)
@@ -193,7 +190,8 @@ class DevServer {
 
   createApp() {
     // Init h3 app
-    const app = createApp({
+    const app = new H3({
+      debug: true,
       onError: async (error, event) => {
         const errorHandler =
           this.nitro.options.devErrorHandler || devErrorHandler;
@@ -207,28 +205,29 @@ class DevServer {
     // Dev-only handlers
     for (const handler of this.nitro.options.devHandlers) {
       app.use(handler.route || "/", handler.handler);
+      if (handler.route) {
+        app.all(handler.route, handler.handler);
+      } else {
+        app.use(handler.handler); // global middleware
+      }
     }
 
     // Debugging endpoint to view vfs
-    app.use("/_vfs", createVFSHandler(this.nitro));
+    app.get("/_vfs", createVFSHandler(this.nitro));
 
     // Serve asset dirs
     for (const asset of this.nitro.options.publicAssets) {
-      const url = joinURL(
+      const assetRoute = joinURL(
         this.nitro.options.runtimeConfig.app.baseURL,
-        asset.baseURL || "/"
+        asset.baseURL || "/",
+        "**"
       );
+      // TODO: serve placeholder as fallback
       app.use(
-        url,
-        fromNodeMiddleware(
-          serveStatic(asset.dir, {
-            dotfiles: "allow",
-          })
-        )
+        assetRoute,
+        // @ts-expect-error (HTTP2 types)
+        fromNodeHandler(serveStatic(asset.dir, { dotfiles: "allow" }))
       );
-      if (!asset.fallthrough) {
-        app.use(url, fromNodeMiddleware(servePlaceholder()));
-      }
     }
 
     // User defined dev proxy
@@ -239,15 +238,13 @@ class DevServer {
         opts = { target: opts };
       }
       const proxy = createHTTPProxy(opts);
-      app.use(
-        route,
-        eventHandler((event) => proxy.handleEvent(event))
-      );
+      app.all(route, proxy.handleEvent);
     }
 
     // Main handler
-    app.use(
-      eventHandler(async (event) => {
+    app.all(
+      "/**",
+      defineHandler(async (event) => {
         const worker = await this.getWorker();
         if (!worker) {
           return this.#generateError();
@@ -266,9 +263,9 @@ class DevServer {
   ) {
     const worker = await this.getWorker();
     if (!worker) {
-      throw createError({
-        statusCode: 503,
-        message: "No worker available.",
+      throw new HTTPError({
+        status: 503,
+        statusText: "No worker available.",
       });
     }
     return worker.handleUpgrade(req, socket, head);
@@ -295,7 +292,7 @@ class DevServer {
       } catch {
         // ignore
       }
-      return createError(error);
+      return new HTTPError(error);
     }
 
     return new Response(

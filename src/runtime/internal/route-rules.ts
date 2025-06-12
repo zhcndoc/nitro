@@ -1,10 +1,10 @@
 import defu from "defu";
 import {
+  type EventHandler,
   type H3Event,
-  eventHandler,
+  defineHandler,
   proxyRequest,
-  sendRedirect,
-  setHeaders,
+  redirect,
 } from "h3";
 import type { NitroRouteRules } from "nitro/types";
 import { createRouter as createRadixRouter, toRouteMatcher } from "radix3";
@@ -16,48 +16,48 @@ const _routeRulesMatcher = toRouteMatcher(
   createRadixRouter({ routes: config.nitro.routeRules })
 );
 
-export function createRouteRulesHandler(ctx: {
-  localFetch: typeof globalThis.fetch;
-}) {
-  return eventHandler((event) => {
+export function createRouteRulesHandler(
+  hybridFetch: typeof globalThis.fetch
+): EventHandler {
+  return defineHandler((event) => {
     // Match route options against path
     const routeRules = getRouteRules(event);
     // Apply headers options
     if (routeRules.headers) {
-      setHeaders(event, routeRules.headers);
+      for (const [key, value] of Object.entries(routeRules.headers)) {
+        event.res.headers.set(key, value);
+      }
     }
     // Apply redirect options
     if (routeRules.redirect) {
       let target = routeRules.redirect.to;
       if (target.endsWith("/**")) {
-        let targetPath = event.path;
+        let targetPath = event.url.pathname + event.url.search;
         const strpBase = (routeRules.redirect as any)._redirectStripBase;
         if (strpBase) {
           targetPath = withoutBase(targetPath, strpBase);
         }
         target = joinURL(target.slice(0, -3), targetPath);
-      } else if (event.path.includes("?")) {
-        const query = getQuery(event.path);
-        target = withQuery(target, query);
+      } else if (event.url.search) {
+        target = withQuery(target, Object.fromEntries(event.url.searchParams));
       }
-      return sendRedirect(event, target, routeRules.redirect.statusCode);
+      return redirect(event, target, routeRules.redirect.status);
     }
     // Apply proxy options
     if (routeRules.proxy) {
       let target = routeRules.proxy.to;
       if (target.endsWith("/**")) {
-        let targetPath = event.path;
+        let targetPath = event.url.pathname + event.url.search;
         const strpBase = (routeRules.proxy as any)._proxyStripBase;
         if (strpBase) {
           targetPath = withoutBase(targetPath, strpBase);
         }
         target = joinURL(target.slice(0, -3), targetPath);
-      } else if (event.path.includes("?")) {
-        const query = getQuery(event.path);
-        target = withQuery(target, query);
+      } else if (event.url.search) {
+        target = withQuery(target, Object.fromEntries(event.url.searchParams));
       }
       return proxyRequest(event, target, {
-        fetch: ctx.localFetch,
+        fetch: hybridFetch,
         ...routeRules.proxy,
       });
     }
@@ -68,7 +68,7 @@ export function getRouteRules(event: H3Event): NitroRouteRules {
   event.context._nitro = event.context._nitro || {};
   if (!event.context._nitro.routeRules) {
     event.context._nitro.routeRules = getRouteRulesForPath(
-      withoutBase(event.path.split("?")[0], useRuntimeConfig().app.baseURL)
+      withoutBase(event.url.pathname, useRuntimeConfig().app.baseURL)
     );
   }
   return event.context._nitro.routeRules;

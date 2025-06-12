@@ -95,7 +95,7 @@ export interface NitroOptions extends PresetOptions {
      */
     typescriptBundlerResolution?: boolean;
     /**
-     * Enable native async context support for useEvent()
+     * Enable native async context support for useRequest()
      */
     asyncContext?: boolean;
     /**

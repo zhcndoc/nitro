@@ -1,4 +1,4 @@
-import type { EventHandler, H3Error, H3Event, RouterMethod } from "h3";
+import type { EventHandler, HTTPError, H3Event, HTTPMethod } from "h3";
 import type { PresetName } from "nitro/presets";
 import type {
   OperationObject,
@@ -43,7 +43,7 @@ export interface NitroEventHandler {
   /**
    * Router method matcher
    */
-  method?: RouterMethod;
+  method?: HTTPMethod;
 
   /**
    * Meta
@@ -72,11 +72,11 @@ export interface NitroDevEventHandler {
 type MaybePromise<T> = T | Promise<T>;
 
 export type NitroErrorHandler = (
-  error: H3Error,
+  error: HTTPError,
   event: H3Event,
   _: {
     defaultHandler: (
-      error: H3Error,
+      error: HTTPError,
       event: H3Event,
       opts?: { silent?: boolean; json?: boolean }
     ) => MaybePromise<{
@@ -86,4 +86,4 @@ export type NitroErrorHandler = (
       body: string | Record<string, any>;
     }>;
   }
-) => void | Promise<void>;
+) => unknown; /* TODO: Response */

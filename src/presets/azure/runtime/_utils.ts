@@ -1,20 +1,13 @@
 import type { Cookie } from "@azure/functions";
 import { parse } from "cookie-es";
-import { splitCookiesString } from "h3";
 
-export function getAzureParsedCookiesFromHeaders(
-  headers: Record<string, number | string | string[] | undefined>
-): Cookie[] {
-  const setCookieHeader = headers["set-cookie"];
-  if (
-    !setCookieHeader ||
-    typeof setCookieHeader === "number" ||
-    setCookieHeader.length === 0
-  ) {
+export function getAzureParsedCookiesFromHeaders(headers: Headers): Cookie[] {
+  const setCookieHeader = headers.getSetCookie();
+  if (setCookieHeader.length === 0) {
     return [];
   }
   const azureCookies: Cookie[] = [];
-  for (const setCookieStr of splitCookiesString(setCookieHeader)) {
+  for (const setCookieStr of setCookieHeader) {
     const setCookie = Object.entries(parse(setCookieStr));
     if (setCookie.length === 0) {
       continue;

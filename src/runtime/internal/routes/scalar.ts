@@ -1,9 +1,9 @@
 import type { ApiReferenceConfiguration } from "@scalar/api-reference";
-import { eventHandler } from "h3";
+import { defineHandler, type EventHandler } from "h3";
 import { useRuntimeConfig } from "../config";
 
 // Served as /_scalar
-export default eventHandler((event) => {
+export default defineHandler((event) => {
   const runtimeConfig = useRuntimeConfig(event);
   const title = runtimeConfig.nitro.openAPI?.meta?.title || "API Reference";
   const description = runtimeConfig.nitro.openAPI?.meta?.description || "";
@@ -22,6 +22,7 @@ export default eventHandler((event) => {
 
   // The default page title
 
+  event.res.headers.set("Content-Type", "text/html");
   return /* html */ `<!doctype html>
     <html lang="en">
       <head>
@@ -43,7 +44,7 @@ export default eventHandler((event) => {
         <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
       </body>
     </html>`;
-});
+}) as EventHandler;
 
 const customTheme = /* css */ `/* basic theme */
   .light-mode,

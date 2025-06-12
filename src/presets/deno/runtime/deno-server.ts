@@ -53,7 +53,8 @@ Deno.serve(serveOptions, handler);
 
 // Websocket support
 const ws = import.meta._websocket
-  ? wsAdapter(nitroApp.h3App.websocket)
+  ? // @ts-expect-error
+    wsAdapter(nitroApp.h3App.websocket)
   : undefined;
 
 async function handler(request: Request, info: any) {
@@ -64,22 +65,8 @@ async function handler(request: Request, info: any) {
   ) {
     return ws!.handleUpgrade(request, info);
   }
-
-  const url = new URL(request.url);
-
-  // https://deno.land/api?s=Body
-  let body;
-  if (request.body) {
-    body = await request.arrayBuffer();
-  }
-
-  return nitroApp.localFetch(url.pathname + url.search, {
-    host: url.hostname,
-    protocol: url.protocol,
-    headers: request.headers,
-    method: request.method,
-    redirect: request.redirect,
-    body,
+  return nitroApp.fetch(request, undefined, {
+    _platform: { deno: { request, info } },
   });
 }
 

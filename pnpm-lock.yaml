@@ -6,6 +6,7 @@ settings:
 
 overrides:
   nitro: link:.
+  undici: ^7.7.0
 
 importers:
 
@@ -64,7 +65,7 @@ importers:
         version: 9.0.0
       crossws:
         specifier: ^0.4.1
-        version: 0.4.1
+        version: 0.4.1(srvx@0.8.0)
       db0:
         specifier: ^0.3.2
         version: 0.3.2
@@ -99,8 +100,8 @@ importers:
         specifier: ^7.0.0
         version: 7.0.0
       h3:
-        specifier: ^1.15.3
-        version: 1.15.3
+        specifier: npm:h3-nightly@2.0.0-20250612-104639-febb832
+        version: h3-nightly@2.0.0-20250612-104639-febb832(crossws@0.4.1(srvx@0.8.0))
       hookable:
         specifier: ^5.5.3
         version: 5.5.3
@@ -134,9 +135,6 @@ importers:
       mlly:
         specifier: ^1.7.4
         version: 1.7.4
-      node-mock-http:
-        specifier: ^1.0.0
-        version: 1.0.0
       ofetch:
         specifier: ^1.4.1
         version: 1.4.1
@@ -179,6 +177,9 @@ importers:
       source-map:
         specifier: ^0.7.4
         version: 0.7.4
+      srvx:
+        specifier: ^0.8.0
+        version: 0.8.0
       std-env:
         specifier: ^3.9.0
         version: 3.9.0
@@ -316,7 +317,7 @@ importers:
         specifier: ^3.5.0
         version: 3.5.0(typescript@5.8.3)(vue@3.5.16(typescript@5.8.3))
       undici:
-        specifier: ^7.10.0
+        specifier: ^7.7.0
         version: 7.10.0
       vitest:
         specifier: ^3.2.3
@@ -864,10 +865,6 @@ packages:
   '@eslint/plugin-kit@0.3.2':
     resolution: {integrity: sha512-4SaFZCNfJqvk/kenHpI8xvN42DMaoycy4PzKc5otHxRswww1kAt82OlBuwRVLofCACCTZEcla2Ydxv8scMXaTg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@fastify/busboy@2.1.1':
-    resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
-    engines: {node: '>=14'}
 
   '@fastify/busboy@3.1.1':
     resolution: {integrity: sha512-5DGmA8FTdB2XbDeEwc/5ZXBl6UbBAyBOOLlPuBnZ/N1SwdH9Ii+cOX3tBROlDgcTXxjOYnLMVoKk9+FXAw0CJw==}
@@ -3376,6 +3373,9 @@ packages:
     resolution: {integrity: sha512-7yAQpD2UMJzLi1Dqv7qFYnPbaPx7ZfFK6PiIxQ4PfkGPyNyl2Ugx+a/umUonmKqjhM4DnfbMvdX6otXq83soQQ==}
     engines: {node: ^12.20 || >= 14.13}
 
+  fetchdts@0.1.4:
+    resolution: {integrity: sha512-ickQgaQs/RbVxaJauBqmpiNSk9wLoxWRsSjDFP6JpiO3MCguqaSRltwL6HF9V9hJr2Prnqq0ic9b2bTBK8LqRA==}
+
   figures@6.1.0:
     resolution: {integrity: sha512-d+l3qxjSesT4V7v2fh+QnmFnUWv9lSpjarhShNTgBOfA0ttejbQUAlHLitbjkoRiDulW0OPoQPYIGhIC8ohejg==}
     engines: {node: '>=18'}
@@ -3616,6 +3616,15 @@ packages:
   gzip-size@7.0.0:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  h3-nightly@2.0.0-20250612-104639-febb832:
+    resolution: {integrity: sha512-0Jzc7znECaGli/an+6v8arT7ky9T0f3+Tkr5bDT1TuzTaqLR2wcGai/yOaZT5q/hb311bvhXLPQSeXKSklCaHQ==}
+    engines: {node: '>=20.11.1'}
+    peerDependencies:
+      crossws: ^0.4.1
+    peerDependenciesMeta:
+      crossws:
+        optional: true
 
   h3@1.15.3:
     resolution: {integrity: sha512-z6GknHqyX0h9aQaTx22VZDf6QyZn+0Nh+Ym8O/u0SGSkyF5cuTJYKlc8MkzW3Nzf9LE1ivcpmYC3FUGpywhuUQ==}
@@ -5438,6 +5447,9 @@ packages:
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
 
+  rou3@0.6.3:
+    resolution: {integrity: sha512-1HSG1ENTj7Kkm5muMnXuzzfdDOf7CFnbSYFA+H3Fp/rB9lOCxCPgy1jlZxTKyFoC5jJay8Mmc+VbPLYRjzYLrA==}
+
   run-applescript@7.0.0:
     resolution: {integrity: sha512-9by4Ij99JUr/MCFBUkDKLWK3G9HVXmabKz9U5MlIAIuvuzkiOicRYs8XJLxX+xahD+mLiiCYDqF9dKAgtzKP1A==}
     engines: {node: '>=18'}
@@ -5613,6 +5625,10 @@ packages:
 
   spdx-license-ids@3.0.21:
     resolution: {integrity: sha512-Bvg/8F5XephndSK3JffaRqdT+gyhfqIPwDHpX80tJrF8QQRYMo8sNMeaZ2Dp5+jhwKnUmIOyFFQfHRkjJm5nXg==}
+
+  srvx@0.8.0:
+    resolution: {integrity: sha512-pZNni9zfG1Leld6CgHMy5WXCWVgqFpoFtNX4jk9jhHSxAWCNTDonjyFP/RHAjvRbJw1FR6cQFj87Vn6nA/EhYw==}
+    engines: {node: '>=20.16.0'}
 
   stack-trace@0.0.10:
     resolution: {integrity: sha512-KGzahc7puUKkzyMt+IqAep+TVNbKP+k2Lmwhub39m1AsTSkaDutx56aDCo+HLDzf/D26BIHTJWNiTG1KAJiQCg==}
@@ -5928,10 +5944,6 @@ packages:
 
   undici-types@7.8.0:
     resolution: {integrity: sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw==}
-
-  undici@5.29.0:
-    resolution: {integrity: sha512-raqeBD6NQK4SkWhQzeYKd1KmIG6dllBOTt55Rmkt4HtI9mwdWtJljnrXjAFUBLTSN67HWrOIZ3EPF4kjUw80Bg==}
-    engines: {node: '>=14.0'}
 
   undici@7.10.0:
     resolution: {integrity: sha512-u5otvFBOBZvmdjWLVW+5DAc9Nkq8f24g0O9oY7qw2JVIF1VocIFoyz9JFkuVOS2j41AufeO0xnlweJ2RLT8nGw==}
@@ -6986,8 +6998,6 @@ snapshots:
     dependencies:
       '@eslint/core': 0.15.0
       levn: 0.4.1
-
-  '@fastify/busboy@2.1.1': {}
 
   '@fastify/busboy@3.1.1': {}
 
@@ -9190,7 +9200,9 @@ snapshots:
     dependencies:
       uncrypto: 0.1.3
 
-  crossws@0.4.1: {}
+  crossws@0.4.1(srvx@0.8.0):
+    optionalDependencies:
+      srvx: 0.8.0
 
   crypt@0.0.2: {}
 
@@ -9846,6 +9858,8 @@ snapshots:
       node-domexception: 1.0.0
       web-streams-polyfill: 3.3.3
 
+  fetchdts@0.1.4: {}
+
   figures@6.1.0:
     dependencies:
       is-unicode-supported: 2.1.0
@@ -10084,6 +10098,15 @@ snapshots:
   gzip-size@7.0.0:
     dependencies:
       duplexer: 0.1.2
+
+  h3-nightly@2.0.0-20250612-104639-febb832(crossws@0.4.1(srvx@0.8.0)):
+    dependencies:
+      cookie-es: 2.0.0
+      fetchdts: 0.1.4
+      rou3: 0.6.3
+      srvx: 0.8.0
+    optionalDependencies:
+      crossws: 0.4.1(srvx@0.8.0)
 
   h3@1.15.3:
     dependencies:
@@ -11156,7 +11179,7 @@ snapshots:
       glob-to-regexp: 0.4.1
       sharp: 0.33.5
       stoppable: 1.1.0
-      undici: 5.29.0
+      undici: 7.10.0
       workerd: 1.20250604.0
       ws: 8.18.0
       youch: 3.3.4
@@ -12293,6 +12316,8 @@ snapshots:
       '@rollup/rollup-win32-x64-msvc': 4.43.0
       fsevents: 2.3.3
 
+  rou3@0.6.3: {}
+
   run-applescript@7.0.0: {}
 
   run-parallel@1.2.0:
@@ -12510,6 +12535,10 @@ snapshots:
       spdx-license-ids: 3.0.21
 
   spdx-license-ids@3.0.21: {}
+
+  srvx@0.8.0:
+    dependencies:
+      cookie-es: 2.0.0
 
   stack-trace@0.0.10: {}
 
@@ -12833,10 +12862,6 @@ snapshots:
   undici-types@6.21.0: {}
 
   undici-types@7.8.0: {}
-
-  undici@5.29.0:
-    dependencies:
-      '@fastify/busboy': 2.1.1
 
   undici@7.10.0: {}
 

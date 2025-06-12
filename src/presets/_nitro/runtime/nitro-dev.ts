@@ -9,14 +9,9 @@ import { Server } from "node:http";
 import { join } from "node:path";
 import nodeCrypto from "node:crypto";
 import { parentPort, threadId } from "node:worker_threads";
+import { defineHandler, getRouterParam } from "h3";
 import wsAdapter from "crossws/adapters/node";
-import {
-  defineEventHandler,
-  getQuery,
-  getRouterParam,
-  readBody,
-  toNodeListener,
-} from "h3";
+import { toNodeHandler } from "srvx/node";
 
 // globalThis.crypto support for Node.js 18
 if (!globalThis.crypto) {
@@ -37,7 +32,7 @@ parentPort?.on("message", (msg) => {
 
 const nitroApp = useNitroApp();
 
-const server = new Server(toNodeListener(nitroApp.h3App));
+const server = new Server(toNodeHandler(nitroApp.h3App.fetch));
 let listener: Server | undefined;
 
 listen()
@@ -50,14 +45,15 @@ listen()
 
 // https://crossws.unjs.io/adapters/node
 if (import.meta._websocket) {
+  // @ts-expect-error
   const { handleUpgrade } = wsAdapter(nitroApp.h3App.websocket);
   server.on("upgrade", handleUpgrade);
 }
 
 // Register tasks handlers
-nitroApp.router.get(
+nitroApp.h3App.get(
   "/_nitro/tasks",
-  defineEventHandler(async (event) => {
+  defineHandler(async (event) => {
     const _tasks = await Promise.all(
       Object.entries(tasks).map(async ([name, task]) => {
         const _task = await task.resolve?.();
@@ -70,15 +66,18 @@ nitroApp.router.get(
     };
   })
 );
-nitroApp.router.use(
+
+nitroApp.h3App.use(
   "/_nitro/tasks/:name",
-  defineEventHandler(async (event) => {
+  defineHandler(async (event) => {
     const name = getRouterParam(event, "name") as string;
+    const body = (await event.req.json().catch(() => ({}))) as Record<
+      string,
+      unknown
+    >;
     const payload = {
-      ...getQuery(event),
-      ...(await readBody(event)
-        .then((r) => r?.payload)
-        .catch(() => ({}))),
+      ...Object.fromEntries(event.url.searchParams.entries()),
+      ...body,
     };
     return await runTask(name, { payload });
   })

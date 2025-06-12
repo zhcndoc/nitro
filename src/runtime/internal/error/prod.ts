@@ -1,35 +1,30 @@
-import {
-  type H3Error,
-  type H3Event,
-  getRequestURL,
-  getResponseHeader,
-  send,
-  setResponseHeaders,
-  setResponseStatus,
-} from "h3";
+import { type HTTPError, type H3Event, getRequestURL } from "h3";
 import { defineNitroErrorHandler, type InternalHandlerResponse } from "./utils";
 
 export default defineNitroErrorHandler(
   function defaultNitroErrorHandler(error, event) {
     const res = defaultHandler(error, event);
-    setResponseHeaders(event, res.headers);
-    setResponseStatus(event, res.status, res.statusText);
-    return send(event, JSON.stringify(res.body, null, 2));
+    event.res.status = res.status;
+    event.res.statusText = res.statusText;
+    for (const [key, value] of Object.entries(res.headers)) {
+      event.res.headers.set(key, value);
+    }
+    return JSON.stringify(res.body, null, 2);
   }
 );
 
 export function defaultHandler(
-  error: H3Error,
+  error: HTTPError,
   event: H3Event,
   opts?: { silent?: boolean; json?: boolean }
 ): InternalHandlerResponse {
-  const isSensitive = error.unhandled || error.fatal;
-  const statusCode = error.statusCode || 500;
-  const statusMessage = error.statusMessage || "Server Error";
+  const isSensitive = error.unhandled;
+  const status = error.status || 500;
+  const statusText = error.statusText || "Server Error";
   // prettier-ignore
   const url = getRequestURL(event, { xForwardedHost: true, xForwardedProto: true })
 
-  if (statusCode === 404) {
+  if (status === 404) {
     const baseURL = import.meta.baseURL || "/";
     if (/^\/[^/]/.test(baseURL) && !url.pathname.startsWith(baseURL)) {
       const redirectTo = `${baseURL}${url.pathname.slice(1)}${url.search}`;
@@ -45,8 +40,11 @@ export function defaultHandler(
   // Console output
   if (isSensitive && !opts?.silent) {
     // prettier-ignore
-    const tags = [error.unhandled && "[unhandled]", error.fatal && "[fatal]"].filter(Boolean).join(" ")
-    console.error(`[request error] ${tags} [${event.method}] ${url}\n`, error);
+    const tags = [error.unhandled && "[unhandled]"].filter(Boolean).join(" ")
+    console.error(
+      `[request error] ${tags} [${event.req.method}] ${url}\n`,
+      error
+    );
   }
 
   // Send response
@@ -61,23 +59,24 @@ export function defaultHandler(
     // Disable the execution of any js
     "content-security-policy": "script-src 'none'; frame-ancestors 'none';",
   };
-  setResponseStatus(event, statusCode, statusMessage);
-  if (statusCode === 404 || !getResponseHeader(event, "cache-control")) {
+  event.res.status = status;
+  event.res.statusText = statusText;
+  if (status === 404 || !event.res.headers.has("cache-control")) {
     headers["cache-control"] = "no-cache";
   }
 
   const body = {
     error: true,
     url: url.href,
-    statusCode,
-    statusMessage,
+    status,
+    statusText,
     message: isSensitive ? "Server Error" : error.message,
     data: isSensitive ? undefined : error.data,
   };
 
   return {
-    status: statusCode,
-    statusText: statusMessage,
+    status: status,
+    statusText: statusText,
     headers,
     body,
   };

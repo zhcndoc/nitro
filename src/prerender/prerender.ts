@@ -9,7 +9,6 @@ import type {
   PrerenderRoute,
   PublicAssetDir,
 } from "nitro/types";
-import type { $Fetch } from "ofetch";
 import { join, relative, resolve } from "pathe";
 import { createRouter as createRadixRouter, toRouteMatcher } from "radix3";
 import { joinURL, withBase, withoutBase, withTrailingSlash } from "ufo";
@@ -96,9 +95,12 @@ export async function prerender(nitro: Nitro) {
     nitroRenderer.options.output.serverDir,
     serverFilename
   );
-  const { closePrerenderer, localFetch } = (await import(
+  const { closePrerenderer, appFetch } = (await import(
     pathToFileURL(serverEntrypoint).href
-  )) as { closePrerenderer: () => Promise<void>; localFetch: $Fetch };
+  )) as {
+    closePrerenderer: () => Promise<void>;
+    appFetch: typeof globalThis.fetch;
+  };
 
   // Create route rule matcher
   const _routeRulesMatcher = toRouteMatcher(
@@ -209,14 +211,12 @@ export async function prerender(nitro: Nitro) {
     // Fetch the route
     const encodedRoute = encodeURI(route);
 
-    const res = await localFetch<Response>(
-      withBase(encodedRoute, nitro.options.baseURL),
-      {
-        headers: { "x-nitro-prerender": encodedRoute },
-        retry: nitro.options.prerender.retry,
-        retryDelay: nitro.options.prerender.retryDelay,
-      }
-    );
+    const res = await appFetch(withBase(encodedRoute, nitro.options.baseURL), {
+      headers: [["x-nitro-prerender", encodedRoute]],
+      // TODO
+      // retry: nitro.options.prerender.retry,
+      // retryDelay: nitro.options.prerender.retryDelay,
+    });
     // Data will be removed as soon as written to the disk
     let dataBuff: Buffer | undefined = Buffer.from(await res.arrayBuffer());
 
@@ -247,8 +247,8 @@ export async function prerender(nitro: Nitro) {
     const redirectCodes = [301, 302, 303, 304, 307, 308];
     if (![200, ...redirectCodes].includes(res.status)) {
       _route.error = new Error(`[${res.status}] ${res.statusText}`) as any;
-      _route.error!.statusCode = res.status;
-      _route.error!.statusMessage = res.statusText;
+      _route.error!.status = res.status;
+      _route.error!.statusText = res.statusText;
     }
 
     // Measure actual time taken for generating route

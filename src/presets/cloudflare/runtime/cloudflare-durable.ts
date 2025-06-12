@@ -1,7 +1,7 @@
 import "#nitro-internal-pollyfills";
 import type * as CF from "@cloudflare/workers-types";
 import { DurableObject } from "cloudflare:workers";
-import wsAdapter from "crossws/adapters/cloudflare-durable";
+import wsAdapter from "crossws/adapters/cloudflare";
 import { useNitroApp } from "nitro/runtime";
 import { isPublicAssetURL } from "#nitro-internal-virtual/public-assets";
 import { createHandler, fetchHandler } from "./_module-handler";
@@ -29,7 +29,8 @@ const getDurableStub = (env: Env) => {
 
 const ws = import.meta._websocket
   ? wsAdapter({
-      ...nitroApp.h3App.websocket,
+      // TODO!
+      // ...nitroApp.h3App.websocket,
       instanceName: DURABLE_INSTANCE,
       bindingName: DURABLE_BINDING,
     })

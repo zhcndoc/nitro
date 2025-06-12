@@ -2,7 +2,7 @@ import "#nitro-internal-pollyfills";
 import type * as CF from "@cloudflare/workers-types";
 import type { ExportedHandler } from "@cloudflare/workers-types";
 import { useNitroApp } from "nitro/runtime";
-import { requestHasBody, runCronTasks } from "nitro/runtime/internal";
+import { runCronTasks } from "nitro/runtime/internal";
 
 type MaybePromise<T> = T | Promise<T>;
 
@@ -113,32 +113,20 @@ export async function fetchHandler(
   nitroApp = useNitroApp(),
   ctxExt: any
 ) {
-  let body;
-  if (requestHasBody(request as unknown as Request)) {
-    body = Buffer.from(await request.arrayBuffer());
-  }
-
   // Expose latest env to the global context
   (globalThis as any).__env__ = env;
 
-  return nitroApp.localFetch(url.pathname + url.search, {
-    context: {
-      waitUntil: (promise: Promise<any>) => context.waitUntil(promise),
-      _platform: {
-        cf: (request as any).cf,
-        cloudflare: {
-          request,
-          env,
-          context,
-          url,
-          ...ctxExt,
-        },
+  return nitroApp.fetch(request as unknown as Request, undefined, {
+    waitUntil: (promise: Promise<any>) => context.waitUntil(promise),
+    _platform: {
+      cf: (request as any).cf,
+      cloudflare: {
+        request,
+        env,
+        context,
+        url,
+        ...ctxExt,
       },
     },
-    host: url.hostname,
-    protocol: url.protocol,
-    method: request.method,
-    headers: request.headers as unknown as Headers,
-    body,
   }) as unknown as Promise<Response>;
 }
