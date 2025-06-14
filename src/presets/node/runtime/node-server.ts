@@ -4,7 +4,7 @@ import { Server as HttpsServer } from "node:https";
 import type { AddressInfo } from "node:net";
 import wsAdapter from "crossws/adapters/node";
 import destr from "destr";
-import { toNodeListener } from "h3";
+import { toNodeHandler } from "srvx/node";
 import { useNitroApp, useRuntimeConfig } from "nitro/runtime";
 import {
   setupGracefulShutdown,
@@ -19,8 +19,8 @@ const nitroApp = useNitroApp();
 
 const server =
   cert && key
-    ? new HttpsServer({ key, cert }, toNodeListener(nitroApp.h3App))
-    : new HttpServer(toNodeListener(nitroApp.h3App));
+    ? new HttpsServer({ key, cert }, toNodeHandler(nitroApp.h3App.fetch))
+    : new HttpServer(toNodeHandler(nitroApp.h3App.fetch));
 
 const port = (destr(process.env.NITRO_PORT || process.env.PORT) ||
   3000) as number;
@@ -59,6 +59,7 @@ setupGracefulShutdown(listener, nitroApp);
 // Websocket support
 // https://crossws.unjs.io/adapters/node
 if (import.meta._websocket) {
+  // @ts-expect-error
   const { handleUpgrade } = wsAdapter(nitroApp.h3App.websocket);
   server.on("upgrade", handleUpgrade);
 }

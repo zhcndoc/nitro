@@ -1,7 +1,7 @@
 import { Miniflare } from "miniflare";
 import { resolve } from "pathe";
-import { Response as _Response } from "undici";
 import { describe } from "vitest";
+import { splitSetCookieString } from "cookie-es";
 
 import { setupTest, testNitro } from "../tests";
 
@@ -11,6 +11,7 @@ describe("nitro:preset:cloudflare-module", async () => {
   testNitro(ctx, () => {
     const mf = new Miniflare({
       modules: true,
+      compatibilityDate: "2025-04-01",
       scriptPath: resolve(ctx.outDir, "server/index.mjs"),
       modulesRules: [{ type: "CompiledWasm", include: ["**/*.wasm"] }],
       assets: {
@@ -22,11 +23,7 @@ describe("nitro:preset:cloudflare-module", async () => {
           not_found_handling: "none" /* default */,
         },
       },
-      compatibilityFlags: [
-        "streams_enable_constructors",
-        "nodejs_compat",
-        "no_nodejs_compat_v2",
-      ],
+      compatibilityFlags: ["nodejs_compat", "no_nodejs_compat_v2"],
       bindings: { ...ctx.env },
     });
 
@@ -37,6 +34,7 @@ describe("nitro:preset:cloudflare-module", async () => {
         redirect: "manual",
         body,
       });
+
       return res as unknown as Response;
     };
   });

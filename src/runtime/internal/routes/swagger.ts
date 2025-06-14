@@ -1,10 +1,9 @@
-import type { ReferenceConfiguration } from "@scalar/api-reference";
-import { eventHandler } from "h3";
+import { defineHandler, type EventHandler } from "h3";
 import { useRuntimeConfig } from "../config";
 
 // https://github.com/swagger-api/swagger-ui
 
-export default eventHandler((event) => {
+export default defineHandler((event) => {
   const runtimeConfig = useRuntimeConfig(event);
   const title = runtimeConfig.nitro.openAPI?.meta?.title || "API Reference";
   const description = runtimeConfig.nitro.openAPI?.meta?.description || "";
@@ -12,6 +11,7 @@ export default eventHandler((event) => {
     runtimeConfig.nitro.openAPI?.route || "./_openapi.json";
 
   const CDN_BASE = "https://cdn.jsdelivr.net/npm/swagger-ui-dist@^5";
+  event.res.headers.set("Content-Type", "text/html");
   return /* html */ `<!doctype html>
     <html lang="en">
       <head>
@@ -43,4 +43,4 @@ export default eventHandler((event) => {
         </script>
       </body>
     </html> `;
-});
+}) as EventHandler;
