@@ -1,0 +1,1 @@
+[{"_path":"/deploy/providers/azure","title":"Azure","description":"将 Nitro 应用部署到 Azure 静态 Web 应用或 Functions。"},{"_path":"/deploy/providers/cloudflare","title":"Cloudflare","description":"部署 Nitro 应用到 Cloudflare。"}]

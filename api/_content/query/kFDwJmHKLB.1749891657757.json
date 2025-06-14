@@ -1,0 +1,1 @@
+[{"_path":"/guide/storage","title":"KV 存储","description":"Nitro 提供了一个内置存储层，可以抽象文件系统、数据库或任何其他数据源。"},{"_path":"/guide/cache","title":"缓存","description":"Nitro 提供了一种构建在存储层之上的缓存系统。"}]

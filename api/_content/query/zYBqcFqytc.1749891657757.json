@@ -1,0 +1,1 @@
+[{"_path":"/guide/routing","title":"服务器路由","description":"Nitro 支持文件系统路由，自动将文件映射到 h3 路由。"},{"_path":"/guide/storage","title":"KV 存储","description":"Nitro 提供了一个内置存储层，可以抽象文件系统、数据库或任何其他数据源。"}]

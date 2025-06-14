@@ -1,0 +1,1 @@
+[{"_path":"/deploy/providers/iis","title":"IIS","description":"将 Nitro 应用部署到 IIS。"},{"_path":"/deploy/providers/netlify","title":"Netlify","description":"将 Nitro 应用部署到 Netlify 函数或边缘。"}]
