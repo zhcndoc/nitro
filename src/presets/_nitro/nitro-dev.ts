@@ -4,7 +4,9 @@ const nitroDev = defineNitroPreset(
   {
     entry: "./runtime/nitro-dev",
     output: {
+      dir: "{{ buildDir }}/dev",
       serverDir: "{{ buildDir }}/dev",
+      publicDir: "{{ buildDir }}/dev",
     },
     externals: { trace: false },
     inlineDynamicImports: true, // externals plugin limitation

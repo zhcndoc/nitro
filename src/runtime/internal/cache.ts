@@ -195,6 +195,9 @@ export function defineCachedEventHandler(
 
   const _opts: CacheOptions<ResponseCacheEntry> = {
     ...opts,
+    shouldBypassCache: (event) => {
+      return event.req.method !== "GET" && event.req.method !== "HEAD";
+    },
     getKey: async (event: H3Event) => {
       // Custom user-defined key
       const customKey = await opts.getKey?.(event);
@@ -243,10 +246,18 @@ export function defineCachedEventHandler(
   const _cachedHandler = cachedFunction<ResponseCacheEntry>(
     async (event: H3Event) => {
       // Filter non variable headers
-      for (const key in event.req.headers.keys()) {
-        if (!variableHeaderNames.includes(key.toLowerCase())) {
-          event.req.headers.delete(key);
-        }
+      const filteredHeaders = [...event.req.headers.entries()].filter(
+        ([key]) => !variableHeaderNames.includes(key.toLowerCase())
+      );
+
+      try {
+        // @ts-expect-error assigning to publicly readonly property
+        event.req = new Request(event.req.url, {
+          method: event.req.method,
+          headers: filteredHeaders,
+        });
+      } catch (error) {
+        console.error("[cache] Failed to filter headers:", error);
       }
 
       // Call handler
