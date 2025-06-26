@@ -1,0 +1,1 @@
+[{"_path":"/deploy/providers/flightcontrol","title":"Flightcontrol","description":"通过 Flightcontrol 将 Nitro 应用程序部署到 AWS。"},{"_path":"/deploy/providers/github-pages","title":"GitHub Pages","description":"将 Nitro 应用部署到 GitHub Pages。"}]

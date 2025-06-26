@@ -1,0 +1,1 @@
+[{"_path":"/guide/migration","title":"迁移指南","description":""},{"_path":"/guide/routing","title":"服务器路由","description":"Nitro 支持文件系统路由，自动将文件映射到 h3 路由。"}]
