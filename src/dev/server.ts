@@ -7,8 +7,7 @@ import { NodeDevWorker, type DevWorker, type WorkerAddress } from "./worker";
 import type { Nitro, NitroBuildInfo, NitroDevServer } from "nitro/types";
 import { H3, HTTPError, defineHandler, fromNodeHandler } from "h3";
 import { toNodeHandler } from "srvx/node";
-import {
-  default as devErrorHandler,
+import devErrorHandler, {
   defaultHandler as devErrorHandlerInternal,
   loadStackTrace,
 } from "../runtime/internal/error/dev";
