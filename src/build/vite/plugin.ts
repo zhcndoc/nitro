@@ -2,7 +2,7 @@ import type { Plugin as VitePlugin } from "vite";
 import type { Plugin as RollupPlugin } from "rollup";
 import type { NitroPluginConfig, NitroPluginContext } from "./types";
 
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { createNitro } from "../..";
 import { getViteRollupConfig } from "./rollup";
 import { buildProduction, prodEntry } from "./prod";
@@ -13,6 +13,7 @@ import { runtimeDir } from "nitro/runtime/meta";
 import * as rou3 from "rou3";
 import * as rou3Compiler from "rou3/compiler";
 import { resolveModulePath } from "exsolve";
+import { prettyPath } from "../../utils/fs";
 
 // https://vite.dev/guide/api-environment-plugins
 // https://vite.dev/guide/api-environment-frameworks.html
@@ -54,11 +55,17 @@ export async function nitro(
       // Auto config default (ssr) service
       if (!pluginConfig.services?.ssr && !userConfig.environments?.ssr) {
         const serverEntry = resolveModulePath("./server", {
-          from: ctx.nitro.options.rootDir + "/",
-          extensions: [".ts", ".tsx", ".js", ".mjs"],
+          from: [
+            join(ctx.nitro.options.srcDir, "/"),
+            join(ctx.nitro.options.rootDir, "src/"),
+          ],
+          extensions: [".ts", ".js", ".mts", ".mjs", ".tsx", ".jsx"],
           try: true,
         });
         if (serverEntry) {
+          ctx.nitro!.logger.info(
+            `Using \`${prettyPath(serverEntry)}\` as the server entry.`
+          );
           pluginConfig.services = {
             ssr: { entry: serverEntry },
           };
