@@ -96,6 +96,9 @@ export async function nitro(
 
         // Add Nitro as a Vite environment
         environments: {
+          client: {
+            consumer: userConfig.environments?.client?.consumer || "client",
+          },
           ...createServiceEnvironments(ctx),
           nitro: createNitroEnvironment(ctx),
         },
