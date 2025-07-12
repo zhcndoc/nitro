@@ -35,18 +35,23 @@ export async function buildProduction(
   for (const [name, env] of Object.entries(builder.environments)) {
     // prettier-ignore
     const fmtName = name.length <= 3 ? name.toUpperCase() : name[0].toUpperCase() + name.slice(1);
-    if (name === "nitro") continue;
-    if (!env.config.build.rollupOptions.input) {
-      // If the environment is a server environment and has no input, skip it
-      nitro.logger.warn(
-        `Skipping build for \`${fmtName}\` as it has no input.`
-      );
+    if (
+      name === "nitro" ||
+      !env.config.build.rollupOptions.input ||
+      env.isBuilt
+    ) {
+      if (!["nitro", "ssr", "client"].includes(name)) {
+        nitro.logger.info(
+          env.isBuilt
+            ? `Skipping \`${fmtName}\` (already built)`
+            : `Skipping \`${fmtName}\` (no input defined)`
+        );
+      }
       continue;
     }
     nitro.logger.start(`Building \`${fmtName}\`...`);
     ctx._buildResults![name] = ((await builder.build(env)) as RollupOutput)
       .output[0] as OutputChunk;
-    await collectManifest();
   }
 
   nitro.logger.start(
