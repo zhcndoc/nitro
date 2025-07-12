@@ -52,6 +52,7 @@ export async function buildProduction(
     nitro.logger.start(`Building \`${fmtName}\`...`);
     ctx._buildResults![name] = ((await builder.build(env)) as RollupOutput)
       .output[0] as OutputChunk;
+    await collectManifest();
   }
 
   nitro.logger.start(
