@@ -297,6 +297,13 @@ type ObservabilityRoute = {
 };
 
 function getObservabilityRoutes(nitro: Nitro): ObservabilityRoute[] {
+  const compatDate =
+    nitro.options.compatibilityDate.vercel ||
+    nitro.options.compatibilityDate.default;
+  if (compatDate < "2025-07-15") {
+    return [];
+  }
+
   // Sort routes by how much specific they are
   const routePatterns = [
     ...new Set([
