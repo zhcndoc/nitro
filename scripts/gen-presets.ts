@@ -93,7 +93,7 @@ ${presetsWithType
 
 export interface PresetOptions {
 ${presetsWithType
-  .map((preset) => `  ${camelCase(preset)}: ${pascalCase(preset)}Options;`)
+  .map((preset) => `  ${camelCase(preset)}?: ${pascalCase(preset)}Options;`)
   .join("\n")}
 }
 
