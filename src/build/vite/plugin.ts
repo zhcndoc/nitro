@@ -8,7 +8,7 @@ import { getViteRollupConfig } from "./rollup";
 import { buildProduction, prodEntry } from "./prod";
 import { createNitroEnvironment, createServiceEnvironments } from "./env";
 import { configureViteDevServer } from "./dev";
-import { runtimeDir } from "nitro/runtime/meta";
+import { runtimeDependencies, runtimeDir } from "nitro/runtime/meta";
 
 import * as rou3 from "rou3";
 import * as rou3Compiler from "rou3/compiler";
@@ -167,6 +167,26 @@ export async function nitro(
         if (resolved) {
           return resolved;
         }
+      }
+
+      // Resolve built-in deps
+      if (
+        runtimeDependencies.some(
+          (dep) => id === dep || id.startsWith(`${dep}/`)
+        )
+      ) {
+        const resolved = await this.resolve(id, importer, {
+          ...options,
+          skipSelf: true,
+        });
+        return (
+          resolved ||
+          resolveModulePath(id, {
+            from: ctx.nitro!.options.nodeModulesDirs,
+            conditions: ctx.nitro!.options.exportConditions,
+            try: true,
+          })
+        );
       }
     },
 
