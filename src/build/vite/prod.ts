@@ -14,6 +14,9 @@ export async function buildProduction(
 ) {
   const nitro = ctx.nitro!;
 
+  // Cleanup build directories before building
+  await prepare(nitro);
+
   // Vite generates public/.vite/manifest.json, for each environment
   // We need to collect it progressively
   ctx._manifest = {};
@@ -58,9 +61,6 @@ export async function buildProduction(
   nitro.logger.start(
     `Building \`${nitroServerName(nitro)}\` (preset: \`${nitro.options.preset}\`, compatibility date: \`${formatCompatibilityDate(nitro.options.compatibilityDate)}\`)`
   );
-
-  // Cleanup build directories
-  await prepare(nitro);
 
   // Call the rollup:before hook for compatibility
   await nitro.hooks.callHook(
