@@ -317,10 +317,6 @@ describe("nitro:preset:vercel", async () => {
                 "src": "/api/kebab",
               },
               {
-                "dest": "/api/import-meta",
-                "src": "/api/import-meta",
-              },
-              {
                 "dest": "/api/hey",
                 "src": "/api/hey",
               },
