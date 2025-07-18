@@ -1,7 +1,7 @@
 import { resolve } from "node:path";
 import { promises as fs } from "node:fs";
 import { fileURLToPath } from "mlly";
-import type { Nitro } from "nitropack";
+import type { Nitro } from "nitro/types";
 import { findFile } from "pkg-types";
 import { resolveModulePath } from "exsolve";
 
