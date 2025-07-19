@@ -1,14 +1,13 @@
-import type { Plugin as VitePlugin } from "vite";
+import { type Plugin as VitePlugin, normalizePath } from "vite";
 import type { Plugin as RollupPlugin } from "rollup";
 import type { NitroPluginConfig, NitroPluginContext } from "./types";
-
-import { join, resolve } from "node:path";
+import { join, resolve, relative } from "pathe";
 import { createNitro } from "../..";
 import { getViteRollupConfig } from "./rollup";
 import { buildProduction, prodEntry } from "./prod";
 import { createNitroEnvironment, createServiceEnvironments } from "./env";
 import { configureViteDevServer } from "./dev";
-import { runtimeDir } from "nitro/runtime/meta";
+import { runtimeDependencies, runtimeDir } from "nitro/runtime/meta";
 
 import * as rou3 from "rou3";
 import * as rou3Compiler from "rou3/compiler";
@@ -23,6 +22,8 @@ export async function nitro(
 ): Promise<VitePlugin> {
   const ctx: NitroPluginContext = {
     pluginConfig,
+    _entryPoints: {},
+    _manifest: {},
   };
 
   return {
@@ -124,11 +125,56 @@ export async function nitro(
         builder: {
           /// Share the config instance among environments to align with the behavior of dev server
           sharedConfigBuild: true,
-          async buildApp(builder) {
-            await buildProduction(ctx, builder);
-          },
         },
       };
+    },
+
+    buildApp: {
+      order: "post",
+      handler(builder) {
+        return buildProduction(ctx, builder);
+      },
+    },
+
+    generateBundle: {
+      handler(_options, bundle) {
+        const { root } = this.environment.config;
+        const services = ctx.pluginConfig.services || {};
+        const serviceNames = Object.keys(services);
+        const isRegisteredService = serviceNames.includes(
+          this.environment.name
+        );
+
+        // find entry point of this service
+        let entryFile: string | undefined;
+        for (const [_name, file] of Object.entries(bundle)) {
+          if (file.type === "chunk") {
+            if (isRegisteredService && file.isEntry) {
+              if (entryFile !== undefined) {
+                this.error(
+                  `Multiple entry points found for service "${this.environment.name}". Only one entry point is allowed.`
+                );
+              }
+              entryFile = file.fileName;
+            }
+            const filteredModuleIds = file.moduleIds.filter((id) =>
+              id.startsWith(root)
+            );
+            for (const id of filteredModuleIds) {
+              const originalFile = relative(root, id);
+              ctx._manifest[originalFile] = { file: file.fileName };
+            }
+          }
+        }
+        if (isRegisteredService) {
+          if (entryFile === undefined) {
+            this.error(
+              `No entry point found for service "${this.environment.name}".`
+            );
+          }
+          ctx._entryPoints![this.environment.name] = entryFile!;
+        }
+      },
     },
 
     // Modify environment configs before it's resolved.
@@ -167,6 +213,26 @@ export async function nitro(
         if (resolved) {
           return resolved;
         }
+      }
+
+      // Resolve built-in deps
+      if (
+        runtimeDependencies.some(
+          (dep) => id === dep || id.startsWith(`${dep}/`)
+        )
+      ) {
+        const resolved = await this.resolve(id, importer, {
+          ...options,
+          skipSelf: true,
+        });
+        return (
+          resolved ||
+          resolveModulePath(id, {
+            from: ctx.nitro!.options.nodeModulesDirs,
+            conditions: ctx.nitro!.options.exportConditions,
+            try: true,
+          })
+        );
       }
     },
 

@@ -3,7 +3,7 @@ import type { NitroPluginContext, ServiceConfig } from "./types";
 
 import { NodeDevWorker } from "../../dev/worker";
 import { join, resolve } from "node:path";
-import { runtimeDir } from "nitro/runtime/meta";
+import { runtimeDependencies, runtimeDir } from "nitro/runtime/meta";
 import { resolveModulePath } from "exsolve";
 import { createFetchableDevEnvironment } from "./dev";
 
@@ -23,7 +23,11 @@ export function createNitroEnvironment(
       },
     },
     resolve: {
-      noExternal: ctx.nitro!.options.dev ? undefined : true,
+      noExternal: ctx.nitro!.options.dev
+        ? // Workaround for dev: external dependencies are not resolvable with respect to nodeModulePaths
+          new RegExp(runtimeDependencies.join("|"))
+        : // Workaround for production: externals tracing currently does not work with Vite rollup build
+          true,
       conditions: ctx.nitro!.options.exportConditions,
       externalConditions: ctx.nitro!.options.exportConditions,
     },
