@@ -9,7 +9,7 @@ describe("nitro:preset:vercel", async () => {
     ctx,
     async () => {
       const handle = await import(
-        resolve(ctx.outDir, "functions/__nitro.func/index.mjs")
+        resolve(ctx.outDir, "functions/__fallback.func/index.mjs")
       ).then((r) => r.default || r);
       await startServer(ctx, handle);
       return async ({ url, ...options }) => {
