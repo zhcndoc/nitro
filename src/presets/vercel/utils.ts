@@ -229,7 +229,7 @@ function generateBuildConfig(nitro: Nitro, o11Routes?: ObservabilityRoute[]) {
       : []),
     // Observability routes
     ...(o11Routes || []).map((route) => ({
-      src: route.src,
+      src: joinURL(nitro.options.baseURL, route.src),
       dest: "/" + route.dest,
     })),
     // If we are using an ISR function as a fallback
