@@ -1,0 +1,1 @@
+import{r as s}from"./CA5yLxYw.js";import t from"./CV40N4y2.js";import{a,c,o as e,w as p,f as n}from"./C7vBE8Ya.js";import"./C2bHYaEW.js";const d={__name:"Tip",setup(i){const o=a();return(r,f)=>(e(),c(t,{color:"success",icon:n(o).ui.icons.tip},{default:p(()=>[s(r.$slots,"default",{mdcUnwrap:"p"})]),_:3},8,["icon"]))}};export{d as default};
