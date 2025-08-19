@@ -115,7 +115,7 @@ export class NitroDevServer implements DevRPCHooks {
 
   // #region Public Methods
 
-  fetch(req: Request): Promise<Response> {
+  fetch(req: Request): Response | Promise<Response> {
     return this.#app.fetch(req);
   }
 

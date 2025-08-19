@@ -87,7 +87,7 @@ function createNitroApp(): NitroApp {
     init?: RequestInit,
     ctx?: H3EventContext
   ) => {
-    return Promise.resolve(h3App._fetch(input, init, ctx));
+    return Promise.resolve(h3App.request(input, init, ctx));
   };
 
   const hybridFetch: typeof fetch = (input, init) => {
