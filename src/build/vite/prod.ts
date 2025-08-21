@@ -49,7 +49,8 @@ export async function buildEnvironments(
   await copyPublicAssets(nitro);
 
   // Prerender routes if configured
-  await prerender(nitro);
+  // TODO
+  // await prerender(nitro);
 
   // Build the Nitro server bundle
   await builder.build(builder.environments.nitro);
