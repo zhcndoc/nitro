@@ -9,6 +9,7 @@ import { baseBuildConfig } from "../config";
 import { baseBuildPlugins } from "../plugins";
 import { replace } from "../plugins/replace";
 import { builtinModules } from "node:module";
+import { defu } from "defu";
 
 export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
   const base = baseBuildConfig(nitro);
@@ -23,7 +24,7 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
     ["\0", "virtual"],
   ] as const;
 
-  const config = {
+  let config = {
     cwd: nitro.options.rootDir,
     input: nitro.options.entry,
     external: [
@@ -138,7 +139,10 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
     name: "nitro:rolldown-resolves",
     async resolveId(id, parent, options) {
       if (parent?.startsWith("\0virtual:#nitro-internal-virtual")) {
-        const internalRes = await this.resolve(id, import.meta.url, options);
+        const internalRes = await this.resolve(id, import.meta.url, {
+          ...options,
+          custom: { ...options.custom, skipNoExternals: true },
+        });
         if (internalRes) {
           return internalRes;
         }
@@ -155,6 +159,8 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
       }
     },
   });
+
+  config = defu(nitro.options.rollupConfig as any, config);
 
   return config as RolldownOptions;
 };

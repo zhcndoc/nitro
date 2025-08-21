@@ -105,6 +105,9 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
     plugins.push({
       name: "no-externals",
       async resolveId(id, importer, resolveOpts) {
+        if (resolveOpts.custom?.skipNoExternals) {
+          return;
+        }
         id = base.aliases[id] || id;
         if (
           base.env.external.includes(id) ||
