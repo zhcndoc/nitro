@@ -24,6 +24,7 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
   ] as const;
 
   const config = {
+    cwd: nitro.options.rootDir,
     input: nitro.options.entry,
     external: [
       ...base.env.external,
@@ -137,10 +138,16 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
         if (internalRes) {
           return internalRes;
         }
-        return resolveModulePath(id, {
-          from: [nitro.options.rootDir, import.meta.url],
-          try: true,
-        });
+        return (
+          resolveModulePath(id, {
+            from: [nitro.options.rootDir, import.meta.url],
+            try: true,
+          }) ||
+          resolveModulePath("./" + id, {
+            from: [nitro.options.rootDir, import.meta.url],
+            try: true,
+          })
+        );
       }
     },
   });
