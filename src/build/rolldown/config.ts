@@ -52,7 +52,11 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
     },
     // @ts-expect-error (readonly values)
     inject: base.env.inject,
-    jsx: "react-jsx",
+    jsx: {
+      mode: "classic",
+      factory: nitro.options.esbuild?.options?.jsxFactory,
+      fragment: nitro.options.esbuild?.options?.jsxFragment,
+    },
     onwarn(warning, warn) {
       if (
         !["CIRCULAR_DEPENDENCY", "EVAL"].includes(warning.code || "") &&
