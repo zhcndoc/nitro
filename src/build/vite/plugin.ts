@@ -248,21 +248,6 @@ function nitroServicePlugin(ctx: NitroPluginContext): VitePlugin {
           return id;
         }
 
-        // Run through rollup compatible plugins to resolve virtual modules
-        for (const plugin of ctx.rollupConfig!.config
-          .plugins as RollupPlugin[]) {
-          if (typeof plugin.resolveId !== "function") continue;
-          const resolved = await plugin.resolveId.call(
-            this,
-            id,
-            importer,
-            options
-          );
-          if (resolved) {
-            return resolved;
-          }
-        }
-
         // Resolve built-in deps
         if (
           runtimeDependencies.some(
@@ -324,16 +309,6 @@ function nitroServicePlugin(ctx: NitroPluginContext): VitePlugin {
             rou3.addRoute(router, "", route, { service: name });
           }
           return `export const findService = ${rou3Compiler.compileRouterToString(router)};`;
-        }
-
-        // Run through rollup compatible plugins to load virtual modules
-        for (const plugin of ctx.rollupConfig!.config
-          .plugins as RollupPlugin[]) {
-          if (typeof plugin.load !== "function") continue;
-          const resolved = await plugin.load.call(this, id);
-          if (resolved) {
-            return resolved;
-          }
         }
       },
     },
