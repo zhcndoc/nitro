@@ -6,7 +6,7 @@ import { formatCompatibilityDate } from "compatx";
 import { copyPublicAssets, prerender } from "../..";
 import { nitroServerName } from "../../utils/nitro";
 
-export async function buildOtherEnvironments(
+export async function buildEnvironments(
   ctx: NitroPluginContext,
   builder: ViteBuilder
 ) {
@@ -33,14 +33,6 @@ export async function buildOtherEnvironments(
     nitro.logger.start(`Building \`${fmtName}\`...`);
     await builder.build(env);
   }
-}
-export async function buildProduction(
-  ctx: NitroPluginContext,
-  builder: ViteBuilder
-) {
-  const nitro = ctx.nitro!;
-
-  await buildOtherEnvironments(ctx, builder);
 
   nitro.logger.start(
     `Building \`${nitroServerName(nitro)}\` (preset: \`${nitro.options.preset}\`, compatibility date: \`${formatCompatibilityDate(nitro.options.compatibilityDate)}\`)`

@@ -4,7 +4,7 @@ import type { NitroPluginConfig, NitroPluginContext } from "./types";
 import { join, resolve, relative } from "pathe";
 import { createNitro, prepare } from "../..";
 import { getViteRollupConfig } from "./rollup";
-import { buildProduction, prodEntry } from "./prod";
+import { buildEnvironments, prodEntry } from "./prod";
 import { createNitroEnvironment, createServiceEnvironments } from "./env";
 import { configureViteDevServer } from "./dev";
 import { runtimeDependencies, runtimeDir } from "nitro/runtime/meta";
@@ -39,23 +39,25 @@ function mainPlugin(ctx: NitroPluginContext): VitePlugin[] {
       // Extend vite config before it's resolved
       async config(userConfig, configEnv) {
         // Initialize a new Nitro instance
-        ctx.nitro = await createNitro({
-          dev: configEnv.mode === "development",
-          rootDir: userConfig.root,
-          compatibilityDate: "latest",
-          imports: false,
-          typescript: {
-            generateRuntimeConfigTypes: false,
-            generateTsConfig: false,
-          },
-          handlers: [
-            {
-              route: "/**",
-              handler: resolve(runtimeDir, "internal/vite/dispatcher.mjs"),
+        ctx.nitro =
+          ctx.pluginConfig._nitro ||
+          (await createNitro({
+            dev: configEnv.mode === "development",
+            rootDir: userConfig.root,
+            compatibilityDate: "latest",
+            imports: false,
+            typescript: {
+              generateRuntimeConfigTypes: false,
+              generateTsConfig: false,
             },
-          ],
-          ...ctx.pluginConfig.config,
-        });
+            handlers: [
+              {
+                route: "/**",
+                handler: resolve(runtimeDir, "internal/vite/dispatcher.mjs"),
+              },
+            ],
+            ...ctx.pluginConfig.config,
+          }));
 
         // Auto config default (ssr) service
         if (!ctx.pluginConfig.services?.ssr) {
@@ -149,7 +151,7 @@ function mainPlugin(ctx: NitroPluginContext): VitePlugin[] {
       buildApp: {
         order: "post",
         handler(builder) {
-          return buildProduction(ctx, builder);
+          return buildEnvironments(ctx, builder);
         },
       },
 
