@@ -4,7 +4,6 @@ import { sanitizeFilePath } from "mlly";
 import { normalize } from "pathe";
 import { resolveModulePath } from "exsolve";
 import { runtimeDir } from "nitro/runtime/meta";
-import json from "@rollup/plugin-json";
 import { baseBuildConfig } from "../config";
 import { baseBuildPlugins } from "../plugins";
 import { replace } from "../plugins/replace";
@@ -39,7 +38,6 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
         preventAssignment: true,
         values: base.replacements,
       }) as RolldownPlugin,
-      json() as RolldownPlugin,
     ],
     resolve: {
       alias: {
