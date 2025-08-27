@@ -6,7 +6,7 @@ import type {
   NitroRuntimeHooks,
 } from "nitro/types";
 
-import { H3, lazyEventHandler, type HTTPEvent } from "h3";
+import { H3, lazyEventHandler, toRequest, type HTTPEvent } from "h3";
 import { createFetch } from "ofetch";
 import { cachedEventHandler } from "./cache";
 import { createRouteRulesHandler, getRouteRulesForPath } from "./route-rules";
@@ -18,19 +18,21 @@ import { handlers } from "#nitro-internal-virtual/server-handlers";
 import { createHooks } from "hookable";
 import { nitroAsyncContext } from "./context";
 
-export const nitroApp: NitroApp = createNitroApp();
-
-export function useNitroApp() {
-  return nitroApp;
+export function useNitroApp(): NitroApp {
+  return ((useNitroApp as any).__instance__ ??= initNitroApp());
 }
 
-for (const plugin of plugins) {
-  try {
-    plugin(nitroApp);
-  } catch (error: any) {
-    nitroApp.captureError(error, { tags: ["plugin"] });
-    throw error;
+function initNitroApp(): NitroApp {
+  const nitroApp = createNitroApp();
+  for (const plugin of plugins) {
+    try {
+      plugin(nitroApp);
+    } catch (error: any) {
+      nitroApp.captureError(error, { tags: ["plugin"] });
+      throw error;
+    }
   }
+  return nitroApp;
 }
 
 function createNitroApp(): NitroApp {
@@ -59,6 +61,8 @@ function createNitroApp(): NitroApp {
     req.context ??= {};
     req.context.nitro = req.context.nitro || { errors: [] };
     const event = { req } satisfies HTTPEvent;
+
+    const nitroApp = useNitroApp();
 
     await nitroApp.hooks.callHook("request", event).catch((error) => {
       captureError(error, { event, tags: ["request"] });
@@ -109,8 +113,8 @@ function createNitroApp(): NitroApp {
   globalThis.$fetch = $fetch;
 
   const app: NitroApp = {
+    _h3: h3App,
     hooks,
-    h3App,
     fetch: requestHandler,
     captureError,
   };
@@ -156,22 +160,4 @@ function createH3App(captureError: CaptureError) {
   }
 
   return h3App;
-}
-
-// --- internal ---
-
-function toRequest(
-  _request: ServerRequest | URL | string,
-  _init?: RequestInit
-): ServerRequest {
-  if (typeof _request === "string") {
-    let url = _request;
-    if (url[0] === "/") {
-      url = `http://_${url}`;
-    }
-    return new Request(url, _init);
-  } else if (_init || _request instanceof URL) {
-    return new Request(_request, _init);
-  }
-  return _request;
 }
