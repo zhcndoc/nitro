@@ -13,7 +13,14 @@ import type {
   WorkerAddress,
 } from "nitro/types";
 
-import { H3, HTTPError, defineHandler, fromNodeHandler } from "h3";
+import {
+  H3,
+  HTTPError,
+  defineHandler,
+  fromNodeHandler,
+  withBase,
+  type EventHandler,
+} from "h3";
 import { toNodeHandler } from "srvx/node";
 import devErrorHandler, {
   defaultHandler as devErrorHandlerInternal,
@@ -108,7 +115,7 @@ export class NitroDevServer implements DevRPCHooks {
 
   // #region Public Methods
 
-  fetch(req: Request): Promise<Response> {
+  fetch(req: Request): Response | Promise<Response> {
     return this.#app.fetch(req);
   }
 
@@ -291,11 +298,14 @@ export class NitroDevServer implements DevRPCHooks {
         "**"
       );
       // TODO: serve placeholder as fallback
-      app.use(
-        assetRoute,
+      let handler: EventHandler = fromNodeHandler(
         // @ts-expect-error (HTTP2 types)
-        fromNodeHandler(serveStatic(asset.dir, { dotfiles: "allow" }))
+        serveStatic(asset.dir, { dotfiles: "allow" })
       );
+      if (asset.baseURL?.length || 0 > 1) {
+        handler = withBase(asset.baseURL!, handler);
+      }
+      app.use(assetRoute, handler);
     }
 
     // User defined dev proxy

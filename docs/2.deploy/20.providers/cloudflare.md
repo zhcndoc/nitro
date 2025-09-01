@@ -177,7 +177,7 @@ export default defineEventHandler((event) => {
 
 ### 在开发模式中指定变量
 
-在开发时，您可以使用 `.env` 文件指定环境变量：
+在开发时，您可以使用 `.env` 或 `.env.local` 文件指定环境变量：
 
 ```ini
 NITRO_HELLO_THERE="captain"
@@ -185,14 +185,14 @@ SECRET="top-secret"
 ```
 
 ::note
-**注意：** 请确保将 `.env` 添加到 `.gitignore` 文件中，以免您提交它，因为它可能包含敏感信息。
+**注意：** 请确保将 `.env` 和 `.env.local` 添加到 `.gitignore` 文件中，以免您提交它，因为它可能包含敏感信息。
 ::
 
 ### 为本地预览指定变量
 
 构建后，当您尝试在本地使用 `wrangler dev` 或 `wrangler pages dev` 测试项目时，为了访问环境变量，您需要在项目根目录中指定在 `.dev.vars` 文件中（如 [Pages](https://developers.cloudflare.com/pages/functions/bindings/#interact-with-your-environment-variables-locally) 和 [Workers](https://developers.cloudflare.com/workers/configuration/environment-variables/#interact-with-environment-variables-locally) 文档中所示）。
 
-如果您在开发时使用了 `.env` 文件，则您的 `.dev.vars` 应与之相同。
+如果您在开发时使用了 `.env` 或 `.env.local` 文件，则您的 `.dev.vars` 应与之相同。
 
 ::note
 **注意：** 请确保将 `.dev.vars` 添加到 `.gitignore` 文件中，以免您提交它，因为它可能包含敏感信息。

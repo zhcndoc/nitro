@@ -4,7 +4,7 @@ import type { NitroPluginConfig, NitroPluginContext } from "./types";
 import { join, resolve, relative } from "pathe";
 import { createNitro, prepare } from "../..";
 import { getViteRollupConfig } from "./rollup";
-import { buildProduction, prodEntry } from "./prod";
+import { buildEnvironments, prodEntry } from "./prod";
 import { createNitroEnvironment, createServiceEnvironments } from "./env";
 import { configureViteDevServer } from "./dev";
 import { runtimeDependencies, runtimeDir } from "nitro/runtime/meta";
@@ -17,9 +17,7 @@ import { prettyPath } from "../../utils/fs";
 // https://vite.dev/guide/api-environment-plugins
 // https://vite.dev/guide/api-environment-frameworks.html
 
-export async function nitro(
-  pluginConfig: NitroPluginConfig = {}
-): Promise<VitePlugin> {
+export function nitro(pluginConfig: NitroPluginConfig = {}): VitePlugin {
   const ctx: NitroPluginContext = {
     pluginConfig,
     _entryPoints: {},
@@ -41,23 +39,25 @@ function mainPlugin(ctx: NitroPluginContext): VitePlugin[] {
       // Extend vite config before it's resolved
       async config(userConfig, configEnv) {
         // Initialize a new Nitro instance
-        ctx.nitro = await createNitro({
-          dev: configEnv.mode === "development",
-          rootDir: userConfig.root,
-          compatibilityDate: "latest",
-          imports: false,
-          typescript: {
-            generateRuntimeConfigTypes: false,
-            generateTsConfig: false,
-          },
-          handlers: [
-            {
-              route: "/**",
-              handler: resolve(runtimeDir, "internal/vite/dispatcher.mjs"),
+        ctx.nitro =
+          ctx.pluginConfig._nitro ||
+          (await createNitro({
+            dev: configEnv.mode === "development",
+            rootDir: userConfig.root,
+            compatibilityDate: "latest",
+            imports: false,
+            typescript: {
+              generateRuntimeConfigTypes: false,
+              generateTsConfig: false,
             },
-          ],
-          ...ctx.pluginConfig.config,
-        });
+            handlers: [
+              {
+                route: "/**",
+                handler: resolve(runtimeDir, "internal/vite/dispatcher.mjs"),
+              },
+            ],
+            ...ctx.pluginConfig.config,
+          }));
 
         // Auto config default (ssr) service
         if (!ctx.pluginConfig.services?.ssr) {
@@ -151,7 +151,7 @@ function mainPlugin(ctx: NitroPluginContext): VitePlugin[] {
       buildApp: {
         order: "post",
         handler(builder) {
-          return buildProduction(ctx, builder);
+          return buildEnvironments(ctx, builder);
         },
       },
 
@@ -210,7 +210,7 @@ function mainPlugin(ctx: NitroPluginContext): VitePlugin[] {
           // we don't write to the file system
           // instead, the generateBundle hook will capture the output and write it to the virtual file system to be used by the nitro build later
           config.build ??= {};
-          config.build.write = false;
+          config.build.write = config.build.write ?? false;
         }
       },
 
@@ -248,18 +248,16 @@ function nitroServicePlugin(ctx: NitroPluginContext): VitePlugin {
           return id;
         }
 
-        // Run through rollup compatible plugins to resolve virtual modules
-        for (const plugin of ctx.rollupConfig!.config
-          .plugins as RollupPlugin[]) {
-          if (typeof plugin.resolveId !== "function") continue;
-          const resolved = await plugin.resolveId.call(
-            this,
-            id,
-            importer,
-            options
-          );
-          if (resolved) {
-            return resolved;
+        // Run rollup resolve hooks in dev (VFS support)
+        if (ctx.nitro?.options.dev) {
+          for (const plugin of ctx.rollupConfig!.config
+            .plugins as RollupPlugin[]) {
+            if (typeof plugin.resolveId !== "function") continue;
+            // prettier-ignore
+            const resolved = await plugin.resolveId.call(this, id, importer, options);
+            if (resolved) {
+              return resolved;
+            }
           }
         }
 
@@ -278,6 +276,27 @@ function nitroServicePlugin(ctx: NitroPluginContext): VitePlugin {
             resolveModulePath(id, {
               from: ctx.nitro!.options.nodeModulesDirs,
               conditions: ctx.nitro!.options.exportConditions,
+              try: true,
+            })
+          );
+        }
+
+        // Resolve relative paths from virtual modules
+        if (importer?.startsWith("\0virtual:#nitro-internal-virtual")) {
+          const internalRes = await this.resolve(id, import.meta.url, {
+            ...options,
+            custom: { ...options.custom, skipNoExternals: true },
+          });
+          if (internalRes) {
+            return internalRes;
+          }
+          return (
+            resolveModulePath(id, {
+              from: [ctx.nitro!.options.rootDir, import.meta.url],
+              try: true,
+            }) ||
+            resolveModulePath("./" + id, {
+              from: [ctx.nitro!.options.rootDir, import.meta.url],
               try: true,
             })
           );
@@ -305,13 +324,15 @@ function nitroServicePlugin(ctx: NitroPluginContext): VitePlugin {
           return `export const findService = ${rou3Compiler.compileRouterToString(router)};`;
         }
 
-        // Run through rollup compatible plugins to load virtual modules
-        for (const plugin of ctx.rollupConfig!.config
-          .plugins as RollupPlugin[]) {
-          if (typeof plugin.load !== "function") continue;
-          const resolved = await plugin.load.call(this, id);
-          if (resolved) {
-            return resolved;
+        // Run rollup load hooks in dev (VFS support)
+        if (ctx.nitro?.options.dev) {
+          for (const plugin of ctx.rollupConfig!.config
+            .plugins as RollupPlugin[]) {
+            if (typeof plugin.load !== "function") continue;
+            const resolved = await plugin.load.call(this, id);
+            if (resolved) {
+              return resolved;
+            }
           }
         }
       },

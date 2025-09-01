@@ -1,11 +1,12 @@
 import defu from "defu";
 import {
-  type EventHandler,
-  type H3Event,
+  H3Event,
   defineHandler,
+  getEventContext,
   proxyRequest,
   redirect,
 } from "h3";
+import type { HTTPEvent, EventHandler } from "h3";
 import type { NitroRouteConfig, NitroRouteRules } from "nitro/types";
 import { createRouter, addRoute, findAllRoutes } from "rou3";
 import { joinURL, withQuery, withoutBase } from "ufo";
@@ -22,6 +23,10 @@ export function createRouteRulesHandler(): EventHandler {
   return defineHandler((event) => {
     // Match route options against path
     const routeRules = getRouteRules(event);
+    if (!routeRules) {
+      return;
+    }
+
     // Apply headers options
     if (routeRules.headers) {
       for (const [key, value] of Object.entries(routeRules.headers)) {
@@ -63,29 +68,22 @@ export function createRouteRulesHandler(): EventHandler {
   });
 }
 
-export function getRouteRules(event: H3Event): NitroRouteRules {
-  event.context._nitro = event.context._nitro || {};
-  if (!event.context._nitro.routeRules) {
-    event.context._nitro.routeRules = getRouteRulesForPath(
-      withoutBase(event.url.pathname, useRuntimeConfig().app.baseURL)
+export function getRouteRules(event: HTTPEvent): NitroRouteRules | undefined {
+  const context = getEventContext(event);
+  context._nitro ??= {};
+  if (!context._nitro.routeRules) {
+    const url = (event as H3Event).url || new URL(event.req.url);
+    context._nitro.routeRules = getRouteRulesForPath(
+      withoutBase(url.pathname, useRuntimeConfig().app.baseURL)
     );
   }
-  return event.context._nitro.routeRules;
+  return context._nitro?.routeRules;
 }
-
-// prettier-ignore
-type DeepReadonly<T> = T extends Record<string, any>
-  ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
-  : T extends Array<infer U>
-    ? ReadonlyArray<DeepReadonly<U>>
-    : T;
 
 /**
  * @param path - The path to match against route rules. This should not contain a query string.
  */
-export function getRouteRulesForPath(
-  path: string
-): DeepReadonly<NitroRouteRules> {
+export function getRouteRulesForPath(path: string): NitroRouteRules {
   return defu(
     {},
     ...findAllRoutes(routeRules, undefined, path)
