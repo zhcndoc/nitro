@@ -18,6 +18,8 @@ const SUPPORTED_NODE_VERSIONS = [20, 22];
 
 const FALLBACK_ROUTE = "/__fallback";
 
+const ISR_SUFFIX = "-isr"; // Avoid using . as it can conflict with routing
+
 const SAFE_FS_CHAR_RE = /[^a-zA-Z0-9_.[\]/]/g;
 
 function getSystemNodeVersion() {
@@ -64,7 +66,7 @@ export async function generateFunctionFiles(nitro: Nitro) {
     const funcPrefix = resolve(
       nitro.options.output.serverDir,
       "..",
-      normalizeRouteDest(key) + ".isr"
+      normalizeRouteDest(key) + ISR_SUFFIX
     );
     await fsp.mkdir(dirname(funcPrefix), { recursive: true });
     await fsp.symlink(
@@ -209,7 +211,9 @@ function generateBuildConfig(nitro: Nitro, o11Routes?: ObservabilityRoute[]) {
         }
         return {
           src,
-          dest: withLeadingSlash(normalizeRouteDest(key) + ".isr?url=$url"),
+          dest: withLeadingSlash(
+            normalizeRouteDest(key) + ISR_SUFFIX + "?url=$url"
+          ),
         };
       }),
     // If we are using an ISR function for /, then we need to write this explicitly
@@ -217,7 +221,7 @@ function generateBuildConfig(nitro: Nitro, o11Routes?: ObservabilityRoute[]) {
       ? [
           {
             src: "(?<url>/)",
-            dest: "/index.isr?url=$url",
+            dest: `/index${ISR_SUFFIX}?url=$url`,
           },
         ]
       : []),
