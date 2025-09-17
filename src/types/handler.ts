@@ -18,14 +18,11 @@ export interface NitroRouteMeta {
 export interface NitroEventHandler {
   /**
    * Path prefix or route
-   *
-   * If an empty string used, will be used as a middleware
    */
-  route?: string;
+  route: string;
 
   /**
    * Specifies this is a middleware handler.
-   * Middleware are called on every route and should normally return nothing to pass to the next handlers
    */
   middleware?: boolean;
 
