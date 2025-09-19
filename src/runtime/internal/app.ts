@@ -1,23 +1,25 @@
 import type { ServerRequest } from "srvx";
 import type {
   CaptureError,
+  MatchedRouteRules,
   NitroApp,
   NitroAsyncContext,
   NitroRuntimeHooks,
 } from "nitro/types";
-
-import { H3, lazyEventHandler, toRequest } from "h3";
-import type { HTTPEvent } from "h3";
+import { H3Core, toRequest } from "h3";
+import type { HTTPEvent, Middleware } from "h3";
 import { createFetch } from "ofetch";
-import { cachedEventHandler } from "./cache";
-import { createRouteRulesHandler, getRouteRulesForPath } from "./route-rules";
 
 // IMPORTANT: virtuals and user code should be imported last to avoid initialization order issues
 import errorHandler from "#nitro-internal-virtual/error-handler";
 import { plugins } from "#nitro-internal-virtual/plugins";
-import { handlers } from "#nitro-internal-virtual/server-handlers";
 import { createHooks } from "hookable";
 import { nitroAsyncContext } from "./context";
+import {
+  findRoute,
+  findRouteRules,
+  middleware,
+} from "#nitro-internal-virtual/routing";
 
 export function useNitroApp(): NitroApp {
   return ((useNitroApp as any).__instance__ ??= initNitroApp());
@@ -125,40 +127,94 @@ function createNitroApp(): NitroApp {
 
 function createH3App(captureError: CaptureError) {
   const DEBUG_MODE = ["1", "true", "TRUE"].includes(process.env.DEBUG + "");
-  const h3App = new H3({
+
+  const h3App = new H3Core({
     debug: DEBUG_MODE,
     onError: (error, event) => {
-      captureError(error, {
-        event,
-        tags: ["request"],
-      });
+      captureError(error, { event, tags: ["request"] });
       return errorHandler(error, event);
     },
   });
 
-  // Register route rule handlers
-  h3App.use(createRouteRulesHandler());
-
-  // Register server handlers
-  for (const h of handlers) {
-    let handler = h.lazy ? lazyEventHandler(h.handler) : h.handler;
-    if (!h.route) {
-      h3App.use(handler);
-    } else if (h.middleware) {
-      h3App.use(h.route, handler, { method: h.method });
-    } else {
-      const routeRules = getRouteRulesForPath(
-        h.route.replace(/:\w+|\*\*/g, "_")
-      );
-      if (routeRules.cache) {
-        handler = cachedEventHandler(handler, {
-          group: "nitro/routes",
-          ...routeRules.cache,
-        });
-      }
-      h3App.on(h.method, h.route, handler);
-    }
+  // Middleware
+  for (const mw of middleware) {
+    h3App.use(mw.route || "/**", mw.handler, { method: mw.method });
   }
 
+  // Compiled route matching
+  h3App._findRoute = (event) => {
+    const pathname = event.url.pathname;
+    const method = event.req.method.toLowerCase();
+    let route = findRoute(method, pathname);
+    const { routeRules, routeRuleMiddleware } = getRouteRules(method, pathname);
+    event.context.routeRules = routeRules;
+    if (!route) {
+      if (routeRuleMiddleware) {
+        route = { data: { handler: () => Symbol.for("h3.notFound") } };
+      } else {
+        return;
+      }
+    }
+    if (routeRuleMiddleware) {
+      route.data = {
+        ...route.data,
+        middleware: [...routeRuleMiddleware, ...(route.data.middleware || [])],
+      };
+    }
+    return route;
+  };
+
   return h3App;
+}
+
+function getRouteRules(
+  method: string,
+  pathname: string
+): {
+  routeRules?: MatchedRouteRules;
+  routeRuleMiddleware?: Middleware[];
+} {
+  const m = findRouteRules(method, pathname);
+  if (!m?.length) {
+    return {};
+  }
+  const routeRules: MatchedRouteRules = {};
+  for (const layer of m) {
+    for (const rule of layer.data) {
+      const currentRule = routeRules[rule.name];
+      if (currentRule) {
+        if (rule.options === false) {
+          // Remove/Reset existing rule with `false` value
+          delete routeRules[rule.name];
+          continue;
+        }
+        if (
+          typeof currentRule.options === "object" &&
+          typeof rule.options === "object"
+        ) {
+          // Merge nested rule objects
+          currentRule.options = { ...currentRule.options, ...rule.options };
+        } else {
+          // Override rule if non object
+          currentRule.options = rule.options;
+        }
+        // Routing (route and params)
+        currentRule.route = rule.route;
+        currentRule.params = { ...currentRule.params, ...layer.params };
+      } else if (rule.options !== false) {
+        routeRules[rule.name] = { ...rule, params: layer.params };
+      }
+    }
+  }
+  const middleware = [];
+  for (const rule of Object.values(routeRules)) {
+    if (rule.options === false || !rule.handler) {
+      continue;
+    }
+    middleware.push(rule.handler(rule));
+  }
+  return {
+    routeRules,
+    routeRuleMiddleware: middleware.length > 0 ? middleware : undefined,
+  };
 }
