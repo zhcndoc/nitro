@@ -96,7 +96,6 @@ async function _loadUserConfig(
   )({
     name: "nitro",
     cwd: configOverrides.rootDir,
-    // @ts-expect-error
     dotenv: _dotenv,
     extend: { extendKey: ["extends", "preset"] },
     defaults: NitroDefaults,
