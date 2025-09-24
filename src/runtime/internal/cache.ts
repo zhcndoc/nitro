@@ -257,11 +257,15 @@ export function defineCachedEventHandler(
       );
 
       try {
+        const originalReq = event.req;
         // @ts-expect-error assigning to publicly readonly property
         event.req = new Request(event.req.url, {
           method: event.req.method,
           headers: filteredHeaders,
         });
+        // Inherit srvx context
+        event.req.runtime = originalReq.runtime;
+        event.req.waitUntil = originalReq.waitUntil;
       } catch (error) {
         console.error("[cache] Failed to filter headers:", error);
       }
