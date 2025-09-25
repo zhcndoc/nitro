@@ -233,6 +233,12 @@ export function testNitro(
     _handler = await getHandler();
   }, 25_000);
 
+  it("Server entry works", async () => {
+    const { data, headers } = await callHandler({ url: "/" });
+    expect(data).toBe("server entry works!");
+    expect(headers["x-test"]).toBe("test");
+  });
+
   it("API Works", async () => {
     const { data: helloData } = await callHandler({ url: "/api/hello" });
     expect(helloData).to.toMatchObject({ message: "Hello API" });

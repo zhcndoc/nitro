@@ -1,5 +1,6 @@
 import type {
   H3EventHandler,
+  Middleware,
   H3Route,
   LazyEventHandler,
   RouterMethod,
