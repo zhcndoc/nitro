@@ -148,6 +148,28 @@ function mainPlugin(ctx: NitroPluginContext): VitePlugin[] {
         };
       },
 
+      configResolved(config) {
+        if (config.command === "build") {
+          // Add cache-control to immutable client assets
+          for (const env of Object.values(config.environments)) {
+            if (env.consumer === "client") {
+              const { assetsDir } = env.build;
+              const rule = (ctx.nitro!.options.routeRules[
+                `/${assetsDir}/**`
+              ] ??= {});
+              if (!rule.headers?.["cache-control"]) {
+                rule.headers = {
+                  ...rule.headers,
+                  "cache-control": `public, max-age=31536000, immutable`,
+                };
+              }
+            }
+          }
+          // Refresh route rules
+          ctx.nitro!.routing.sync();
+        }
+      },
+
       buildApp: {
         order: "post",
         handler(builder) {
