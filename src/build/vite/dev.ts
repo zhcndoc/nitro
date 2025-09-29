@@ -6,7 +6,7 @@ import type {
   ViteDevServer,
 } from "vite";
 
-import { createServer } from "node:http";
+import { createServer, IncomingMessage, ServerResponse } from "node:http";
 import { NodeRequest, sendNodeResponse } from "srvx/node";
 import { getSocketAddress, isSocketSupported } from "get-port-please";
 import { DevEnvironment } from "vite";
@@ -33,11 +33,12 @@ export interface DevServer extends TransportHooks {
 export function createFetchableDevEnvironment(
   name: string,
   config: ResolvedConfig,
-  devServer: DevServer
+  devServer: DevServer,
+  entry: string
 ): FetchableDevEnvironment {
-  const transport = createTransport(devServer);
+  const transport = createTransport(name, devServer);
   const context: DevEnvironmentContext = { hot: true, transport };
-  return new FetchableDevEnvironment(name, config, context, devServer);
+  return new FetchableDevEnvironment(name, config, context, devServer, entry);
 }
 
 export class FetchableDevEnvironment extends DevEnvironment {
@@ -47,10 +48,17 @@ export class FetchableDevEnvironment extends DevEnvironment {
     name: string,
     config: ResolvedConfig,
     context: DevEnvironmentContext,
-    devServer: DevServer
+    devServer: DevServer,
+    entry: string
   ) {
     super(name, config, context);
     this.devServer = devServer;
+
+    this.devServer.sendMessage({
+      type: "custom",
+      event: "nitro:vite-env",
+      data: { name, entry },
+    });
   }
 
   async dispatchFetch(request: Request): Promise<Response> {
@@ -63,16 +71,21 @@ export class FetchableDevEnvironment extends DevEnvironment {
   }
 }
 
-function createTransport(hooks: TransportHooks): HotChannel {
+function createTransport(name: string, hooks: TransportHooks): HotChannel {
   const listeners = new WeakMap();
   return {
-    send: (data) => hooks.sendMessage(data),
+    send: (data) => hooks.sendMessage({ ...data, viteEnv: name }),
     on: (event: string, handler: any) => {
       if (event === "connection") return;
       const listener = (value: any) => {
-        if (value.type === "custom" && value.event === event) {
+        if (
+          value?.type === "custom" &&
+          value.event === event &&
+          value.viteEnv === name
+        ) {
           handler(value.data, {
-            send: (payload: any) => hooks.sendMessage(payload),
+            send: (payload: any) =>
+              hooks.sendMessage({ ...payload, viteEnv: name }),
           });
         }
       };
@@ -114,7 +127,7 @@ export async function configureViteDevServer(
     for (const env of Object.values(server.environments)) {
       env.hot.send({
         type: "custom",
-        event: "nitro-rpc",
+        event: "nitro:vite-server-addr",
         data:
           typeof addr === "string"
             ? { socketPath: addr }
@@ -124,35 +137,61 @@ export async function configureViteDevServer(
     }
   });
 
-  return () =>
-    server.middlewares.use(async (nodeReq, nodeRes, next) => {
-      // Fast Skip known prefixes
-      if (
-        nodeReq.url!.startsWith("/@vite/") ||
-        nodeReq.url!.startsWith("/@fs/") ||
-        nodeReq.url!.startsWith("/@id/")
-      ) {
-        return next();
+  const nitroEnvMiddleware = async (
+    nodeReq: IncomingMessage,
+    nodeRes: ServerResponse,
+    next: () => void
+  ) => {
+    if (/^\/@(?:vite|fs|id)\//.test(nodeReq.url!)) {
+      return next();
+    }
+
+    // Dispatch the request to the nitro environment
+    const env = server.environments.nitro as FetchableDevEnvironment;
+    const webReq = new NodeRequest({ req: nodeReq, res: nodeRes });
+    const webRes = await env.dispatchFetch(webReq);
+    return webRes.status === 404
+      ? next()
+      : await sendNodeResponse(nodeRes, webRes);
+  };
+
+  // 1. Handle as first middleware for HTML requests
+  server.middlewares.use((req, res, next) => {
+    // https://github.com/vitejs/vite/issues/20705#issuecomment-3272974173
+    if (!res.getHeader("vary")) {
+      res.setHeader("vary", "Sec-Fetch-Dest, Accept");
+    }
+    if (isHTMLRequest(req)) {
+      nitroEnvMiddleware(req, res, next);
+    } else {
+      next();
+    }
+  });
+  return () => {
+    // 2. Handle as last middleware for non-HTML requests
+    server.middlewares.use((req, res, next) => {
+      if (isHTMLRequest(req)) {
+        next();
+      } else {
+        nitroEnvMiddleware(req, res, next);
       }
-
-      // Match fetchable environment based on request
-      // 1. Check for x-vite-env header
-      // 3. Default to nitro environment
-      const env = (server.environments[
-        nodeReq.headers["x-vite-env"] as string
-      ] || server.environments.nitro) as FetchableDevEnvironment;
-
-      // Make sure the environment is fetchable or else skip
-      if (typeof env?.dispatchFetch !== "function") {
-        ctx.nitro!.logger.warn("Environment is not fetchable:", env.name);
-        return next();
-      }
-
-      // Dispatch the request to the environment
-      const webReq = new NodeRequest({ req: nodeReq, res: nodeRes });
-      const webRes = await env.dispatchFetch(webReq);
-      return webRes.status === 404
-        ? next()
-        : await sendNodeResponse(nodeRes, webRes);
     });
+  };
+}
+
+function isHTMLRequest(req: IncomingMessage): boolean {
+  if ((req as any)._isHTML !== undefined) {
+    return (req as any)._isHTML;
+  }
+  let isHTML = false;
+  const fetchDest = req.headers["sec-fetch-dest"] || "";
+  const accept = req.headers.accept || "";
+  if (
+    /^(document|iframe|frame)$/.test(fetchDest) ||
+    ((!fetchDest || fetchDest === "empty") && accept.includes("text/html"))
+  ) {
+    isHTML = true;
+  }
+  (req as any)._isHTML = isHTML;
+  return isHTML;
 }

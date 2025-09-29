@@ -5,7 +5,11 @@ import { join, resolve, relative } from "pathe";
 import { createNitro, prepare } from "../..";
 import { getViteRollupConfig } from "./rollup";
 import { buildEnvironments, prodEntry } from "./prod";
-import { createNitroEnvironment, createServiceEnvironments } from "./env";
+import {
+  createDevWorker,
+  createNitroEnvironment,
+  createServiceEnvironments,
+} from "./env";
 import { configureViteDevServer } from "./dev";
 import { runtimeDependencies, runtimeDir } from "nitro/runtime/meta";
 
@@ -50,32 +54,24 @@ function mainPlugin(ctx: NitroPluginContext): VitePlugin[] {
               generateRuntimeConfigTypes: false,
               generateTsConfig: false,
             },
-            handlers: [
-              {
-                route: "/**",
-                handler: resolve(runtimeDir, "internal/vite/dispatcher.mjs"),
-              },
-            ],
             ...ctx.pluginConfig.config,
           }));
 
-        // Auto config default (ssr) service
+        // Config ssr env as a fetchable ssr service
         if (!ctx.pluginConfig.services?.ssr) {
           ctx.pluginConfig.services ??= {};
           if (userConfig.environments?.ssr === undefined) {
-            const serverEntry = resolveModulePath("./server", {
-              from: [
-                join(ctx.nitro.options.srcDir, "/"),
-                join(ctx.nitro.options.rootDir, "src/"),
-              ],
+            const ssrEntry = resolveModulePath("./app", {
+              from: ctx.nitro.options.scanDirs,
+              suffixes: [".server", "/server"],
               extensions: [".ts", ".js", ".mts", ".mjs", ".tsx", ".jsx"],
               try: true,
             });
-            if (serverEntry) {
+            if (ssrEntry) {
               ctx.nitro!.logger.info(
-                `Using \`${prettyPath(serverEntry)}\` as the server entry.`
+                `Using \`${prettyPath(ssrEntry)}\` as SSR entry.`
               );
-              ctx.pluginConfig.services.ssr = { entry: serverEntry };
+              ctx.pluginConfig.services.ssr = { entry: ssrEntry };
             }
           } else {
             const input =
@@ -116,6 +112,11 @@ function mainPlugin(ctx: NitroPluginContext): VitePlugin[] {
 
         // Resolve common rollup options
         ctx.rollupConfig = await getViteRollupConfig(ctx);
+
+        // Create dev worker
+        if (ctx.nitro.options.dev && !ctx.devWorker) {
+          ctx.devWorker = createDevWorker(ctx);
+        }
 
         return {
           // Don't include HTML middlewares
