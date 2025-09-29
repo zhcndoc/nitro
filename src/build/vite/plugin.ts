@@ -146,6 +146,14 @@ function mainPlugin(ctx: NitroPluginContext): VitePlugin[] {
             /// Share the config instance among environments to align with the behavior of dev server
             sharedConfigBuild: true,
           },
+
+          server: {
+            port:
+              Number.parseInt(process.env.PORT || "") ||
+              userConfig.server?.port ||
+              ctx.nitro.options.devServer?.port ||
+              3000,
+          },
         };
       },
 
