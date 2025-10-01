@@ -21,6 +21,8 @@ import { prettyPath } from "../../utils/fs";
 // https://vite.dev/guide/api-environment-plugins
 // https://vite.dev/guide/api-environment-frameworks.html
 
+const DEFAULT_EXTENSIONS = [".ts", ".js", ".mts", ".mjs", ".tsx", ".jsx"];
+
 export function nitro(pluginConfig: NitroPluginConfig = {}): VitePlugin {
   const ctx: NitroPluginContext = {
     pluginConfig,
@@ -58,7 +60,7 @@ function mainPlugin(ctx: NitroPluginContext): VitePlugin[] {
             const ssrEntry = resolveModulePath("./app", {
               from: ctx.nitro.options.scanDirs,
               suffixes: [".server", "/server"],
-              extensions: [".ts", ".js", ".mts", ".mjs", ".tsx", ".jsx"],
+              extensions: DEFAULT_EXTENSIONS,
               try: true,
             });
             if (ssrEntry) {
@@ -315,16 +317,29 @@ function nitroServicePlugin(ctx: NitroPluginContext): VitePlugin {
           if (internalRes) {
             return internalRes;
           }
-          return (
-            resolveModulePath(id, {
-              from: [ctx.nitro!.options.rootDir, import.meta.url],
-              try: true,
-            }) ||
-            resolveModulePath("./" + id, {
-              from: [ctx.nitro!.options.rootDir, import.meta.url],
-              try: true,
-            })
+          const resolvedFromRoot = await this.resolve(
+            id,
+            ctx.nitro!.options.rootDir,
+            { ...options, custom: { ...options.custom, skipNoExternals: true } }
           );
+          if (resolvedFromRoot) {
+            return resolvedFromRoot;
+          }
+          const ids = [id];
+          if (!/^[./@#]/.test(id)) {
+            ids.push(`./${id}`);
+          }
+          for (const _id of ids) {
+            const resolved = resolveModulePath(_id, {
+              from: process.cwd(),
+              extensions: DEFAULT_EXTENSIONS,
+              suffixes: ["", "/index"],
+              try: true,
+            });
+            if (resolved) {
+              return resolved;
+            }
+          }
         }
       },
     },
