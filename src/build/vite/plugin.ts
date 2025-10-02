@@ -1,5 +1,5 @@
 import type { PluginOption as VitePlugin } from "vite";
-import type { Plugin as RollupPlugin } from "rollup";
+import type { InputOption, Plugin as RollupPlugin } from "rollup";
 import type { NitroPluginConfig, NitroPluginContext } from "./types";
 import { resolve, relative } from "pathe";
 import { createNitro, prepare } from "../..";
@@ -70,16 +70,23 @@ function mainPlugin(ctx: NitroPluginContext): VitePlugin[] {
               ctx.pluginConfig.services.ssr = { entry: ssrEntry };
             }
           } else {
-            const input =
-              userConfig.environments.ssr.build?.rollupOptions?.input;
-            if (typeof input === "string") {
-              ctx.pluginConfig.services.ssr = {
-                entry: input,
-              };
-            } else {
-              this.error(
-                `Invalid input type for SSR entry point. Expected a string.`
+            let ssrEntry = getEntry(
+              userConfig.environments.ssr.build?.rollupOptions?.input
+            );
+            if (typeof ssrEntry === "string") {
+              ssrEntry =
+                resolveModulePath(ssrEntry, {
+                  from: ctx.nitro.options.scanDirs,
+                  extensions: DEFAULT_EXTENSIONS,
+                  suffixes: ["", "/index"],
+                  try: true,
+                }) || ssrEntry;
+              ctx.nitro!.logger.info(
+                `Using \`${prettyPath(ssrEntry)}\` as SSR entry.`
               );
+              ctx.pluginConfig.services.ssr = { entry: ssrEntry };
+            } else {
+              this.error(`Invalid input type for SSR entry point.`);
             }
           }
         }
@@ -379,4 +386,16 @@ function nitroServicePlugin(ctx: NitroPluginContext): VitePlugin {
       },
     },
   };
+}
+
+// --- internal helpers ---
+
+function getEntry(input: InputOption | undefined): string | undefined {
+  if (typeof input === "string") {
+    return input;
+  } else if (Array.isArray(input) && input.length > 0) {
+    return input[0];
+  } else if (input && "index" in input) {
+    return input.index as string;
+  }
 }
