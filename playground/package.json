@@ -14,7 +14,7 @@
     "nitro": "link:..",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-refresh": "^0.17.0",
+    "react-refresh": "^0.18.0",
     "vite": "^7.1.8"
   }
 }
