@@ -306,7 +306,7 @@ function nitroServicePlugin(ctx: NitroPluginContext): VitePlugin {
   return {
     name: "nitro:service",
 
-    enforce: 'pre',
+    enforce: "pre",
 
     // Only apply this plugin to the nitro environment
     applyToEnvironment: (env) => env.name === "nitro",
