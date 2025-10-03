@@ -65,10 +65,10 @@ function mainPlugin(ctx: NitroPluginContext): VitePlugin[] {
               try: true,
             });
             if (ssrEntry) {
-              ctx.nitro!.logger.info(
-                `Using \`${prettyPath(ssrEntry)}\` as SSR entry.`
-              );
               ctx.pluginConfig.services.ssr = { entry: ssrEntry };
+              ctx.nitro!.logger.info(
+                `Using \`${prettyPath(ssrEntry)}\` as vite ssr entry.`
+              );
             }
           } else {
             let ssrEntry = getEntry(
@@ -82,9 +82,6 @@ function mainPlugin(ctx: NitroPluginContext): VitePlugin[] {
                   suffixes: ["", "/index"],
                   try: true,
                 }) || ssrEntry;
-              ctx.nitro!.logger.info(
-                `Using \`${prettyPath(ssrEntry)}\` as SSR entry.`
-              );
               ctx.pluginConfig.services.ssr = { entry: ssrEntry };
             } else {
               this.error(`Invalid input type for SSR entry point.`);
@@ -92,10 +89,18 @@ function mainPlugin(ctx: NitroPluginContext): VitePlugin[] {
           }
         }
 
-        // Use SSR entry as default renderer
+        // Default SSR renderer
         if (
-          ctx.pluginConfig.services.ssr?.entry &&
-          !ctx.nitro.options.renderer?.entry
+          ctx.nitro.options.renderer?.template &&
+          ctx.pluginConfig.services.ssr?.entry
+        ) {
+          ctx.nitro.logger.warn(
+            "Both SSR entry and renderer template are set. SSR entry needs manual fetch (experimental)."
+          );
+        } else if (
+          !ctx.nitro.options.renderer?.entry &&
+          !ctx.nitro.options.renderer?.template &&
+          ctx.pluginConfig.services.ssr?.entry
         ) {
           ctx.nitro.options.renderer ??= {};
           ctx.nitro.options.renderer.entry = resolve(
@@ -104,14 +109,14 @@ function mainPlugin(ctx: NitroPluginContext): VitePlugin[] {
           );
         }
 
-        // Disable basic template renderer in dev mode (dev server will handle it)
+        // Use vite dev renderer in dev mode
         if (
           ctx.nitro.options.dev &&
           ctx.nitro.options.renderer?.template &&
           ctx.nitro.options.renderer?.entry ===
             resolve(runtimeDir, "internal/routes/renderer-template")
         ) {
-          ctx.nitro.options.renderer.entry = undefined;
+          ctx.nitro.options.renderer.entry = "#vite-dev";
         }
 
         // Determine default Vite dist directory
