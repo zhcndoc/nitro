@@ -4,7 +4,7 @@ import type { NitroPluginConfig, NitroPluginContext } from "./types";
 import { resolve, relative } from "pathe";
 import { createNitro, prepare } from "../..";
 import { getViteRollupConfig } from "./rollup";
-import { buildEnvironments, prodEntry } from "./prod";
+import { buildEnvironments, prodSetup } from "./prod";
 import {
   createDevWorker,
   createNitroEnvironment,
@@ -12,9 +12,6 @@ import {
 } from "./env";
 import { configureViteDevServer } from "./dev";
 import { runtimeDependencies, runtimeDir } from "nitro/runtime/meta";
-
-import * as rou3 from "rou3";
-import * as rou3Compiler from "rou3/compiler";
 import { resolveModulePath } from "exsolve";
 import { prettyPath } from "../../utils/fs";
 import { NitroDevApp } from "../../dev/app";
@@ -134,7 +131,7 @@ function mainPlugin(ctx: NitroPluginContext): VitePlugin[] {
         if (!ctx.nitro.options.dev) {
           ctx.nitro.options.unenv.push({
             meta: { name: "nitro-vite" },
-            polyfill: ["#nitro-vite-entry"],
+            polyfill: ["#nitro-vite-setup"],
           });
         }
 
@@ -319,7 +316,7 @@ function nitroServicePlugin(ctx: NitroPluginContext): VitePlugin {
     resolveId: {
       async handler(id, importer, options) {
         // Virtual modules
-        if (id === "#nitro-vite-entry") {
+        if (id === "#nitro-vite-setup") {
           return { id, moduleSideEffects: true };
         }
         if (id === "#nitro-vite-services") {
@@ -398,21 +395,8 @@ function nitroServicePlugin(ctx: NitroPluginContext): VitePlugin {
     load: {
       async handler(id) {
         // Virtual modules
-        if (id === "#nitro-vite-entry") {
-          return prodEntry(ctx);
-        }
-        if (id === "#nitro-vite-services") {
-          const router = rou3.createRouter();
-          for (const [name, service] of Object.entries(
-            ctx.pluginConfig.services || {}
-          )) {
-            const route = service.route || (name === "ssr" ? "/**" : undefined);
-            if (!route) {
-              continue;
-            }
-            rou3.addRoute(router, "", route, { service: name });
-          }
-          return `export const findService = ${rou3Compiler.compileRouterToString(router)};`;
+        if (id === "#nitro-vite-setup") {
+          return prodSetup(ctx);
         }
 
         // Run rollup load hooks (VFS support)
