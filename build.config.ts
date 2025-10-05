@@ -35,7 +35,12 @@ export default defineBuildConfig({
     { input: "src/vite.ts" },
     { input: "src/types/index.ts" },
     { input: "src/runtime/", outDir: "dist/runtime", format: "esm" },
-    { input: "src/presets/", outDir: "dist/presets", format: "esm" },
+    {
+      input: "src/presets/",
+      outDir: "dist/presets",
+      format: "esm",
+      pattern: "**/runtime/**",
+    },
   ],
   hooks: {
     async "build:done"(ctx) {
@@ -69,6 +74,9 @@ export default defineBuildConfig({
         const id = normalize(chunk.moduleIds.at(-1));
         if (id.includes("/src/cli/")) {
           return "cli/[name].mjs";
+        }
+        if (id.includes("/src/presets")) {
+          return "presets.mjs";
         }
         return "_chunks/[name].mjs";
       },
