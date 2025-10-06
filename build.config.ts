@@ -57,6 +57,7 @@ export default defineBuildConfig({
     },
   },
   externals: [
+    "typescript",
     "nitro",
     ...[...distSubpaths, ...libSubpaths].map((subpath) => `nitro/${subpath}`),
     "firebase-functions",
@@ -69,6 +70,7 @@ export default defineBuildConfig({
     },
   },
   rollup: {
+    inlineDependencies: true,
     output: {
       chunkFileNames(chunk: any) {
         const id = normalize(chunk.moduleIds.at(-1));
