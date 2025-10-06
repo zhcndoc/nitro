@@ -30,6 +30,7 @@ export function createNitroEnvironment(
     build: {
       rollupOptions: ctx.rollupConfig!.config as any,
       minify: ctx.nitro!.options.minify,
+      emptyOutDir: false,
       commonjsOptions: {
         strictRequires: "auto", // TODO: set to true (default) in v3
         esmExternals: (id) => !id.startsWith("unenv/"),
@@ -41,8 +42,7 @@ export function createNitroEnvironment(
       noExternal: ctx.nitro!.options.dev
         ? // Workaround for dev: external dependencies are not resolvable with respect to nodeModulePaths
           new RegExp(runtimeDependencies.join("|"))
-        : // Workaround for production: externals tracing currently does not work with Vite rollup build
-          true,
+        : ctx.nitro!.options.noExternals || undefined,
       conditions: ctx.nitro!.options.exportConditions,
       externalConditions: ctx.nitro!.options.exportConditions,
     },

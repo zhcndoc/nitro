@@ -16,6 +16,7 @@ import { resolveModulePath } from "exsolve";
 import { prettyPath } from "../../utils/fs";
 import { NitroDevApp } from "../../dev/app";
 import { nitroPreviewPlugin } from "./preview";
+import { fileURLToPath } from "node:url";
 
 // https://vite.dev/guide/api-environment-plugins
 // https://vite.dev/guide/api-environment-frameworks.html
@@ -30,7 +31,12 @@ export function nitro(pluginConfig: NitroPluginConfig = {}): VitePlugin {
     _serviceBundles: {},
   };
 
-  return [nitroPlugin(ctx), nitroServicePlugin(ctx), nitroPreviewPlugin(ctx)];
+  return [
+    nitroPlugin(ctx),
+    nitroServicePlugin(ctx),
+    nitroPreviewPlugin(ctx),
+    nitroRollupPlugins(ctx),
+  ];
 }
 
 function nitroPlugin(ctx: NitroPluginContext): VitePlugin[] {
@@ -327,19 +333,6 @@ function nitroServicePlugin(ctx: NitroPluginContext): VitePlugin {
           return id;
         }
 
-        // Run rollup resolve hooks in dev (VFS support)
-        if (id.startsWith("#") || id.startsWith("\0")) {
-          for (const plugin of ctx.rollupConfig!.config
-            .plugins as RollupPlugin[]) {
-            if (typeof plugin.resolveId !== "function") continue;
-            // prettier-ignore
-            const resolved = await plugin.resolveId.call(this, id, importer, options);
-            if (resolved) {
-              return resolved;
-            }
-          }
-        }
-
         // Resolve built-in deps
         if (
           runtimeDependencies.some(
@@ -402,20 +395,44 @@ function nitroServicePlugin(ctx: NitroPluginContext): VitePlugin {
         if (id === "#nitro-vite-setup") {
           return prodSetup(ctx);
         }
-
-        // Run rollup load hooks (VFS support)
-        if (id.startsWith("#") || id.startsWith("\0")) {
-          for (const plugin of ctx.rollupConfig!.config
-            .plugins as RollupPlugin[]) {
-            if (typeof plugin.load !== "function") continue;
-            const resolved = await plugin.load.call(this, id);
-            if (resolved) {
-              return resolved;
-            }
-          }
-        }
       },
     },
+  };
+}
+
+function nitroRollupPlugins(ctx: NitroPluginContext): VitePlugin {
+  const createHookCaller = (
+    hook: keyof RollupPlugin,
+    order: "pre" | "post"
+  ) => {
+    const handler = async function (this: any, ...args: any[]) {
+      for (const plugin of ctx.rollupConfig!.config.plugins as RollupPlugin[]) {
+        if (typeof plugin[hook] !== "function") continue;
+        const res = await plugin[hook].call(this, ...args);
+        if (res) {
+          if (hook === "resolveId" && res.id?.startsWith?.("file://")) {
+            res.id = fileURLToPath(res.id); // hotfix for node externals
+          }
+          return res;
+        }
+      }
+    };
+    Object.defineProperty(handler, "name", { value: hook });
+    return order ? { order, handler } : handler;
+  };
+
+  return {
+    name: "nitro:rollup-hooks",
+    applyToEnvironment: (env) => env.name === "nitro",
+
+    buildStart: createHookCaller("buildStart", "pre"),
+    resolveId: createHookCaller("resolveId", "pre"),
+    load: createHookCaller("load", "pre"),
+
+    transform: createHookCaller("transform", "post"),
+    renderChunk: createHookCaller("renderChunk", "post"),
+    generateBundle: createHookCaller("generateBundle", "post"),
+    buildEnd: createHookCaller("buildEnd", "post"),
   };
 }
 

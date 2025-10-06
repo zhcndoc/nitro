@@ -1,11 +1,5 @@
-import {
-  defineHandler,
-  handleCacheHeaders,
-  isEvent,
-  isHTTPEvent,
-  toResponse,
-} from "h3";
-import { FastResponse, type ServerRequest } from "srvx";
+import { defineHandler, handleCacheHeaders, isHTTPEvent, toResponse } from "h3";
+import { FastResponse } from "srvx";
 import { parseURL } from "ufo";
 import { useNitroApp } from "./app";
 import { useStorage } from "./storage";
