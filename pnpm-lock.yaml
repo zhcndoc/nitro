@@ -42,6 +42,9 @@ importers:
       ofetch:
         specifier: ^1.4.1
         version: 1.4.1
+      ohash:
+        specifier: ^2.0.11
+        version: 2.0.11
       rollup:
         specifier: ^4.52.4
         version: 4.52.4
@@ -232,9 +235,6 @@ importers:
       mlly:
         specifier: ^1.8.0
         version: 1.8.0
-      ohash:
-        specifier: ^2.0.11
-        version: 2.0.11
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
