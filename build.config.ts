@@ -61,6 +61,7 @@ export default defineBuildConfig({
         tracePkgs.map((pkg) => resolveModulePath(pkg)),
         {}
       );
+      await rm("dist/node_modules/ofetch", { recursive: true, force: true });
 
       // Remove extra d.ts files
       for await (const file of glob(resolve(ctx.options.outDir, "**/*.d.ts"))) {
