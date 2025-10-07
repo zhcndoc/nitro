@@ -6,7 +6,6 @@ import { defineBuildConfig } from "unbuild";
 
 import { resolveModulePath } from "exsolve";
 import { traceNodeModules } from "nf3";
-import { builtinDrivers as unstorageDrivers } from "unstorage";
 
 const srcDir = fileURLToPath(new URL("src", import.meta.url));
 const libDir = fileURLToPath(new URL("lib", import.meta.url));
@@ -14,13 +13,7 @@ const libDir = fileURLToPath(new URL("lib", import.meta.url));
 export const distSubpaths = ["presets", "runtime", "types", "vite"];
 export const libSubpaths = ["config", "meta", "runtime/meta"];
 
-const tracePkgs = [
-  "youch",
-  "youch-core",
-  "unctx",
-  "unstorage",
-  ...Object.values(unstorageDrivers),
-];
+const tracePkgs = ["youch", "youch-core", "unctx"];
 
 export const stubAlias = {
   nitro: resolve(srcDir, "index.ts"),
