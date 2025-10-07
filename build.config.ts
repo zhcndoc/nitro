@@ -23,8 +23,6 @@ const tracePkgs = [
   "hookable",
   "klona",
   "klona/full",
-  "ohash",
-  "ohash/utils",
   "scule",
   "source-map",
   "ufo",
