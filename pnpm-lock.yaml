@@ -23,7 +23,7 @@ importers:
         version: 9.1.0
       crossws:
         specifier: ^0.4.1
-        version: 0.4.1(srvx@0.8.9)
+        version: 0.4.1(srvx@0.8.13)
       db0:
         specifier: ^0.3.4
         version: 0.3.4
@@ -43,8 +43,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0
       h3:
-        specifier: 2.0.0-beta.5
-        version: 2.0.0-beta.5(crossws@0.4.1(srvx@0.8.9))
+        specifier: ^2.0.0-rc.1
+        version: 2.0.0-rc.1(crossws@0.4.1(srvx@0.8.13))
       hookable:
         specifier: ^5.5.3
         version: 5.5.3
@@ -79,8 +79,8 @@ importers:
         specifier: ^0.7.6
         version: 0.7.6
       srvx:
-        specifier: ^0.8.9
-        version: 0.8.9
+        specifier: ^0.8.13
+        version: 0.8.13
       std-env:
         specifier: ^3.9.0
         version: 3.9.0
@@ -3730,8 +3730,8 @@ packages:
   h3@1.15.4:
     resolution: {integrity: sha512-z5cFQWDffyOe4vQ9xIqNfCZdV4p//vy6fBnr8Q1AWnVZ0teurKMG66rLj++TKwKPUP3u7iMUvrvKaEUiQw2QWQ==}
 
-  h3@2.0.0-beta.5:
-    resolution: {integrity: sha512-ApIkLH+nTxzCC0Nq/GN1v6jkvu2eOLfdTnTs6ghiuG1EYHWJBDLzhk5tn7SZMEUNsLUjG4qfmqzBx2LG9I7Q/w==}
+  h3@2.0.0-rc.1:
+    resolution: {integrity: sha512-aEKi+P+28qvKmza5jr7tT8rqW8UxQZ7IIe6InVTyL8xZYnLR8VF6w5TynjJhBDtEN0RsB0n3MIgEX7rfz3qreQ==}
     engines: {node: '>=20.11.1'}
     peerDependencies:
       crossws: ^0.4.1
@@ -5689,8 +5689,8 @@ packages:
   spdx-license-ids@3.0.22:
     resolution: {integrity: sha512-4PRT4nh1EImPbt2jASOKHX7PB7I+e4IWNLvkKFDxNhJlfjbYlleYQh285Z/3mPTHSAK/AvdMmw5BNNuYH8ShgQ==}
 
-  srvx@0.8.9:
-    resolution: {integrity: sha512-wYc3VLZHRzwYrWJhkEqkhLb31TI0SOkfYZDkUhXdp3NoCnNS0FqajiQszZZjfow/VYEuc6Q5sZh9nM6kPy2NBQ==}
+  srvx@0.8.13:
+    resolution: {integrity: sha512-ny3X0dm5GsLeeUOsLwfY3mLu/UhM8QkCrc5/rWKt75mx74udHUDlTsUxC5YRArgiMX/knsbRSwJcNo2aPUeN5A==}
     engines: {node: '>=20.16.0'}
     hasBin: true
 
@@ -9280,9 +9280,9 @@ snapshots:
     dependencies:
       uncrypto: 0.1.3
 
-  crossws@0.4.1(srvx@0.8.9):
+  crossws@0.4.1(srvx@0.8.13):
     optionalDependencies:
-      srvx: 0.8.9
+      srvx: 0.8.13
 
   crypt@0.0.2: {}
 
@@ -10194,14 +10194,14 @@ snapshots:
       ufo: 1.6.1
       uncrypto: 0.1.3
 
-  h3@2.0.0-beta.5(crossws@0.4.1(srvx@0.8.9)):
+  h3@2.0.0-rc.1(crossws@0.4.1(srvx@0.8.13)):
     dependencies:
       cookie-es: 2.0.0
       fetchdts: 0.1.7
       rou3: 0.7.7
-      srvx: 0.8.9
+      srvx: 0.8.13
     optionalDependencies:
-      crossws: 0.4.1(srvx@0.8.9)
+      crossws: 0.4.1(srvx@0.8.13)
 
   has-flag@4.0.0: {}
 
@@ -12531,7 +12531,7 @@ snapshots:
 
   spdx-license-ids@3.0.22: {}
 
-  srvx@0.8.9:
+  srvx@0.8.13:
     dependencies:
       cookie-es: 2.0.0
 
