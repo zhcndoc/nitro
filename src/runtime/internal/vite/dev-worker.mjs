@@ -83,7 +83,39 @@ class EnvRunner {
 
 // ----- RPC listeners -----
 
-let viteServerAddr;
+const viteHostRequests = new Map();
+
+async function requestToViteHost(
+  name,
+  data,
+  id = Math.random().toString(16).slice(2),
+  timeout = 3000
+) {
+  setTimeout(() => {
+    if (viteHostRequests.has(id)) {
+      viteHostRequests.delete(id);
+      reject(new Error(`Request to vite host timed out (${name}:${id})`));
+    }
+  }, timeout);
+  let resolve, reject;
+  const promise = new Promise((_resolve, _reject) => {
+    resolve = (value) => {
+      viteHostRequests.delete(id);
+      return _resolve(value);
+    };
+    reject = (err) => {
+      viteHostRequests.delete(id);
+      return _reject(err);
+    };
+  });
+  viteHostRequests.set(id, { resolve, reject });
+  parentPort.postMessage({
+    type: "custom",
+    event: "nitro:vite-invoke",
+    data: { name, id, data },
+  });
+  return promise;
+}
 
 parentPort.on("message", (payload) => {
   if (payload?.type !== "custom") {
@@ -100,6 +132,18 @@ parentPort.on("message", (payload) => {
         console.error(`Vite environment "${name}" already registered!`);
       } else {
         envs[name] = new EnvRunner({ name, entry });
+      }
+      break;
+    }
+    case "nitro:vite-invoke-response": {
+      const { id, data: response } = payload.data;
+      const req = viteHostRequests.get(id);
+      if (req) {
+        if (response.error) {
+          req.reject(response.error);
+        } else {
+          req.resolve(response.data);
+        }
       }
       break;
     }
@@ -211,6 +255,16 @@ if (workerData.server) {
         : { host: "localhost", port: address?.port },
   });
 }
+
+// ----- HTML Transform -----
+
+globalThis.__transform_html__ = async function (html) {
+  html = await requestToViteHost("transformHTML", html).catch((error) => {
+    console.warn("Failed to transform HTML via Vite:", error);
+    return html;
+  });
+  return html;
+};
 
 // ----- Error handling -----
 

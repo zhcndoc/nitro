@@ -99,13 +99,6 @@ function nitroPlugin(ctx: NitroPluginContext): VitePlugin[] {
 
         // Default SSR renderer
         if (
-          ctx.nitro.options.renderer?.template &&
-          ctx.pluginConfig.services.ssr?.entry
-        ) {
-          ctx.nitro.logger.warn(
-            "Both SSR entry and renderer template are set. SSR entry needs manual fetch (experimental)."
-          );
-        } else if (
           !ctx.nitro.options.renderer?.entry &&
           !ctx.nitro.options.renderer?.template &&
           ctx.pluginConfig.services.ssr?.entry
@@ -115,16 +108,6 @@ function nitroPlugin(ctx: NitroPluginContext): VitePlugin[] {
             runtimeDir,
             "internal/vite/ssr-renderer"
           );
-        }
-
-        // Use vite dev renderer in dev mode
-        if (
-          ctx.nitro.options.dev &&
-          ctx.nitro.options.renderer?.template &&
-          ctx.nitro.options.renderer?.entry ===
-            resolve(runtimeDir, "internal/routes/renderer-template")
-        ) {
-          ctx.nitro.options.renderer.entry = "#vite-dev";
         }
 
         // Determine default Vite dist directory
