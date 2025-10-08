@@ -31,7 +31,7 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       h3:
-        specifier: ^2.0.0-rc.1
+        specifier: 2.0.0-rc.1
         version: 2.0.0-rc.1(crossws@0.4.1(srvx@0.8.13))
       jiti:
         specifier: ^2.6.1
