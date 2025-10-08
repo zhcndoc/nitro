@@ -25,10 +25,6 @@ export function createDevWorker(ctx: NitroPluginContext) {
 export function createNitroEnvironment(
   ctx: NitroPluginContext
 ): EnvironmentOptions {
-  console.log({
-    option: ctx.nitro!.options.noExternals,
-    noExternals: ctx.nitro!.options.noExternals === false ? undefined : true,
-  });
   return {
     consumer: "server",
     build: {
