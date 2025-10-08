@@ -5,7 +5,7 @@ import { initStorage } from "#nitro-internal-virtual/storage";
 export function useStorage<T extends StorageValue = StorageValue>(
   base = ""
 ): Storage<T> {
-  const storage = (globalThis as any)._storage ?? initStorage();
+  const storage = ((useStorage as any)._storage ??= initStorage());
   return (base
     ? prefixStorage(storage, base)
     : storage) as unknown as Storage<T>;
