@@ -25,6 +25,10 @@ export function createDevWorker(ctx: NitroPluginContext) {
 export function createNitroEnvironment(
   ctx: NitroPluginContext
 ): EnvironmentOptions {
+  console.log({
+    option: ctx.nitro!.options.noExternals,
+    noExternals: ctx.nitro!.options.noExternals === false ? undefined : true,
+  });
   return {
     consumer: "server",
     build: {
@@ -42,7 +46,8 @@ export function createNitroEnvironment(
       noExternal: ctx.nitro!.options.dev
         ? // Workaround for dev: external dependencies are not resolvable with respect to nodeModulePaths
           new RegExp(runtimeDependencies.join("|"))
-        : ctx.nitro!.options.noExternals || undefined,
+        : // Workaround for build: externals tracing is unstable
+          (ctx.nitro!.options.noExternals === false ? undefined : true), // prettier-ignore
       conditions: ctx.nitro!.options.exportConditions,
       externalConditions: ctx.nitro!.options.exportConditions,
     },
