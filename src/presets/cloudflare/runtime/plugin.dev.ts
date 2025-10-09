@@ -59,6 +59,8 @@ export default <NitroAppPlugin>function (nitroApp) {
 };
 
 async function _getPlatformProxy() {
+  const { useRuntimeConfig } = await import("nitro/runtime");
+
   const pkg = "wrangler"; // bypass bundler
   const { getPlatformProxy } = (await import(/* @vite-ignore */ pkg).catch(
     () => {
@@ -68,18 +70,13 @@ async function _getPlatformProxy() {
     }
   )) as typeof import("wrangler");
 
-  const { useRuntimeConfig } = await import(
-    // @ts-expect-error
-    "nitro/runtime/internal/runtime-config"
-  );
-
   const runtimeConfig: {
     wrangler: {
       configPath: string;
       persistDir: string;
       environment?: string;
     };
-  } = useRuntimeConfig();
+  } = useRuntimeConfig() as any;
 
   const proxyOptions: GetPlatformProxyOptions = {
     configPath: runtimeConfig.wrangler.configPath,

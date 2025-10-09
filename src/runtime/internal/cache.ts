@@ -1,9 +1,9 @@
 import { defineHandler, handleCacheHeaders, isHTTPEvent, toResponse } from "h3";
 import { FastResponse } from "srvx";
 import { parseURL } from "ufo";
+import { hash } from "ohash";
 import { useNitroApp } from "./app";
 import { useStorage } from "./storage";
-import { hash } from "ohash";
 
 import type { H3Event, EventHandler, HTTPEvent } from "h3";
 import type { TransactionOptions } from "unstorage";

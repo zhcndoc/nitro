@@ -1,4 +1,3 @@
-import type { ServerRequest } from "srvx";
 import type {
   CaptureError,
   MatchedRouteRules,
@@ -6,15 +5,15 @@ import type {
   NitroAsyncContext,
   NitroRuntimeHooks,
 } from "nitro/types";
-import { H3Core, toRequest } from "h3";
+import type { ServerRequest } from "srvx";
 import type { HTTPEvent, Middleware } from "h3";
-import { createFetch } from "ofetch";
+import { H3Core, toRequest } from "h3";
+import { createHooks } from "hookable";
+import { nitroAsyncContext } from "./context";
 
 // IMPORTANT: virtuals and user code should be imported last to avoid initialization order issues
 import errorHandler from "#nitro-internal-virtual/error-handler";
 import { plugins } from "#nitro-internal-virtual/plugins";
-import { createHooks } from "hookable";
-import { nitroAsyncContext } from "./context";
 import {
   findRoute,
   findRouteRules,
