@@ -1,6 +1,6 @@
 {
   "name": "nitro",
-  "version": "3.0.0-beta",
+  "version": "3.0.0-alpha.0",
   "description": "Build and Deploy Universal JavaScript Servers",
   "homepage": "https://nitro.build",
   "repository": "nitrojs/nitro",
