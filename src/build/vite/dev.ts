@@ -9,7 +9,11 @@ import type {
 import { IncomingMessage, ServerResponse } from "node:http";
 import { NodeRequest, sendNodeResponse } from "srvx/node";
 import { DevEnvironment } from "vite";
-import { compileTemplate, renderToResponse } from "rendu";
+import { watch as chokidarWatch } from "chokidar";
+import { watch as fsWatch } from "node:fs";
+import { join } from "pathe";
+import { debounce } from "perfect-debounce";
+import { scanHandlers } from "../../scan";
 
 // https://vite.dev/guide/api-environment-runtimes.html#modulerunner
 
@@ -109,14 +113,53 @@ export async function configureViteDevServer(
   ctx: NitroPluginContext,
   server: ViteDevServer
 ) {
+  const nitro = ctx.nitro!;
+  const nitroEnv = server.environments.nitro as FetchableDevEnvironment;
+
   // Restart with nitro.config changes
-  const nitroConfigFile = ctx.nitro!.options._c12.configFile;
+  const nitroConfigFile = nitro.options._c12.configFile;
   if (nitroConfigFile) {
     server.config.configFileDependencies.push(nitroConfigFile);
   }
 
-  // Nitro dev environment
-  const nitroEnv = server.environments.nitro as FetchableDevEnvironment;
+  // Rebuild on scan dir changes
+  const reload = debounce(async () => {
+    await scanHandlers(nitro);
+    nitro.routing.sync();
+    nitroEnv.moduleGraph.invalidateAll();
+    nitroEnv.hot.send({ type: "full-reload" });
+  });
+
+  const scanDirs = nitro.options.scanDirs.flatMap((dir) => [
+    join(dir, nitro.options.apiDir || "api"),
+    join(dir, nitro.options.routesDir || "routes"),
+    join(dir, "middleware"),
+    join(dir, "plugins"),
+    join(dir, "modules"),
+  ]);
+
+  const watchReloadEvents = new Set(["add", "addDir", "unlink", "unlinkDir"]);
+  const scanDirsWatcher = chokidarWatch(scanDirs, {
+    ignoreInitial: true,
+  }).on("all", (event, path, stat) => {
+    if (watchReloadEvents.has(event)) {
+      reload();
+    }
+  });
+
+  const srcDirWatcher = fsWatch(
+    nitro.options.srcDir,
+    { persistent: false },
+    (_event, filename) => {
+      if (filename && /^server\.[mc]?[jt]sx?$/.test(filename)) {
+        reload();
+      }
+    }
+  );
+  nitro.hooks.hook("close", () => {
+    scanDirsWatcher.close();
+    srcDirWatcher.close();
+  });
 
   // Worker => Host IPC
   const hostIPC = {
