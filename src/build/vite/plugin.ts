@@ -393,7 +393,15 @@ function nitroRollupPlugins(ctx: NitroPluginContext): VitePlugin {
     const handler = async function (this: any, ...args: any[]) {
       for (const plugin of ctx.rollupConfig!.config.plugins as RollupPlugin[]) {
         if (typeof plugin[hook] !== "function") continue;
-        const res = await plugin[hook].call(this, ...args);
+        let res: any;
+        try {
+          res = await plugin[hook].call(this, ...args);
+        } catch (error) {
+          throw new Error(
+            `[nitro] Calling rollup plugin ${plugin.name || "unknown"}.${hook} failed`,
+            { cause: error }
+          );
+        }
         if (res) {
           if (hook === "resolveId" && res.id?.startsWith?.("file://")) {
             res.id = fileURLToPath(res.id); // hotfix for node externals
