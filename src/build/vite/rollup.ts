@@ -18,6 +18,7 @@ import type { NitroPluginContext } from "./types";
  *  - esbuild
  *  - sourcemapMininify
  *  - json
+ *  - raw
  *
  * TODO: Reuse with rollup:
  * - chunkFileNames
@@ -35,7 +36,6 @@ export const getViteRollupConfig = (
     [base.buildServerDir, "app"],
     [runtimeDir, "nitro"],
     [base.presetsDir, "nitro"],
-    ["\0raw:", "raw"],
     ["\0nitro-wasm:", "wasm"],
     ["\0", "virtual"],
   ] as const;

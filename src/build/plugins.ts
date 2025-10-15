@@ -15,7 +15,6 @@ import { routing } from "./plugins/routing";
 import { routeMeta } from "./plugins/route-meta";
 import { serverMain } from "./plugins/server-main";
 import { publicAssets } from "./plugins/public-assets";
-import { raw } from "./plugins/raw";
 import { serverAssets } from "./plugins/server-assets";
 import { storage } from "./plugins/storage";
 import { virtual } from "./plugins/virtual";
@@ -30,9 +29,6 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
   if (nitro.options.imports) {
     plugins.push(unimportPlugin.rollup(nitro.options.imports) as Plugin);
   }
-
-  // Raw asset loader
-  plugins.push(raw());
 
   // WASM loader
   if (nitro.options.experimental.wasm) {

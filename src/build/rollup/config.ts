@@ -15,6 +15,7 @@ import { esbuild } from "../plugins/esbuild";
 import { sourcemapMininify } from "../plugins/sourcemap-min";
 import { baseBuildConfig } from "../config";
 import { baseBuildPlugins } from "../plugins";
+import { raw } from "../plugins/raw";
 
 export const getRollupConfig = (nitro: Nitro): RollupConfig => {
   const base = baseBuildConfig(nitro);
@@ -64,6 +65,7 @@ export const getRollupConfig = (nitro: Nitro): RollupConfig => {
       }),
       json(),
       inject(base.env.inject),
+      raw(),
     ],
     onwarn(warning, rollupWarn) {
       if (
