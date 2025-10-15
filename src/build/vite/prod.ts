@@ -9,6 +9,7 @@ import { existsSync } from "node:fs";
 import { runtimeDir } from "nitro/runtime/meta";
 import { writeBuildInfo } from "../info";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { isTest, isCI } from "std-env";
 
 const BuilderNames = {
   nitro: C.magenta("Nitro"),
@@ -43,7 +44,7 @@ export async function buildEnvironments(
       }
       continue;
     }
-    console.log();
+    if (!isTest && !isCI) console.log();
     nitro.logger.start(`Building [${fmtName}]`);
     await builder.build(env);
   }
@@ -79,7 +80,7 @@ export async function buildEnvironments(
   // Stage 2: Build Nitro
   // ----------------------------------------------
 
-  console.log();
+  if (!isTest && !isCI) console.log();
   const buildInfo = [
     ["preset", nitro.options.preset],
     ["compatibility", formatCompatibilityDate(nitro.options.compatibilityDate)],
@@ -120,7 +121,7 @@ export async function buildEnvironments(
     return input.replace(/([\s:])\.\/(\S*)/g, `$1${rOutput}/$2`);
   };
 
-  console.log();
+  if (!isTest && !isCI) console.log();
   if (nitro.options.commands.preview) {
     nitro.logger.success(
       `You can preview this build using \`${rewriteRelativePaths(
