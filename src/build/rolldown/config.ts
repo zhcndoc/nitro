@@ -39,7 +39,7 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
         preventAssignment: true,
         values: base.replacements,
       }) as RolldownPlugin,
-      raw(),
+      raw() as RolldownPlugin,
     ],
     resolve: {
       alias: base.aliases,
