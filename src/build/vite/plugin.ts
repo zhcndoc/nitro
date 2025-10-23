@@ -136,6 +136,15 @@ function nitroPlugin(ctx: NitroPluginContext): VitePlugin[] {
         // Resolve common rollup options
         ctx.rollupConfig = await getViteRollupConfig(ctx);
 
+        // Call rollup:before hook in dev mode for compatibility
+        if (ctx.nitro.options.dev) {
+          await ctx.nitro.hooks.callHook(
+            "rollup:before",
+            ctx.nitro,
+            ctx.rollupConfig.config
+          );
+        }
+
         // Create dev worker
         if (ctx.nitro.options.dev && !ctx.devWorker) {
           ctx.devWorker = createDevWorker(ctx);
