@@ -22,6 +22,7 @@ import { defu } from "defu";
 import { prettyPath } from "../../utils/fs";
 import { NitroDevApp } from "../../dev/app";
 import { nitroPreviewPlugin } from "./preview";
+import { assetsPlugin } from "@hiogawa/vite-plugin-fullstack";
 
 // https://vite.dev/guide/api-environment-plugins
 // https://vite.dev/guide/api-environment-frameworks.html
@@ -41,6 +42,13 @@ export function nitro(pluginConfig: NitroPluginConfig = {}): VitePlugin {
     nitroPrepare(ctx),
     nitroService(ctx),
     nitroPreviewPlugin(ctx),
+    pluginConfig.experimental?.assetsImport !== false &&
+      assetsPlugin({
+        experimental: {
+          // See https://github.com/hi-ogawa/vite-plugins/pull/1289
+          clientBuildFallback: false,
+        },
+      }),
   ];
 }
 
