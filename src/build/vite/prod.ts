@@ -100,13 +100,6 @@ export async function buildEnvironments(
   // TODO
   // await prerender(nitro);
 
-  // Call the rollup:before hook for compatibility
-  await nitro.hooks.callHook(
-    "rollup:before",
-    nitro,
-    builder.environments.nitro.config.build.rollupOptions as any
-  );
-
   // Build the Nitro server bundle
   await builder.build(builder.environments.nitro);
 

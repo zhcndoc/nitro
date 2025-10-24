@@ -449,14 +449,12 @@ async function setupNitroContext(
   // Resolve common rollup options
   ctx.rollupConfig = await getViteRollupConfig(ctx);
 
-  // Call rollup:before hook in dev mode for compatibility
-  if (ctx.nitro.options.dev) {
-    await ctx.nitro.hooks.callHook(
-      "rollup:before",
-      ctx.nitro,
-      ctx.rollupConfig.config
-    );
-  }
+  // Call rollup:before hook to allow modifying rollup config
+  await ctx.nitro.hooks.callHook(
+    "rollup:before",
+    ctx.nitro,
+    ctx.rollupConfig.config
+  );
 
   // Create dev worker
   if (ctx.nitro.options.dev && !ctx.devWorker) {
