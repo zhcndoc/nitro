@@ -9,9 +9,9 @@ const fixtureDir = fileURLToPath(new URL("./", import.meta.url));
 const tmpDir = fileURLToPath(new URL(".tmp", import.meta.url));
 
 const sizeThresholds: Record<string, [number, number]> = {
-  rollup: [27, 16],
-  rolldown: [181, 181],
-  vite: [28, 14],
+  rollup: [24, 15],
+  rolldown: [178, 178],
+  vite: [27, 13],
 };
 
 describe("minimal fixture", () => {
