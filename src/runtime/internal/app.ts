@@ -82,7 +82,7 @@ function createNitroApp(): NitroApp {
   let fetchHandler = (req: ServerRequest): Response | Promise<Response> => {
     req.context ??= {};
     req.context.nitro = req.context.nitro || { errors: [] };
-    return h3App.request(req, undefined, req.context);
+    return h3App.fetch(req);
   };
 
   // Experimental async context support
