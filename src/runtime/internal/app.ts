@@ -160,7 +160,7 @@ function createH3App(config: H3Config) {
         ...findRoutedMiddleware(method!, pathname!).map((r) => r.data)
       );
     }
-    if (route?.data?.middleware?.length) {
+    if (hasRoutes && route?.data?.middleware?.length) {
       middleware.push(...route.data.middleware);
     }
     return middleware;
