@@ -1,7 +1,7 @@
 ---
 seo:
-  title: Ship Full-Stack Vite Apps
-  description: Nitro extends your Vite application with a production-ready server, compatible with any runtime. Add server routes to your application and deploy many hosting platform with a zero-config experience.
+  title: 发布全栈 Vite 应用
+  description: Nitro 为您的 Vite 应用扩展了一个生产就绪的服务器，兼容任何运行时。向应用添加服务器路由，并以零配置体验部署到多种托管平台。
 ---
 
 ::u-page-hero
@@ -32,10 +32,10 @@ orientation: horizontal
 :hero-background
 
 #title
-Ship [Full-Stack]{.text-primary} Vite Apps
+发布 [全栈]{.text-primary} Vite 应用
 
 #description
-Nitro extends your Vite application with a production-ready server, compatible with any runtime. Add server routes to your application and deploy many hosting platform with a zero-config experience.
+Nitro 为您的 Vite 应用扩展了一个生产就绪的服务器，兼容任何运行时。向应用添加服务器路由，并以零配置体验部署到多种托管平台。
 
 #links
   :::u-button
@@ -44,7 +44,7 @@ Nitro extends your Vite application with a production-ready server, compatible w
   to: /docs/quick-start
   trailing-icon: i-lucide-arrow-right
   ---
-  Get started
+  快速开始
   :::
 
   :::u-button
@@ -65,26 +65,26 @@ Nitro extends your Vite application with a production-ready server, compatible w
     ::u-page-grid
       ::u-page-feature
       #title
-      Fast
+      快速
 
       #description
-      Enjoy the Vite development experience with HMR on the server and optimized for production.
+      享受带有服务器端 HMR 的 Vite 开发体验，并针对生产环境进行优化。
       ::
 
       ::u-page-feature
       #title
-      Versatile
+      多样
 
       #description
-      Deploy the same codebase to any deployment provider with zero config, no vendor lock-in.
+      使用零配置将相同代码库部署到任何部署提供商，无供应商锁定。
       ::
 
       ::u-page-feature
       #title
-      Minimal
+      极简
 
       #description
-      Minimal design to fit into any solution with minimum overhead.
+      极简设计，适配任何解决方案，开销最低。
       ::
 
     ::
@@ -96,22 +96,22 @@ Nitro extends your Vite application with a production-ready server, compatible w
 orientation: horizontal
 features:
   - title: 'routes/'
-    description: 'Create server routes in the routes/ folder and they will be automatically registered.'
+    description: '在 routes/ 目录中创建服务器路由，它们将自动注册。'
     icon: 'i-lucide-folder-tree'
   - title: 'server.ts'
-    description: 'Go full Web standard and pick standard library of your choice to create server routes using the server.ts file.'
+    description: '完全遵循 Web 标准，使用您选择的标准库，在 server.ts 文件中创建服务器路由。'
     icon: 'i-lucide-file-code'
 ---
 #title
-Create Server Routes
+创建服务器路由
 
 #description
-Start creating API routes in the routes/ folder or start with your favorite backend framework in a `server.ts` file.
+在 routes/ 目录中开始创建 API 路由，或使用您喜欢的后端框架，在 `server.ts` 文件中开始。
 
 #default
 ::div{class="min-h-[506px]"}
   ::tabs
-    ::tabs-item{label="FS Routing" icon="i-lucide-folder"}
+    ::tabs-item{label="文件系统路由" icon="i-lucide-folder"}
       ::code-tree{defaultValue="routes/hello.ts" expand-all}
         ::prose-pre{filename="vite.config.ts"}
         ```ts
@@ -148,7 +148,7 @@ Start creating API routes in the routes/ folder or start with your favorite back
         ::
       ::
     ::
-    ::tabs-item{label="Web Standard" icon="i-lucide-globe"}
+    ::tabs-item{label="Web 标准" icon="i-lucide-globe"}
       ::prose-pre{filename="server.ts"}
       ```ts
       export default {
