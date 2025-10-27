@@ -18,9 +18,9 @@
 
 以下是将 Nitro 应用部署到 Cloudflare Workers 的示例 `nitro.config.ts` 文件。
 
-::code-group
-
 ```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
 export default defineNitroConfig({
     compatibilityDate: "2024-09-19",
     preset: "cloudflare_module",
@@ -45,10 +45,10 @@ export default defineNuxtConfig({
 ```
 ::
 
-通过设置 `deployConfig: true`，Nitro 将自动为您生成一个正确配置的 `wrangler.json`。
+通过设置 `deployConfig: true`，Nitro 将自动为您生成一个正确配置的 `wrangler.json`。  
 如果您需要添加 [Cloudflare Workers 配置](https://developers.cloudflare.com/workers/wrangler/configuration/)，例如 [bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/)，您可以：
 
-- 在您的 Nitro 配置中设置 `cloudflare: { wrangler : {} }`。这与 `wrangler.json` 的类型相同。
+- 在您的 Nitro 配置中设置 `cloudflare: { wrangler : {} }`。这与 `wrangler.json` 的类型相同。  
 - 提供您自己的 `wrangler.json`。Nitro 将与适当的设置合并您的配置，包括指向构建输出。
 
 ### 本地预览
@@ -100,9 +100,9 @@ Cloudflare [Workers Module](#cloudflare-workers) 是推荐用于部署的新预�
 
 以下是将 Nitro 应用部署到 Cloudflare Pages 的示例 `nitro.config.ts` 文件。
 
-::code-group
-
 ```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
 export default defineNitroConfig({
     preset: "cloudflare_pages",
     cloudflare: {
@@ -164,9 +164,11 @@ Nitro 允许您通过 `process.env` 或 `import.meta.env` 或运行时配置通�
 **示例：** 如果您设置了 `SECRET` 和 `NITRO_HELLO_THERE` 环境变量，您可以通过以下方式访问它们：
 
 ```ts
+import { defineHandler } from "nitro/h3";
+
 console.log(process.env.SECRET) // 请注意，这是在全局范围内！因此实际上它不起作用，变量是未定义的！
 
-export default defineEventHandler((event) => {
+export default defineHandler((event) => {
   // 请注意，所有以下方式都是访问上述变量的有效方法
   useRuntimeConfig(event).helloThere
   useRuntimeConfig(event).secret
@@ -242,7 +244,9 @@ SECRET="top-secret"
 在运行时，您可以通过访问请求事件的 `context.cloudflare.env` 字段来访问绑定，例如，您可以这样访问 D1 绑定：
 
 ```ts
-defineEventHandler(async (event) => {
+import { defineHandler } from "nitro/h3";
+
+defineHandler(async (event) => {
   const { cloudflare } = event.context
   const stmt = await cloudflare.env.MY_D1.prepare('SELECT id FROM table')
   const { results } = await stmt.all()
@@ -270,6 +274,7 @@ id = "xxx"
 或在您的 Nitro 配置中：
 
 ```js [nitro.config.js]
+import { defineNitroConfig } from "nitro/config";
 import nitroCloudflareBindings from "nitro-cloudflare-dev";
 
 export default defineNitroConfig({
@@ -298,8 +303,6 @@ export default defineNitroConfig({
 
 然后定义模块：
 
-::code-group
-
 ```js [nitro.config.js]
 import nitroCloudflareBindings from "nitro-cloudflare-dev";
 
@@ -313,7 +316,6 @@ export default defineNuxtConfig({
   modules: ['nitro-cloudflare-dev']
 })
 ```
-
 ::
 
 从此时起，当运行

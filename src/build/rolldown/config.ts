@@ -9,6 +9,7 @@ import { baseBuildPlugins } from "../plugins";
 import { replace } from "../plugins/replace";
 import { builtinModules } from "node:module";
 import { defu } from "defu";
+import { raw } from "../plugins/raw";
 
 export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
   const base = baseBuildConfig(nitro);
@@ -35,16 +36,14 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
       ...(baseBuildPlugins(nitro, base) as RolldownPlugin[]),
       // https://github.com/rolldown/rolldown/issues/4257
       replace({
+        delimiters: base.replaceDelimiters,
         preventAssignment: true,
         values: base.replacements,
       }) as RolldownPlugin,
+      raw() as RolldownPlugin,
     ],
     resolve: {
-      alias: {
-        ...base.aliases,
-        "node-mock-http/_polyfill/events": "node-mock-http/_polyfill/events",
-        "node-mock-http/_polyfill/buffer": "node-mock-http/_polyfill/buffer",
-      },
+      alias: base.aliases,
       extensions: base.extensions,
       mainFields: ["main"], // "module" is intentionally not supported because of externals
       conditionNames: nitro.options.exportConditions,

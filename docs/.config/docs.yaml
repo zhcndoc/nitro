@@ -1,55 +1,14 @@
 # yaml-language-server: $schema=https://unpkg.com/undocs/schema/config.json
 name: Nitro 中文文档
-shortDescription: 下一代服务器工具包
-description: 创建具有所有必需功能的网络服务器，并将其部署到您喜欢的地方。
+shortDescription: 构建全栈 Vite 应用程序
+description: 为任何 Vite 应用程序添加服务器 API 路由，并在您最喜欢的托管平台上零配置部署。
 github: zhcndoc/nitro
 url: https://nitro.zhcndoc.com
-themeColor: "red"
+socials:
+  x: "https://x.com/nitrojsdev"
+  bluesky: "https://bsky.app/profile/nitro.build"
+  discord: https://discord.nitro.build
+sponsors:
+  api: https://sponsors.pi0.io/sponsors.json
+themeColor: "rose"
 automd: true
-redirects:
-  /deploy/node: /deploy/runtimes/node
-landing:
-  heroLinks:
-    playOnline:
-      label: "在线演示"
-      icon: "i-simple-icons-lightning"
-      to: "https://stackblitz.com/github/nitrojs/nitro/tree/main/examples/hello-world"
-  contributors: true
-  featuresTitle: "现代 Web 的服务器"
-  features:
-    - title: "快速开发"
-      description: "开发时的零配置设置和模块热替换。"
-      icon: "🐇"
-    - title: "随处部署"
-      description: "无需额外配置即可将相同代码库部署到任何 [部署提供商](/deploy)。"
-      icon: "😌"
-    - title: "便携和紧凑"
-      description: "告别 `node_modules`，输出大小小于 1MB。"
-      icon: "💼"
-    - title: "文件系统路由"
-      description: "[自动注册](/guide/routing) 服务器和 API 路由。"
-      icon: "📁"
-    - title: "极简设计"
-      description: "极简设计以最低的开销适应任何解决方案。"
-      icon: "🤏"
-    - title: "代码拆分"
-      description: "异步分块加载以实现快速的服务器启动时间和响应。"
-      icon: "🚀"
-    - title: "TypeScript"
-      description: "开箱即用的 TypeScript 支持，以及更多实用功能。"
-      icon: "👕"
-    - title: "存储层"
-      description: "多驱动和平台无关的存储系统。"
-      icon: "💾"
-    - title: "缓存 API"
-      description: "强大的内置缓存 API。"
-      icon: "💰"
-    - title: "可定制"
-      description: "通过 [插件](/guide/plugins) 钩子系统进行定制。"
-      icon: "🐱"
-    - title: "自动导入"
-      description: "自动导入工具以实现简洁的代码库。仅将使用的部分添加到最终包中。"
-      icon: "✨"
-    - title: "向后兼容"
-      description: "可以使用传统的 npm 包、CommonJS，并为 workers 模拟 Node.js 模块。"
-      icon: "🏛️"

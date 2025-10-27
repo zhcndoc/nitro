@@ -48,6 +48,12 @@ export function baseBuildConfig(nitro: Nitro) {
     _tasks: nitro.options.experimental.tasks,
   };
 
+  // https://github.com/rollup/plugins/tree/master/packages/replace#delimiters
+  const replaceDelimiters: [string, string] = [
+    String.raw`\b`,
+    String.raw`(?![\w.$])`,
+  ];
+
   const replacements = {
     "typeof window": '"undefined"',
     _import_meta_url_: "import.meta.url",
@@ -91,18 +97,7 @@ export function baseBuildConfig(nitro: Nitro) {
     },
   });
 
-  let buildDir = nitro.options.buildDir;
-  // Windows (native) dynamic imports should be file:// urls
-  if (
-    isWindows &&
-    nitro.options.externals?.trace === false &&
-    nitro.options.dev
-  ) {
-    buildDir = pathToFileURL(buildDir).href;
-  }
-
   const aliases = resolveAliases({
-    "#build": buildDir,
     "#internal/nitro": runtimeDir,
     "nitro/runtime": runtimeDir,
     "nitropack/runtime": runtimeDir, // Backwards compatibility
@@ -110,13 +105,13 @@ export function baseBuildConfig(nitro: Nitro) {
   });
 
   return {
-    buildDir,
     buildServerDir,
     presetsDir,
     extensions,
     isNodeless,
     buildEnvVars,
     staticFlags,
+    replaceDelimiters,
     replacements,
     env,
     aliases,

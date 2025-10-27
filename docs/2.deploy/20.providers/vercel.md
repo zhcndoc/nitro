@@ -28,7 +28,7 @@ Vercel 支持 Nitro 的零配置部署。[立即将 Nitro 部署到 Vercel](http
 
 Nitro 的 `/api` 目录与 Vercel 不兼容。相反，您应使用：
 
-- 独立的 `server/routes/api/`
+- `routes/api/`，用于独立使用
 
 ## 自定义构建输出配置
 
@@ -45,9 +45,9 @@ Nitro 的 `/api` 目录与 Vercel 不兼容。相反，您应使用：
 
 2. 更新您的配置：
 
-    ::code-group
-
     ```ts [nitro.config.ts]
+    import { defineNitroConfig } from "nitro/config";
+
     export default defineNitroConfig({
       vercel: {
         config: {

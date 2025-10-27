@@ -23,9 +23,9 @@
 
 你可以使用 `awsAmplify` 选项配置该预设的高级选项。
 
-::code-group
-
 ```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
 export default defineNitroConfig({
   awsAmplify: {
       // catchAllStaticFallback: true,
@@ -35,21 +35,6 @@ export default defineNitroConfig({
   }
 })
 ```
-
-```ts [nuxt.config.ts]
-export default defineNuxtConfig({
-  nitro: {
-    awsAmplify: {
-      // catchAllStaticFallback: true,
-      // imageOptimization: { "/_image", cacheControl: "public, max-age=3600, immutable" },
-      // imageSettings: { ... },
-      // runtime: "nodejs18.x", // default: "nodejs18.x" | "nodejs16.x" | "nodejs20.x"
-    }
-  }
-})
-```
-
-::
 
 ### `amplify.yml`
 

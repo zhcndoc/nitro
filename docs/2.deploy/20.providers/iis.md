@@ -24,9 +24,9 @@
 
 ## IIS 配置选项
 
-::code-group
-
 ```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
 export default defineNitroConfig({
   // IIS 选项默认
   iis: {
@@ -51,5 +51,3 @@ export default defineNuxtConfig({
   },
 });
 ```
-
-::

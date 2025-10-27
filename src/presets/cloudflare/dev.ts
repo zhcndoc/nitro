@@ -4,8 +4,9 @@ import { fileURLToPath } from "mlly";
 import type { Nitro } from "nitro/types";
 import { findFile } from "pkg-types";
 import { resolveModulePath } from "exsolve";
+import { presetsDir } from "nitro/runtime/meta";
 
-export async function cloudflareDev(nitro: Nitro) {
+export async function cloudflareDevModule(nitro: Nitro) {
   if (!nitro.options.dev) {
     return; // Production doesn't need this
   }
@@ -77,7 +78,10 @@ export async function cloudflareDev(nitro: Nitro) {
 
   // Add plugin to inject bindings to dev server
   nitro.options.plugins = nitro.options.plugins || [];
-  nitro.options.plugins.push(
-    fileURLToPath(new URL("runtime/plugin.dev", import.meta.url))
+  nitro.options.plugins.unshift(
+    resolveModulePath("./cloudflare/runtime/plugin.dev", {
+      from: presetsDir,
+      extensions: [".mjs", ".ts"],
+    })
   );
 }

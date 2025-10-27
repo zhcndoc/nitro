@@ -10,12 +10,12 @@ import commonjs from "@rollup/plugin-commonjs";
 import inject from "@rollup/plugin-inject";
 import json from "@rollup/plugin-json";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
-import { visualizer } from "rollup-plugin-visualizer";
 import { replace } from "../plugins/replace";
 import { esbuild } from "../plugins/esbuild";
 import { sourcemapMininify } from "../plugins/sourcemap-min";
 import { baseBuildConfig } from "../config";
 import { baseBuildPlugins } from "../plugins";
+import { raw } from "../plugins/raw";
 
 export const getRollupConfig = (nitro: Nitro): RollupConfig => {
   const base = baseBuildConfig(nitro);
@@ -47,7 +47,11 @@ export const getRollupConfig = (nitro: Nitro): RollupConfig => {
         ...nitro.options.esbuild?.options,
       }),
       alias({ entries: base.aliases }),
-      replace({ preventAssignment: true, values: base.replacements }),
+      replace({
+        delimiters: base.replaceDelimiters,
+        preventAssignment: true,
+        values: base.replacements,
+      }),
       nodeResolve({
         extensions: base.extensions,
         preferBuiltins: !!nitro.options.node,
@@ -65,6 +69,7 @@ export const getRollupConfig = (nitro: Nitro): RollupConfig => {
       }),
       json(),
       inject(base.env.inject),
+      raw(),
     ],
     onwarn(warning, rollupWarn) {
       if (
@@ -179,21 +184,6 @@ export const getRollupConfig = (nitro: Nitro): RollupConfig => {
     nitro.options.experimental.sourcemapMinify !== false
   ) {
     config.plugins.push(sourcemapMininify());
-  }
-
-  // Bundle analyzer
-  if (nitro.options.analyze) {
-    config.plugins.push(
-      // https://github.com/btd/rollup-plugin-visualizer
-      visualizer({
-        ...nitro.options.analyze,
-        filename: (nitro.options.analyze.filename || "stats.html").replace(
-          "{name}",
-          "nitro"
-        ),
-        title: "Nitro Server bundle stats",
-      })
-    );
   }
 
   return config;
