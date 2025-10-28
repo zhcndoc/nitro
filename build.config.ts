@@ -30,8 +30,6 @@ const tracePkgs = [
   "destr", // used by node-server and deno-server
   "get-port-please", // used by dev server
   "hookable", // used by app.ts
-  "ohash", // used by runtime cache
-  "ohash/utils",
   "rendu", // used by HTML renderer template
   "scule", // used by runtime config
   "source-map", // used by dev error runtime
