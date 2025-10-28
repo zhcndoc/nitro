@@ -24,7 +24,7 @@ const vercel = defineNitroPreset(
       preview: "",
     },
     hooks: {
-      "rollup:before": async (nitro: Nitro) => {
+      "build:before": async (nitro: Nitro) => {
         const runtime = await resolveVercelRuntime(nitro);
         if (
           runtime.startsWith("bun") &&
@@ -32,6 +32,8 @@ const vercel = defineNitroPreset(
         ) {
           nitro.options.exportConditions!.push("bun");
         }
+      },
+      "rollup:before": (nitro: Nitro) => {
         deprecateSWR(nitro);
       },
       async compiled(nitro: Nitro) {
