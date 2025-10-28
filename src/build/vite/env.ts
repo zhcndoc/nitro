@@ -42,8 +42,7 @@ export function createNitroEnvironment(
       noExternal: ctx.nitro!.options.dev
         ? // Workaround for dev: external dependencies are not resolvable with respect to nodeModulePaths
           new RegExp(runtimeDependencies.join("|"))
-        : // Workaround for build: externals tracing is unstable
-          (ctx.nitro!.options.noExternals === false ? undefined : true), // prettier-ignore
+        : undefined,
       conditions: ctx.nitro!.options.exportConditions,
       externalConditions: ctx.nitro!.options.exportConditions,
     },
