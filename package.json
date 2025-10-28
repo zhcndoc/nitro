@@ -64,7 +64,7 @@
     "srvx": "^0.9.2",
     "undici": "^7.16.0",
     "unenv": "^2.0.0-rc.23",
-    "unstorage": "^2.0.0-alpha.3"
+    "unstorage": "^2.0.0-alpha.4"
   },
   "devDependencies": {
     "@azure/functions": "^3.5.1",

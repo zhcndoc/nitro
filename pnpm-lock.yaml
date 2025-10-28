@@ -49,8 +49,8 @@ importers:
         specifier: ^2.0.0-rc.23
         version: 2.0.0-rc.23
       unstorage:
-        specifier: ^2.0.0-alpha.3
-        version: 2.0.0-alpha.3(@azure/identity@4.13.0)(chokidar@4.0.3)(db0@0.3.4)(ioredis@5.8.2)(ofetch@2.0.0-alpha.3)
+        specifier: ^2.0.0-alpha.4
+        version: 2.0.0-alpha.4(@azure/identity@4.13.0)(chokidar@4.0.3)(db0@0.3.4)(ioredis@5.8.2)(ofetch@2.0.0-alpha.3)
       vite:
         specifier: ^7
         version: 7.1.12(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.1)
@@ -5824,8 +5824,8 @@ packages:
       uploadthing:
         optional: true
 
-  unstorage@2.0.0-alpha.3:
-    resolution: {integrity: sha512-BeoqISVh8jxqnPseHH7/92twe2VkQztrudXg8RFZVbXb4ckkFdpLk1LnNvsUndDltyodBMVxgI6V7JcbJYt2VQ==}
+  unstorage@2.0.0-alpha.4:
+    resolution: {integrity: sha512-ywXZMZRfrvmO1giJeMTCw6VUn0ALYxVl8pFqJPStiyQUvgJImejtAHrKvXPj4QGJAoS/iLGcVGF6ljN/lkh1bw==}
     peerDependencies:
       '@azure/app-configuration': ^1.8.0
       '@azure/cosmos': ^4.2.0
@@ -5848,7 +5848,7 @@ packages:
       ioredis: ^5.4.2
       lru-cache: ^11.2.2
       mongodb: ^6.20.0
-      ofetch: ^1.4.1
+      ofetch: '*'
       uploadthing: ^7.4.4
     peerDependenciesMeta:
       '@azure/app-configuration':
@@ -12280,7 +12280,7 @@ snapshots:
       db0: 0.3.4
       ioredis: 5.8.2
 
-  unstorage@2.0.0-alpha.3(@azure/identity@4.13.0)(chokidar@4.0.3)(db0@0.3.4)(ioredis@5.8.2)(ofetch@2.0.0-alpha.3):
+  unstorage@2.0.0-alpha.4(@azure/identity@4.13.0)(chokidar@4.0.3)(db0@0.3.4)(ioredis@5.8.2)(ofetch@2.0.0-alpha.3):
     optionalDependencies:
       '@azure/identity': 4.13.0
       chokidar: 4.0.3
