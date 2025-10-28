@@ -31,6 +31,7 @@ const tracePkgs = [
   "hookable",
   "klona",
   "klona/full",
+  "cookie-es",
   "scule",
   "source-map",
   "ufo",

@@ -1,7 +1,6 @@
 import { Miniflare } from "miniflare";
 import { resolve } from "pathe";
 import { describe } from "vitest";
-import { splitSetCookieString } from "cookie-es";
 
 import { setupTest, testNitro } from "../tests";
 
