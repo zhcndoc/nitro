@@ -6,6 +6,7 @@ import { defineBuildConfig } from "unbuild";
 
 import { resolveModulePath } from "exsolve";
 import { traceNodeModules } from "nf3";
+import { parseNodeModulePath } from "mlly";
 
 const srcDir = fileURLToPath(new URL("src", import.meta.url));
 const libDir = fileURLToPath(new URL("lib", import.meta.url));
@@ -109,15 +110,28 @@ export default defineBuildConfig({
   rollup: {
     inlineDependencies: true,
     output: {
+      manualChunks(id: string) {
+        if (id.includes("node_modules")) {
+          const pkg = parseNodeModulePath(id);
+          if (pkg?.name) {
+            return `_deps/${pkg.name}`;
+          }
+        }
+        if (id.includes("src/presets/")) {
+          const presetDir = /\/src\/presets\/([^/.]+)/.exec(id);
+          return `_presets/${presetDir?.[1] || "_common"}`;
+        }
+        if (id.includes("src/build/")) {
+          const dir = /\/src\/build\/([^/.]+)/.exec(id);
+          return `_build/${dir?.[1] || "_common"}`;
+        }
+      },
       chunkFileNames(chunk: any) {
-        const id = normalize(chunk.moduleIds.at(-1));
-        if (id.includes("/src/cli/")) {
-          return "cli/[name].mjs";
+        const tailId = normalize(chunk.moduleIds.at(-1));
+        if (tailId.includes("/src/cli/")) {
+          return "_cli/[name].mjs";
         }
-        if (id.includes("/src/presets")) {
-          return "presets.mjs";
-        }
-        return "_chunks/[name].mjs";
+        return "[name].mjs";
       },
     },
   },
