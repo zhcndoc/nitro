@@ -149,7 +149,7 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
         }
       },
     });
-  } else {
+  } else if (!nitro.options.dev) {
     plugins.push(
       rollupNodeFileTrace(
         defu(nitro.options.externals, <NodeExternalsOptions>{
