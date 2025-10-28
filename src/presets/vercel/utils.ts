@@ -16,7 +16,7 @@ import { isTest } from "std-env";
 // https://vercel.com/docs/functions/runtimes/node-js/node-js-versions
 const SUPPORTED_NODE_VERSIONS = [20, 22];
 
-const FALLBACK_ROUTE = "/__fallback";
+const FALLBACK_ROUTE = "/__server";
 
 const ISR_SUFFIX = "-isr"; // Avoid using . as it can conflict with routing
 

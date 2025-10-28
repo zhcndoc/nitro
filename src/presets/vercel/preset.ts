@@ -16,7 +16,7 @@ const vercel = defineNitroPreset(
     entry: "./vercel/runtime/vercel",
     output: {
       dir: "{{ rootDir }}/.vercel/output",
-      serverDir: "{{ output.dir }}/functions/__fallback.func",
+      serverDir: "{{ output.dir }}/functions/__server.func",
       publicDir: "{{ output.dir }}/static/{{ baseURL }}",
     },
     commands: {
