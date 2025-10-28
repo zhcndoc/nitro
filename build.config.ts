@@ -8,6 +8,8 @@ import { resolveModulePath } from "exsolve";
 import { traceNodeModules } from "nf3";
 import { parseNodeModulePath } from "mlly";
 
+const pkg = await import("./package.json").then((r) => r.default || r);
+
 const srcDir = fileURLToPath(new URL("src", import.meta.url));
 const libDir = fileURLToPath(new URL("lib", import.meta.url));
 
@@ -78,7 +80,9 @@ export default defineBuildConfig({
         tracePkgs.map((pkg) => resolveModulePath(pkg)),
         {}
       );
-      await rm("dist/node_modules/ofetch", { recursive: true, force: true });
+      for (const dep of Object.keys(pkg.dependencies)) {
+        await rm(`dist/node_modules/${dep}`, { recursive: true, force: true });
+      }
 
       // Remove extra d.ts files
       for await (const file of glob(resolve(ctx.options.outDir, "**/*.d.ts"))) {
