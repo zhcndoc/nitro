@@ -9,10 +9,11 @@ import { isWindows } from "std-env";
 const fixtureDir = fileURLToPath(new URL("./", import.meta.url));
 const tmpDir = fileURLToPath(new URL(".tmp", import.meta.url));
 
-const sizeThresholds: Record<string, [number, number]> = {
-  rollup: [20, 14],
-  rolldown: [146, 146],
-  vite: [23, 12],
+// Round up to 1KB
+const sizeThresholds: Record<string, [kb: number, minKB: number]> = {
+  vite: [9, 5],
+  rollup: [19, 11],
+  rolldown: [21, 10],
 };
 
 if (isWindows) {
@@ -24,7 +25,7 @@ if (isWindows) {
 }
 
 describe("minimal fixture", () => {
-  const builders = ["rollup", "rolldown", "vite"] as const;
+  const builders = ["vite", "rollup", "rolldown"] as const;
 
   const results: any[] = [];
 
