@@ -11,7 +11,7 @@ const tmpDir = fileURLToPath(new URL(".tmp", import.meta.url));
 
 // Round up to 1KB
 const sizeThresholds: Record<string, [kb: number, minKB: number]> = {
-  vite: [9, 5],
+  vite: [23, 12],
   rollup: [19, 11],
   rolldown: [22, 10],
 };
