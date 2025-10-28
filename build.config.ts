@@ -121,17 +121,25 @@ export default defineBuildConfig({
           const presetDir = /\/src\/presets\/([^/.]+)/.exec(id);
           return `_presets/${presetDir?.[1] || "_common"}`;
         }
-        if (id.includes("src/build/")) {
-          const dir = /\/src\/build\/([^/.]+)/.exec(id);
-          return `_build/${dir?.[1] || "_common"}`;
-        }
+        // if (id.includes("src/build/")) {
+        //   const dir = /\/src\/build\/([^/.]+)/.exec(id);
+        //   return `_build/${dir?.[1] || "_common"}`;
+        // }
       },
       chunkFileNames(chunk: any) {
         const tailId = normalize(chunk.moduleIds.at(-1));
         if (tailId.includes("/src/cli/")) {
           return "_cli/[name].mjs";
         }
-        return "[name].mjs";
+        if (tailId.includes("/src/build/")) {
+          if (
+            chunk.moduleIds.every((id: string) => id.includes("src/build/vite"))
+          ) {
+            return "_build/vite.mjs";
+          }
+          return "_build/[name].mjs";
+        }
+        return "_chunks/[name].mjs";
       },
     },
   },
