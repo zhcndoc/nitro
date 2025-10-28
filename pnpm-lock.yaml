@@ -31,8 +31,8 @@ importers:
         specifier: ^2.6.1
         version: 2.6.1
       nf3:
-        specifier: ^0.1.3
-        version: 0.1.3
+        specifier: ^0.1.5
+        version: 0.1.5
       ofetch:
         specifier: ^2.0.0-alpha.3
         version: 2.0.0-alpha.3
@@ -4550,8 +4550,8 @@ packages:
     resolution: {integrity: sha512-+Mc8UaAebFzgV+KpI5n7DasuuQCHA89dmwm7JXw3TV43ukfNQ9DnBH3Mdb2g/I4Fdxc26pwimBWvjIw0UAILSQ==}
     hasBin: true
 
-  nf3@0.1.3:
-    resolution: {integrity: sha512-z8gzWmkLTiwc+SBFJBaA+6bhamCGOCw8QQkhebAvBURPUuGhtUCfDMKwYWqvdnzGijNYRK7Z8iJ1jK2QDLZ3OQ==}
+  nf3@0.1.5:
+    resolution: {integrity: sha512-kb6KFkGzOx1ux95s8kSJF17D/j2hgkWn7/gW6qgLYEZYY6a3eJH463zqb/H/gZLNgQAdGd7FpLkdfbSrXncqhw==}
 
   nitropack@2.12.8:
     resolution: {integrity: sha512-k4KT/6CMiX+aAI2LWEdVhvI4PPPWt6NTz70TcxrGUgvMpt8Pv4/iG0KTwBJ58KdwFp59p3Mlp8QyGVmIVP6GvQ==}
@@ -10823,7 +10823,7 @@ snapshots:
       railroad-diagrams: 1.0.0
       randexp: 0.4.6
 
-  nf3@0.1.3: {}
+  nf3@0.1.5: {}
 
   nitropack@2.12.8(@azure/identity@4.13.0)(rolldown@1.0.0-beta.45)(xml2js@0.6.2):
     dependencies:
