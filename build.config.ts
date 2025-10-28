@@ -22,21 +22,20 @@ export const libSubpaths = [
 ];
 
 const tracePkgs = [
-  "youch",
-  "youch-core",
-  "unctx",
-  "croner",
-  "defu",
-  "destr",
-  "hookable",
-  "klona",
-  "klona/full",
-  "cookie-es",
-  "scule",
-  "source-map",
-  "ufo",
-  "std-env",
-  "get-port-please",
+  "cookie-es", // used by azure runtime
+  "croner", // used by internal/task
+  "defu", // used by open-api runtime
+  "destr", // used by node-server and deno-server
+  "get-port-please", // used by dev server
+  "hookable", // used by app.ts
+  "ohash", // used by runtime cache
+  "rendu", // used by HTML renderer template
+  "scule", // used by runtime config
+  "source-map", // used by dev error runtime
+  "ufo", // used by presets and runtime
+  "unctx", // used by internal/context
+  "youch", // used by error handler
+  "youch-core", // used by error handler
 ];
 
 export const stubAlias = {

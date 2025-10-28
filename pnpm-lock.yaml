@@ -36,12 +36,6 @@ importers:
       ofetch:
         specifier: ^2.0.0-alpha.3
         version: 2.0.0-alpha.3
-      ohash:
-        specifier: ^2.0.11
-        version: 2.0.11
-      rendu:
-        specifier: ^0.0.7
-        version: 0.0.7
       rollup:
         specifier: ^4.52.5
         version: 4.52.5
@@ -232,6 +226,9 @@ importers:
       mlly:
         specifier: ^1.8.0
         version: 1.8.0
+      ohash:
+        specifier: ^2.0.11
+        version: 2.0.11
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -250,6 +247,9 @@ importers:
       react:
         specifier: ^19.2.0
         version: 19.2.0
+      rendu:
+        specifier: ^0.0.7
+        version: 0.0.7
       rolldown:
         specifier: 1.0.0-beta.45
         version: 1.0.0-beta.45
