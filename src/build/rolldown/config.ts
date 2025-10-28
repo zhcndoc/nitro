@@ -85,6 +85,7 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
     output: {
       dir: nitro.options.output.serverDir,
       entryFileNames: "index.mjs",
+      minify: nitro.options.minify,
       chunkFileNames(chunk) {
         const id = normalize(chunk.moduleIds.at(-1) || "");
         // Known path prefixes
