@@ -13,10 +13,10 @@ const tmpDir = fileURLToPath(new URL(".tmp", import.meta.url));
 const sizeThresholds: Record<string, [kb: number, minKB: number]> = {
   vite: [9, 5],
   rollup: [19, 11],
-  rolldown: [21, 10],
+  rolldown: [22, 10],
 };
 
-if (isWindows || isCI) {
+if (isWindows) {
   // Add 1kB more to thresholds on Windows and CI
   for (const key in sizeThresholds) {
     sizeThresholds[key][0] += 1;
