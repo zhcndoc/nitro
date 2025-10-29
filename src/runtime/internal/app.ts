@@ -125,11 +125,9 @@ function createNitroApp(): NitroApp {
   const nativeFetch = globalThis.fetch;
   globalThis.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
     if (typeof input === "string" && input.charCodeAt(0) === 47 /* '/' */) {
-      return request(input, init);
+      return request(input, init); // local request
     }
-    if ("_request" in (input as Request)) {
-      input = (input as any)._request;
-    }
+    input = (input as any)._request || input; // unwrap srvx Request
     return nativeFetch(input, init);
   };
 
