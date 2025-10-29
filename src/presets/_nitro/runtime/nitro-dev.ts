@@ -85,7 +85,7 @@ async function shutdown() {
   server.closeAllConnections?.();
   await Promise.all([
     new Promise((resolve) => listener?.close(resolve)),
-    nitroHooks.callHook("close").catch(console.error),
-  ]);
+    nitroHooks.callHook("close"),
+  ]).catch(console.error);
   parentPort?.postMessage({ event: "exit" });
 }
