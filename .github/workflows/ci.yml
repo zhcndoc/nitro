@@ -45,5 +45,5 @@ jobs:
       - uses: actions/setup-node@v6
         with: { node-version: lts/*, cache: "pnpm" }
       - run: pnpm install
-      - run: pnpm changelogen --bump --canary nightly
+      - run: pnpm changelogen --bump -r 3.0.1 --canary nightly
       - run: npm i -g npm@latest && npm publish --tag latest
