@@ -1,7 +1,10 @@
 import "#nitro-internal-pollyfills";
 import { useNitroApp, useNitroHooks } from "nitro/runtime";
 
-import { startScheduleRunner } from "nitro/runtime/internal";
+import {
+  startScheduleRunner,
+  trapUnhandledErrors,
+} from "nitro/runtime/internal";
 import { Server } from "node:http";
 import { parentPort, threadId } from "node:worker_threads";
 
@@ -18,6 +21,8 @@ parentPort?.on("message", (msg) => {
 
 const nitroApp = useNitroApp();
 const nitroHooks = useNitroHooks();
+
+trapUnhandledErrors();
 
 const server = new Server(toNodeHandler(nitroApp.fetch));
 let listener: Server | undefined;
