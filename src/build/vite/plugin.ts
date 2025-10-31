@@ -2,8 +2,9 @@ import type {
   ConfigEnv,
   EnvironmentModuleNode,
   EnvironmentOptions,
+  PluginOption,
   UserConfig,
-  PluginOption as VitePlugin,
+  Plugin as VitePlugin,
 } from "vite";
 import type { InputOption } from "rollup";
 import type { NitroPluginConfig, NitroPluginContext } from "./types.ts";
@@ -34,7 +35,7 @@ const debug = process.env.NITRO_DEBUG
   ? (...args: any[]) => console.log("[nitro]", ...args)
   : () => {};
 
-export function nitro(pluginConfig: NitroPluginConfig = {}): VitePlugin {
+export function nitro(pluginConfig: NitroPluginConfig = {}): VitePlugin[] {
   const ctx: NitroPluginContext = createContext(pluginConfig);
   return [
     nitroInit(ctx),
@@ -50,7 +51,7 @@ export function nitro(pluginConfig: NitroPluginConfig = {}): VitePlugin {
           clientBuildFallback: false,
         },
       }),
-  ];
+  ].filter(Boolean) as VitePlugin[];
 }
 
 function nitroInit(ctx: NitroPluginContext): VitePlugin {
@@ -357,13 +358,8 @@ async function setupNitroContext(
 
   // Register Nitro modules from Vite plugins
   nitroConfig.modules ??= [];
-  for (const plugin of userConfig.plugins || []) {
-    if (
-      plugin &&
-      !Array.isArray(plugin) &&
-      !(plugin instanceof Promise) &&
-      plugin.nitro
-    ) {
+  for (const plugin of flattenPlugins(userConfig.plugins || [])) {
+    if (plugin.nitro) {
       nitroConfig.modules.push(plugin.nitro);
     }
   }
@@ -471,4 +467,12 @@ function getEntry(input: InputOption | undefined): string | undefined {
   } else if (input && "index" in input) {
     return input.index as string;
   }
+}
+
+function flattenPlugins(plugins: PluginOption[]): VitePlugin[] {
+  return plugins
+    .flatMap((plugin) =>
+      Array.isArray(plugin) ? flattenPlugins(plugin) : [plugin]
+    )
+    .filter((p) => p && !(p instanceof Promise)) as VitePlugin[];
 }

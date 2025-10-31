@@ -10,6 +10,10 @@ declare module "vite" {
      */
     nitro?: NitroConfig;
   }
+
+  interface Plugin {
+    nitro?: NitroModule;
+  }
 }
 
 declare module "rollup" {
