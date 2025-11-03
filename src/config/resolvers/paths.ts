@@ -84,18 +84,45 @@ export async function resolvePathOptions(options: NitroOptions) {
   );
   options.scanDirs = [...new Set(options.scanDirs.map((dir) => dir + "/"))];
 
-  // Resolve server entry
-  if (!options.routes["/**"]?.handler) {
+  // Resolve handler and route paths
+  options.handlers = options.handlers.map((h) => {
+    return {
+      ...h,
+      handler: resolveNitroPath(h.handler, options),
+    };
+  });
+  options.routes = Object.fromEntries(
+    Object.entries(options.routes).map(([route, h]) => {
+      if (typeof h === "string") {
+        h = { handler: h };
+      }
+      h.handler = resolveNitroPath(h.handler, options);
+      return [route, h];
+    })
+  );
+
+  // Auto-detected server entry
+  if (
+    !options.routes["/**"] &&
+    !options.handlers.some((h) => h.route === "/**")
+  ) {
     const serverEntry = resolveModulePath("./server", {
       from: [options.rootDir, ...options.scanDirs],
       extensions: RESOLVE_EXTENSIONS,
       try: true,
     });
     if (serverEntry) {
-      options.routes["/**"] = { handler: serverEntry };
-      consola.info(
-        `Using \`${prettyPath(serverEntry)}\` as default route handler.`
-      );
+      const alreadyRegistered =
+        options.handlers.some((h) => h.handler === serverEntry) ||
+        Object.values(options.routes).some(
+          (r) => (r as { handler: string }).handler === serverEntry
+        );
+      if (!alreadyRegistered) {
+        options.routes["/**"] = { handler: serverEntry };
+        consola.info(
+          `Using \`${prettyPath(serverEntry)}\` as default route handler.`
+        );
+      }
     }
   }
 

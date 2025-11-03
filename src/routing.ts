@@ -54,6 +54,9 @@ export function initNitroRouting(nitro: Nitro) {
     // Update routes
     const _routes = [
       ...Object.entries(nitro.options.routes).flatMap(([route, handler]) => {
+        if (typeof handler === "string") {
+          handler = { handler };
+        }
         return { ...handler, route, middleware: false };
       }),
       ...nitro.options.handlers,

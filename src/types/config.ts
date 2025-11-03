@@ -187,7 +187,10 @@ export interface NitroOptions extends PresetOptions {
   baseURL: string;
   apiBaseURL: string;
 
-  routes: Record<string, Omit<NitroEventHandler, "route" | "middleware">>;
+  routes: Record<
+    string,
+    string | Omit<NitroEventHandler, "route" | "middleware">
+  >;
   handlers: NitroEventHandler[];
   devHandlers: NitroDevEventHandler[];
 
