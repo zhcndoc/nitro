@@ -308,8 +308,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       unwasm:
-        specifier: ^0.4.0
-        version: 0.4.0
+        specifier: ^0.4.2
+        version: 0.4.2
       vitest:
         specifier: ^4.0.6
         version: 4.0.6(@edge-runtime/vm@5.0.0)(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.1)
@@ -6238,8 +6238,8 @@ packages:
   unwasm@0.3.11:
     resolution: {integrity: sha512-Vhp5gb1tusSQw5of/g3Q697srYgMXvwMgXMjcG4ZNga02fDX9coxJ9fAb0Ci38hM2Hv/U1FXRPGgjP2BYqhNoQ==}
 
-  unwasm@0.4.0:
-    resolution: {integrity: sha512-7Qhfwvy3PNhHwjsJGrruVZXlKYGJ1eWT6gnNCsrK+kOuLLAbY0A7w1vC6N2ZivSKbh60/bEUzfsdpnsulCakOg==}
+  unwasm@0.4.2:
+    resolution: {integrity: sha512-/DWXXXn63zAbdoQ6jtdbhr1WP2Cz6ax2nwIu4/yqj4617VWmva4UAzNH16q2fD4I6fym4tSAXFT8P89weXn2AA==}
 
   update-browserslist-db@1.1.4:
     resolution: {integrity: sha512-q0SPT4xyU84saUX+tomz1WLkxUbuaJnR1xWt17M7fJtEJigJeWUNGUqrauFXsHnqev9y9JTRGwk13tFBuKby4A==}
@@ -12904,7 +12904,7 @@ snapshots:
       pkg-types: 2.3.0
       unplugin: 2.3.10
 
-  unwasm@0.4.0:
+  unwasm@0.4.2:
     dependencies:
       exsolve: 1.0.7
       knitwork: 1.2.0
