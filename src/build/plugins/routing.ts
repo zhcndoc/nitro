@@ -35,7 +35,7 @@ export const findRouteRules = ${nitro.routing.routeRules.compileToString({ seria
 
 const multiHandler = (...handlers) => {
   const final = handlers.pop()
-  const middleware = handlers.map(h => h3.toMiddleware(h));
+  const middleware = handlers.filter(Boolean).map(h => h3.toMiddleware(h));
   return (ev) => h3.callMiddleware(ev, middleware, final);
 }
 
