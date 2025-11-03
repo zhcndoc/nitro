@@ -388,8 +388,6 @@ async function setupNitroContext(
             try: true,
           }) || ssrEntry;
         ctx.pluginConfig.services.ssr = { entry: ssrEntry };
-      } else {
-        throw new TypeError(`Invalid input type for SSR entry point.`);
       }
     }
   }
