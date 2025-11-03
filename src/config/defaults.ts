@@ -11,6 +11,7 @@ export const NitroDefaults: NitroConfig = {
   runtimeConfig: { app: {}, nitro: {} },
 
   // Dirs
+  serverDir: false,
   scanDirs: [],
   buildDir: ".nitro",
   output: {

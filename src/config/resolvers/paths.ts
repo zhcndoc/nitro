@@ -11,12 +11,25 @@ const RESOLVE_EXTENSIONS = [".ts", ".js", ".mts", ".mjs", ".tsx", ".jsx"];
 
 export async function resolvePathOptions(options: NitroOptions) {
   options.rootDir = resolve(options.rootDir || ".") + "/";
+  options.buildDir = resolve(options.rootDir, options.buildDir || ".") + "/";
   options.workspaceDir ||=
     (await findWorkspaceDir(options.rootDir).catch(() => options.rootDir)) +
     "/";
-  for (const key of ["srcDir", "buildDir"] as const) {
-    options[key] = resolve(options.rootDir, options[key] || ".");
+
+  if (options.srcDir) {
+    if (options.serverDir === undefined) {
+      options.serverDir = options.srcDir;
+    }
+    consola.warn(
+      `"srcDir" option is deprecated. Please use "serverDir" instead.`
+    );
   }
+
+  if (options.serverDir !== false) {
+    options.serverDir =
+      resolve(options.rootDir, options.serverDir || ".") + "/";
+  }
+
   options.alias ??= {};
 
   // Resolve possibly template paths
@@ -63,16 +76,18 @@ export async function resolvePathOptions(options: NitroOptions) {
   options.plugins = options.plugins.map((p) => resolveNitroPath(p, options));
 
   // Resolve scanDirs
-  options.scanDirs.unshift(options.srcDir);
+  if (options.serverDir) {
+    options.scanDirs.unshift(options.serverDir);
+  }
   options.scanDirs = options.scanDirs.map((dir) =>
-    resolve(options.srcDir, dir)
+    resolve(options.rootDir, dir)
   );
   options.scanDirs = [...new Set(options.scanDirs.map((dir) => dir + "/"))];
 
   // Resolve server entry
   if (!options.routes["/**"]?.handler) {
     const serverEntry = resolveModulePath("./server", {
-      from: options.scanDirs,
+      from: [options.rootDir, ...options.scanDirs],
       extensions: RESOLVE_EXTENSIONS,
       try: true,
     });
@@ -89,7 +104,7 @@ export async function resolvePathOptions(options: NitroOptions) {
     options.renderer.entry = resolveModulePath(
       resolveNitroPath(options.renderer?.entry, options),
       {
-        from: options.scanDirs,
+        from: [options.rootDir, ...options.scanDirs],
         extensions: RESOLVE_EXTENSIONS,
       }
     );
@@ -100,13 +115,13 @@ export async function resolvePathOptions(options: NitroOptions) {
     options.renderer.template = resolveModulePath(
       resolveNitroPath(options.renderer?.template, options),
       {
-        from: options.scanDirs,
+        from: [options.rootDir, ...options.scanDirs],
         extensions: [".html"],
       }
     )!;
   } else if (!options.renderer?.entry) {
     const defaultIndex = resolveModulePath("./index.html", {
-      from: options.scanDirs,
+      from: [options.rootDir, ...options.scanDirs],
       extensions: [".html"],
       try: true,
     });

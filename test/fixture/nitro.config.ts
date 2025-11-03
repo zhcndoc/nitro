@@ -5,6 +5,7 @@ import { dirname, resolve } from "node:path";
 export default defineNitroConfig({
   compressPublicAssets: true,
   compatibilityDate: "latest",
+  serverDir: "server",
   framework: {
     name: "nitro",
     version: "2.x",
@@ -31,12 +32,12 @@ export default defineNitroConfig({
   handlers: [
     {
       route: "/api/test/*/foo",
-      handler: "api/hello.ts",
+      handler: "./server/api/hello.ts",
       method: "GET",
     },
     {
       route: "/api/hello2",
-      handler: "api/hello.ts",
+      handler: "server/api/hello.ts",
       middleware: true,
     },
   ],
@@ -55,7 +56,7 @@ export default defineNitroConfig({
   serverAssets: [
     {
       baseName: "files",
-      dir: "files",
+      dir: "server/files",
     },
   ],
   ignore: ["api/**/_*", "middleware/_ignored.ts", "routes/_*.ts", "**/_*.txt"],
