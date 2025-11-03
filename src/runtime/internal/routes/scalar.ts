@@ -16,6 +16,7 @@ export default defineHandler((event) => {
   const scalarConfig: ApiReferenceConfiguration = {
     ..._config,
     url: openAPIEndpoint,
+    // @ts-expect-error
     spec: { url: openAPIEndpoint, ..._config?.spec },
   };
 
