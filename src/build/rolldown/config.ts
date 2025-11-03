@@ -106,7 +106,8 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
           const path =
             routeHandler.route
               .replace(/:([^/]+)/g, "_$1")
-              .replace(/\/[^/]+$/g, "") || "/";
+              .replace(/\/[^/]+$/g, "")
+              .replace(/[^a-zA-Z0-9/_-]/g, "_") || "/";
           return `chunks/routes${path}/[name].mjs`;
         }
 
