@@ -63,10 +63,13 @@ export const getViteRollupConfig = (
         (inject as unknown as typeof inject.default)(base.env.inject),
     ].filter(Boolean) as RollupPlugin[],
     // rolldown-specific config
-    // @ts-expect-error
-    transform: {
-      inject: base.env.inject as Record<string, string>,
-    },
+    ...(ctx._isRolldown
+      ? {
+          transform: {
+            inject: base.env.inject as Record<string, string>,
+          },
+        }
+      : {}),
     treeshake: {
       moduleSideEffects(id) {
         const normalizedId = normalize(id);
