@@ -11,7 +11,7 @@ import json from "@rollup/plugin-json";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import { replace } from "../plugins/replace.ts";
 import { esbuild } from "../plugins/esbuild.ts";
-import { sourcemapMininify } from "../plugins/sourcemap-min.ts";
+import { sourcemapMinify } from "../plugins/sourcemap-min.ts";
 import { baseBuildConfig } from "../config.ts";
 import { baseBuildPlugins } from "../plugins.ts";
 import { raw } from "../plugins/raw.ts";
@@ -43,6 +43,7 @@ export const getRollupConfig = (nitro: Nitro): RollupConfig => {
       esbuild({
         target: "esnext",
         sourceMap: nitro.options.sourceMap,
+        minify: nitro.options.minify,
         ...nitro.options.esbuild?.options,
       }),
       alias({ entries: base.aliases }),
@@ -164,27 +165,12 @@ export const getRollupConfig = (nitro: Nitro): RollupConfig => {
   }
 
   // Minify
-  if (nitro.options.minify) {
-    const _terser = createRequire(import.meta.url)("@rollup/plugin-terser");
-    const terser = _terser.default || _terser;
-    config.plugins.push(
-      terser({
-        mangle: {
-          keep_fnames: true,
-          keep_classnames: true,
-        },
-        format: {
-          comments: false,
-        },
-      })
-    );
-  }
   if (
     nitro.options.sourceMap &&
     !nitro.options.dev &&
     nitro.options.experimental.sourcemapMinify !== false
   ) {
-    config.plugins.push(sourcemapMininify());
+    config.plugins.push(sourcemapMinify());
   }
 
   return config;
