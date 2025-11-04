@@ -40,7 +40,6 @@
     "lint": "eslint --cache . && prettier -c .",
     "lint:fix": "automd && eslint --cache --fix . && prettier -w .",
     "nitro": "node ./src/cli/index.ts",
-    "prepack": "pnpm build",
     "release": "pnpm test && pnpm build && changelogen --release --prerelease --push",
     "stub": "obuild --stub",
     "test": "pnpm lint && pnpm vitest run",
