@@ -34,7 +34,9 @@ export async function writeBuildInfo(nitro: Nitro): Promise<NitroBuildInfo> {
   );
   await mkdir(dirname(lastBuild), { recursive: true });
   await unlink(lastBuild).catch(() => {});
-  await symlink(nitro.options.output.dir, lastBuild).catch(console.warn);
+  await symlink(nitro.options.output.dir, lastBuild)
+    .catch(() => symlink(nitro.options.output.dir, lastBuild))
+    .catch(() => {});
 
   return buildInfo;
 }
