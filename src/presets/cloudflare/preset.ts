@@ -94,11 +94,6 @@ export const cloudflareDev = defineNitroPreset(
   {
     extends: "nitro-dev",
     modules: [cloudflareDevModule],
-    esbuild: {
-      options: {
-        target: "es2022",
-      },
-    },
     unenv: {
       meta: {
         name: "cloudflare-dev",
