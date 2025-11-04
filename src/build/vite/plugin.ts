@@ -355,13 +355,13 @@ async function setupNitroContext(
     }
   }
 
-  nitroConfig.builder = ctx._isRolldown ? "rolldown-vite" : "rolldown";
+  nitroConfig.builder = ctx._isRolldown ? "rolldown-vite" : "vite";
   debug("[init] Using builder:", nitroConfig.builder);
 
   // Initialize a new Nitro instance
   ctx.nitro = ctx.pluginConfig._nitro || (await createNitro(nitroConfig));
 
-  ctx.nitro.options.builder = ctx._isRolldown ? "rolldown-vite" : "rolldown";
+  ctx.nitro.options.builder = ctx._isRolldown ? "rolldown-vite" : "vite";
 
   // Config ssr env as a fetchable ssr service
   if (!ctx.pluginConfig.services?.ssr) {
