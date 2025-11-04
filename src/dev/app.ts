@@ -5,7 +5,9 @@ import { H3, toEventHandler, serveStatic } from "h3";
 import { joinURL } from "ufo";
 import mime from "mime";
 import { join, resolve, extname } from "pathe";
-import { readFile, stat } from "node:fs/promises";
+import { stat } from "node:fs/promises";
+import { createReadStream } from "node:fs";
+import { createGzip, createBrotliCompress } from "node:zlib";
 import { createVFSHandler } from "./vfs.ts";
 import { createHTTPProxy } from "./proxy.ts";
 
@@ -96,6 +98,7 @@ export class NitroDevApp {
   }
 }
 
+// TODO: upstream to h3/node
 function serveStaticDir(
   event: H3Event,
   opts: { dir: string; base: string; fallthrough?: boolean }
@@ -110,19 +113,35 @@ function serveStaticDir(
   };
   return serveStatic(event, {
     fallthrough: opts.fallthrough,
-    getContents(id) {
-      const path = r(id);
-      return path ? readFile(path) : undefined;
-    },
     getMeta: async (id) => {
       const path = r(id);
       if (!path) return;
       const s = await stat(path).catch(() => null);
       if (!s?.isFile()) return;
-      return { size: s.size, mtime: s.mtime };
+      const ext = extname(path);
+      return {
+        size: s.size,
+        mtime: s.mtime,
+        type: mime.getType(ext) || "application/octet-stream",
+      };
     },
-    getType(ext) {
-      return mime.getType(ext) || "application/octet-stream";
+    getContents(id) {
+      const path = r(id);
+      if (!path) return;
+      const stream = createReadStream(path);
+      const acceptEncoding = event.req.headers.get("accept-encoding") || "";
+      if (acceptEncoding.includes("br")) {
+        event.res.headers.set("Content-Encoding", "br");
+        event.res.headers.delete("Content-Length");
+        event.res.headers.set("Vary", "Accept-Encoding");
+        return stream.pipe(createBrotliCompress());
+      } else if (acceptEncoding.includes("gzip")) {
+        event.res.headers.set("Content-Encoding", "gzip");
+        event.res.headers.delete("Content-Length");
+        event.res.headers.set("Vary", "Accept-Encoding");
+        return stream.pipe(createGzip());
+      }
+      return stream as any;
     },
   });
 }
