@@ -64,7 +64,7 @@ export async function buildEnvironments(
       const html = await readFile(outputPath, "utf8").then((r) =>
         r.replace(
           "<!--ssr-outlet-->",
-          `{{{ fetch($REQUEST, { viteEnv: "ssr" }) }}}`
+          `{{{ globalThis.__nitro_vite_envs__?.["ssr"]?.fetch($REQUEST) || "" }}}`
         )
       );
       await rm(outputPath);
