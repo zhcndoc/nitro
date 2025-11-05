@@ -1,13 +1,16 @@
-import { serverFetch } from "nitro";
+import { fetch } from "nitro";
 
 export default {
   async fetch() {
-    const quote = await serverFetch("/quote").then((res) => res.json());
-    return tokenizedStream(quote.text, 100);
+    const quote = await fetch("/quote").then((res) => res.json());
+    return tokenizedStream(quote.text, 50);
   },
 };
 
-function tokenizedStream(text: string, delay = 100) {
+function tokenizedStream(
+  text: string,
+  delay: number
+): ReadableStream<Uint8Array> {
   const tokens = text.split(" ");
   return new ReadableStream({
     start(controller) {

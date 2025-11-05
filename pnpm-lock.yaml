@@ -426,6 +426,21 @@ importers:
         specifier: ^7.1.8
         version: 7.2.0(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.1)
 
+  examples/vite-html:
+    devDependencies:
+      '@tailwindcss/vite':
+        specifier: ^4.1.14
+        version: 4.1.16(vite@7.2.0(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.1))
+      nitro:
+        specifier: link:../..
+        version: link:../..
+      tailwindcss:
+        specifier: ^4.1.14
+        version: 4.1.16
+      vite:
+        specifier: latest
+        version: 7.2.0(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.1)
+
   examples/vite-nitro-plugin:
     devDependencies:
       nitro:
@@ -443,15 +458,9 @@ importers:
 
   playground:
     devDependencies:
-      '@tailwindcss/vite':
-        specifier: ^4.1.14
-        version: 4.1.16(rolldown-vite@7.2.0(@types/node@24.10.0)(esbuild@0.25.12)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))
       nitro:
         specifier: link:..
         version: link:..
-      tailwindcss:
-        specifier: ^4.1.14
-        version: 4.1.16
       vite:
         specifier: npm:rolldown-vite
         version: rolldown-vite@7.2.0(@types/node@24.10.0)(esbuild@0.25.12)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1)
@@ -8500,13 +8509,6 @@ snapshots:
       '@tailwindcss/oxide-wasm32-wasi': 4.1.16
       '@tailwindcss/oxide-win32-arm64-msvc': 4.1.16
       '@tailwindcss/oxide-win32-x64-msvc': 4.1.16
-
-  '@tailwindcss/vite@4.1.16(rolldown-vite@7.2.0(@types/node@24.10.0)(esbuild@0.25.12)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1))':
-    dependencies:
-      '@tailwindcss/node': 4.1.16
-      '@tailwindcss/oxide': 4.1.16
-      tailwindcss: 4.1.16
-      vite: rolldown-vite@7.2.0(@types/node@24.10.0)(esbuild@0.25.12)(jiti@2.6.1)(terser@5.44.0)(yaml@2.8.1)
 
   '@tailwindcss/vite@4.1.16(vite@7.2.0(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.1))':
     dependencies:
