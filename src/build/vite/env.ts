@@ -91,7 +91,7 @@ export function createServiceEnvironments(
   ctx: NitroPluginContext
 ): Record<string, EnvironmentOptions> {
   return Object.fromEntries(
-    Object.entries(ctx.pluginConfig.services || {}).map(([name, config]) => [
+    Object.entries(ctx.services).map(([name, config]) => [
       name,
       createServiceEnvironment(ctx, name, config),
     ])

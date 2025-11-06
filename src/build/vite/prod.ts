@@ -135,12 +135,11 @@ export async function buildEnvironments(
 }
 
 export function prodSetup(ctx: NitroPluginContext): string {
-  const services = ctx.pluginConfig.services || {};
-  const serviceNames = Object.keys(services);
+  const serviceNames = Object.keys(ctx.services);
 
   const serviceEntries = serviceNames.map((name) => {
     let entry: string;
-    if (ctx.pluginConfig.experimental?.virtualBundle) {
+    if (ctx.pluginConfig.experimental?.vite?.virtualBundle) {
       entry = ctx._entryPoints[name];
     } else {
       entry = resolve(
