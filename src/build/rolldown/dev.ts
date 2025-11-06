@@ -5,8 +5,8 @@ import { watch } from "node:fs";
 import { join } from "pathe";
 import { debounce } from "perfect-debounce";
 import { scanHandlers } from "../../scan.ts";
-import { nitroServerName } from "../../utils/nitro.ts";
 import { writeTypes } from "../types.ts";
+import { formatCompatibilityDate } from "compatx";
 
 export async function watchDev(nitro: Nitro, config: RolldownOptions) {
   const rolldown = await import("rolldown");
@@ -72,6 +72,9 @@ export async function watchDev(nitro: Nitro, config: RolldownOptions) {
       switch (event.code) {
         case "START": {
           start = Date.now();
+          nitro.logger.info(
+            `Starting dev watcher (builder: \`rolldown\`, preset: \`${nitro.options.preset}\`, compatibility date: \`${formatCompatibilityDate(nitro.options.compatibilityDate)}\`)`
+          );
           nitro.hooks.callHook("dev:start");
           break;
         }
@@ -79,7 +82,7 @@ export async function watchDev(nitro: Nitro, config: RolldownOptions) {
           nitro.hooks.callHook("compiled", nitro);
           if (nitro.options.logging.buildSuccess) {
             nitro.logger.success(
-              `${nitroServerName(nitro)} built with rolldown`,
+              `Server built`,
               start ? `in ${Date.now() - start}ms` : ""
             );
           }

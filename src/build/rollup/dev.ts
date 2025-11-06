@@ -6,9 +6,9 @@ import { defu } from "defu";
 import { join } from "pathe";
 import { debounce } from "perfect-debounce";
 import { scanHandlers } from "../../scan.ts";
-import { nitroServerName } from "../../utils/nitro.ts";
 import { formatRollupError } from "./error.ts";
 import { writeTypes } from "../types.ts";
+import { formatCompatibilityDate } from "compatx";
 
 export async function watchDev(nitro: Nitro, rollupConfig: RollupConfig) {
   const rollup = await import("rollup");
@@ -79,6 +79,9 @@ export async function watchDev(nitro: Nitro, rollupConfig: RollupConfig) {
       switch (event.code) {
         case "START": {
           start = Date.now();
+          nitro.logger.info(
+            `Starting dev watcher (builder: \`rollup\`, preset: \`${nitro.options.preset}\`, compatibility date: \`${formatCompatibilityDate(nitro.options.compatibilityDate)}\`)`
+          );
           nitro.hooks.callHook("dev:start");
           break;
         }
@@ -86,7 +89,7 @@ export async function watchDev(nitro: Nitro, rollupConfig: RollupConfig) {
           nitro.hooks.callHook("compiled", nitro);
           if (nitro.options.logging.buildSuccess) {
             nitro.logger.success(
-              `${nitroServerName(nitro)} built with rollup`,
+              `Server built`,
               start ? `in ${Date.now() - start}ms` : ""
             );
           }
