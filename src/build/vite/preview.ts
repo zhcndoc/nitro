@@ -33,7 +33,7 @@ export function nitroPreviewPlugin(ctx: NitroPluginContext): VitePlugin {
       );
       if (!existsSync(buildInfoPath)) {
         console.warn(
-          `[nitro] No build found. Please build your project before previewing.`
+          `No nitro build found. Please build your project before previewing.`
         );
         return;
       }
@@ -63,8 +63,21 @@ export function nitroPreviewPlugin(ctx: NitroPluginContext): VitePlugin {
       });
 
       if (!buildInfo.commands?.preview) {
-        consola.warn("[nitro] No preview command found for this preset..");
+        consola.warn("No nitro build preview command found for this preset.");
         return;
+      }
+
+      // Load .env files for preview mode
+      const dotEnvEntries = await loadPreviewDotEnv(server.config.root);
+      if (dotEnvEntries.length > 0) {
+        consola.box({
+          title: " [Environment Variables] ",
+          message: [
+            "Loaded variables from .env files (preview mode only).",
+            "Set platform environment variables for production:",
+            ...dotEnvEntries.map(([key, val]) => ` - ${key}`),
+          ].join("\n"),
+        });
       }
 
       const randomPort = await getRandomPort();
@@ -81,6 +94,7 @@ export function nitroPreviewPlugin(ctx: NitroPluginContext): VitePlugin {
         cwd: realBuildDir,
         env: {
           ...process.env,
+          ...Object.fromEntries(dotEnvEntries),
           PORT: String(randomPort),
         },
       });
@@ -107,4 +121,13 @@ export function nitroPreviewPlugin(ctx: NitroPluginContext): VitePlugin {
       });
     },
   } satisfies VitePlugin;
+}
+
+async function loadPreviewDotEnv(root: string): Promise<[string, string][]> {
+  const { loadDotenv } = await import("c12");
+  const env = await loadDotenv({
+    cwd: root,
+    fileName: [".env.preview", ".env.production", ".env"],
+  });
+  return Object.entries(env).filter(([_key, val]) => val) as [string, string][];
 }
