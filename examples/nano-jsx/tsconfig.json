@@ -2,6 +2,6 @@
   "extends": "nitro/tsconfig",
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "preact"
+    "jsxImportSource": "nano-jsx/esm"
   }
 }
