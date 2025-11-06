@@ -1,16 +1,9 @@
 import type { Plugin as VitePlugin } from "vite";
-import type { NitroBuildInfo } from "nitro/types";
 import type { NitroPluginContext } from "./types.ts";
-
-import { resolve } from "pathe";
-import { existsSync } from "node:fs";
-import { readFile, readlink } from "node:fs/promises";
-import { getRandomPort } from "get-port-please";
-
-import consola from "consola";
 import { spawn } from "node:child_process";
+import consola from "consola";
 import { prettyPath } from "../../utils/fs.ts";
-import { createProxyServer } from "httpxy";
+import { getBuildInfo } from "../info.ts";
 
 export function nitroPreviewPlugin(ctx: NitroPluginContext): VitePlugin {
   return {
@@ -26,26 +19,15 @@ export function nitroPreviewPlugin(ctx: NitroPluginContext): VitePlugin {
     },
 
     async configurePreviewServer(server) {
-      const buildInfoPath = resolve(
-        server.config.root,
-        "node_modules/.nitro/last-build",
-        "nitro.json"
-      );
-      if (!existsSync(buildInfoPath)) {
-        console.warn(
-          `No nitro build found. Please build your project before previewing.`
+      const { outputDir, buildInfo } = await getBuildInfo(server.config.root);
+      if (!buildInfo) {
+        throw this.error(
+          "Cannot load nitro build info. Make sure to build first."
         );
-        return;
       }
 
-      const realBuildDir = await readlink("node_modules/.nitro/last-build");
-
-      const buildInfo = JSON.parse(
-        await readFile(buildInfoPath, "utf8")
-      ) as NitroBuildInfo;
-
       const info = [
-        ["Build Directory:", prettyPath(realBuildDir)],
+        ["Build Directory:", prettyPath(outputDir)],
         ["Date:", buildInfo.date && new Date(buildInfo.date).toLocaleString()],
         ["Nitro Version:", buildInfo.versions.nitro],
         ["Nitro Preset:", buildInfo.preset],
@@ -80,34 +62,39 @@ export function nitroPreviewPlugin(ctx: NitroPluginContext): VitePlugin {
         });
       }
 
-      const randomPort = await getRandomPort();
-      consola.info(`Spawning preview server...`);
-
       const [command, ...args] = buildInfo.commands.preview.split(" ");
 
-      let child: ReturnType<typeof spawn> | undefined;
-
+      consola.info(`Spawning preview server...`);
       consola.info(buildInfo.commands?.preview);
+      console.log("");
 
-      child = spawn(command, args, {
+      const { getRandomPort } = await import("get-port-please");
+      const randomPort = await getRandomPort();
+      const child = spawn(command, args, {
         stdio: "inherit",
-        cwd: realBuildDir,
+        cwd: outputDir,
         env: {
           ...process.env,
           ...Object.fromEntries(dotEnvEntries),
           PORT: String(randomPort),
         },
       });
-      process.on("exit", () => {
-        child?.kill();
-        child = undefined;
-      });
+      for (const sig of ["SIGINT", "SIGHUP"] as const) {
+        process.once(sig, () => {
+          consola.info(`Stopping preview server...`);
+          if (child.killed === false) {
+            child.kill(sig);
+            process.exit();
+          }
+        });
+      }
       child.on("exit", (code) => {
         if (code && code !== 0) {
           consola.error(`[nitro] Preview server exited with code ${code}`);
         }
       });
 
+      const { createProxyServer } = await import("httpxy");
       const proxy = createProxyServer({
         target: `http://localhost:${randomPort}`,
       });
