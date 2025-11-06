@@ -214,6 +214,8 @@ SECRET="top-secret"
 
 **示例：**
 
+::code-group
+
 ```ini [wrangler.toml]
 # 共享
 [vars]
@@ -226,7 +228,27 @@ NITRO_HELLO_THERE="captain"
 SECRET="top-secret"
 ```
 
-## 直接访问 Cloudflare bindings
+```json [wrangler.json]
+{
+  "vars": {
+    "NITRO_HELLO_THERE": "general",
+    "SECRET": "secret"
+  },
+  "env": {
+    "production": {
+      "vars": {
+        "NITRO_HELLO_THERE": "captain",
+        "SECRET": "top-secret"
+      }
+    }
+  }
+}
+
+```
+
+::
+
+## 直接访问 Cloudflare 绑定
 
 绑定允许您与 Cloudflare 平台上的资源交互，这些资源的示例包括键值数据存储 ([KVs](https://developers.cloudflare.com/kv/)) 和无服务器 SQL 数据库 ([D1s](https://developers.cloudflare.com/d1/))。
 
@@ -262,6 +284,8 @@ defineHandler(async (event) => {
 
 例如，在 `wrangler.toml` 中定义变量和 KV 命名空间：
 
+::code-group
+
 ```ini [wrangler.toml]
 [vars]
 MY_VARIABLE="my-value"
@@ -270,6 +294,22 @@ MY_VARIABLE="my-value"
 binding = "MY_KV"
 id = "xxx"
 ```
+
+```json [wrangler.json]
+{
+  "vars": {
+    "MY_VARIABLE": "my-value"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "MY_KV",
+      "id": "xxx"
+    }
+  ]
+}
+```
+
+::
 
 或在您的 Nitro 配置中：
 

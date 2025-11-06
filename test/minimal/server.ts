@@ -1,5 +1,5 @@
 export default {
-  fetch(request: Request) {
+  fetch(_req: Request) {
     return new Response("ok");
   },
 };

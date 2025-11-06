@@ -2,8 +2,8 @@ import type { IncomingMessage, OutgoingMessage } from "node:http";
 import type { Duplex } from "node:stream";
 import type { FSWatcher } from "chokidar";
 import type { ServerOptions, Server } from "srvx";
-import { NodeDevWorker } from "./worker";
-import type { DevWorkerData } from "./worker";
+import { NodeDevWorker } from "./worker.ts";
+import type { DevWorkerData } from "./worker.ts";
 import type {
   DevMessageListener,
   DevRPCHooks,
@@ -23,7 +23,7 @@ import { watch } from "chokidar";
 import { serve } from "srvx/node";
 import { debounce } from "perfect-debounce";
 import { isTest, isCI } from "std-env";
-import { NitroDevApp } from "./app";
+import { NitroDevApp } from "./app.ts";
 
 export function createDevServer(nitro: Nitro): NitroDevServer {
   return new NitroDevServer(nitro);
@@ -57,6 +57,9 @@ export class NitroDevServer extends NitroDevApp implements DevRPCHooks {
         (this as any)[key] = value.bind(this);
       }
     }
+
+    // Attach to Nitro.fetch
+    nitro.fetch = this.fetch.bind(this);
 
     this.#entry = resolve(
       nitro.options.output.dir,
@@ -122,6 +125,7 @@ export class NitroDevServer extends NitroDevApp implements DevRPCHooks {
     const server = serve({
       ...opts,
       fetch: this.fetch,
+      gracefulShutdown: false,
     });
     this.#listeners.push(server);
     if (server.node?.server) {

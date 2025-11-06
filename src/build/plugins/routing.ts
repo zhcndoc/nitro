@@ -1,5 +1,5 @@
 import type { Nitro, NitroEventHandler, NitroRouteRules } from "nitro/types";
-import { virtual } from "./virtual";
+import { virtual } from "./virtual.ts";
 
 export const RuntimeRouteRules = [
   "headers",
@@ -15,7 +15,9 @@ export function routing(nitro: Nitro) {
       "#nitro-internal-virtual/routing": () => {
         const allHandlers = uniqueBy(
           [
-            ...Object.values(nitro.routing.routes.routes).map((h) => h.data),
+            ...Object.values(nitro.routing.routes.routes).flatMap(
+              (h) => h.data
+            ),
             ...Object.values(nitro.routing.routedMiddleware.routes).map(
               (h) => h.data
             ),
@@ -24,19 +26,18 @@ export function routing(nitro: Nitro) {
           "_importHash"
         );
 
-        const h3Imports = [
-          (nitro.options.serverEntry || allHandlers.some((h) => !h.lazy)) &&
-            "toEventHandler",
-          allHandlers.some((h) => h.lazy) && "defineLazyEventHandler",
-        ].filter(Boolean) as string[];
-
         return /* js */ `
 import * as __routeRules__ from "nitro/runtime/internal/route-rules";
-${nitro.options.serverEntry ? `import __serverEntry__ from ${JSON.stringify(nitro.options.serverEntry)};` : ""}
-import {${h3Imports.join(", ")}} from "nitro/deps/h3";
+import * as srvxNode from "srvx/node"
+import * as h3 from "h3";
 
-export const hasRouteRules = ${nitro.routing.routeRules.hasRoutes() ? "true" : "false"};
 export const findRouteRules = ${nitro.routing.routeRules.compileToString({ serialize: serializeRouteRule, matchAll: true })}
+
+const multiHandler = (...handlers) => {
+  const final = handlers.pop()
+  const middleware = handlers.filter(Boolean).map(h => h3.toMiddleware(h));
+  return (ev) => h3.callMiddleware(ev, middleware, final);
+}
 
 ${allHandlers
   .filter((h) => !h.lazy)
@@ -47,26 +48,23 @@ ${allHandlers
   .filter((h) => h.lazy)
   .map(
     (h) =>
-      /* js */ `const ${h._importHash} = defineLazyEventHandler(() => import("${h.handler}"));`
+      /* js */ `const ${h._importHash} = h3.defineLazyEventHandler(() => import("${h.handler}")${h.format === "node" ? ".then(m => srvxNode.toFetchHandler(m.default))" : ""});`
   )
   .join("\n")}
 
-export const hasRoutes = ${nitro.routing.routes.hasRoutes() ? "true" : "false"};
 export const findRoute = ${nitro.routing.routes.compileToString({ serialize: serializeHandler })}
 
-export const hasRoutedMiddleware = ${nitro.routing.routedMiddleware.hasRoutes() ? "true" : "false"};
 export const findRoutedMiddleware = ${nitro.routing.routedMiddleware.compileToString({ serialize: serializeHandler, matchAll: true })};
 
-export const hasGlobalMiddleware = ${nitro.routing.globalMiddleware.length > 0 || nitro.options.serverEntry ? "true" : "false"};
-export const globalMiddleware = [${nitro.routing.globalMiddleware.map((h) => (h.lazy ? h._importHash : `toEventHandler(${h._importHash})`)).join(",")}];
-
-${nitro.options.serverEntry && /* js */ `const serverEntry = toEventHandler(__serverEntry__);\nif (serverEntry) { globalMiddleware.push(serverEntry) }`}
+export const globalMiddleware = [
+  ${nitro.routing.globalMiddleware.map((h) => (h.lazy ? h._importHash : `h3.toEventHandler(${h._importHash})`)).join(",")}
+].filter(Boolean);
   `;
       },
       // --- routing-meta ---
       "#nitro-internal-virtual/routing-meta": () => {
         const routeHandlers = uniqueBy(
-          Object.values(nitro.routing.routes.routes).map((h) => h.data),
+          Object.values(nitro.routing.routes.routes).flatMap((h) => h.data),
           "_importHash"
         );
 
@@ -99,17 +97,38 @@ function uniqueBy<T>(arr: T[], key: keyof T): T[] {
 
 // --- Serializing ---
 
+type MaybeArray<T> = T | T[];
+
 function serializeHandler(
-  h: NitroEventHandler & { _importHash: string }
+  h: MaybeArray<NitroEventHandler & { _importHash: string }>
 ): string {
+  const meta = Array.isArray(h) ? h[0] : h;
+
   return `{${[
-    `route:${JSON.stringify(h.route)}`,
-    h.method && `method:${JSON.stringify(h.method)}`,
-    h.meta && `meta:${JSON.stringify(h.meta)}`,
-    `handler:${h.lazy ? h._importHash : `toEventHandler(${h._importHash})`}`,
+    `route:${JSON.stringify(meta.route)}`,
+    meta.method && `method:${JSON.stringify(meta.method)}`,
+    meta.meta && `meta:${JSON.stringify(meta.meta)}`,
+    `handler:${
+      Array.isArray(h)
+        ? `multiHandler(${h.map((handler) => serializeHandlerFn(handler)).join(",")})`
+        : serializeHandlerFn(h)
+    }`,
   ]
     .filter(Boolean)
     .join(",")}}`;
+}
+
+function serializeHandlerFn(
+  h: NitroEventHandler & { _importHash: string }
+): string {
+  let code = h._importHash;
+  if (!h.lazy) {
+    if (h.format === "node") {
+      code = `srvxNode.toFetchHandler(${code})`;
+    }
+    code = `h3.toEventHandler(${code})`;
+  }
+  return code;
 }
 
 function serializeRouteRule(h: NitroRouteRules & { _route: string }): string {

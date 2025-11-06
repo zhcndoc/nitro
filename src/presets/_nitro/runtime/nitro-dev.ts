@@ -1,23 +1,16 @@
 import "#nitro-internal-pollyfills";
-import { useNitroApp } from "nitro/runtime";
+import { useNitroApp, useNitroHooks } from "nitro/runtime";
 
-import { trapUnhandledNodeErrors } from "nitro/runtime/internal";
-import { startScheduleRunner } from "nitro/runtime/internal";
+import {
+  startScheduleRunner,
+  trapUnhandledErrors,
+} from "nitro/runtime/internal";
 import { Server } from "node:http";
-import nodeCrypto from "node:crypto";
 import { parentPort, threadId } from "node:worker_threads";
 
 import wsAdapter from "crossws/adapters/node";
 import { toNodeHandler } from "srvx/node";
 import { getSocketAddress, isSocketSupported } from "get-port-please";
-
-// globalThis.crypto support for Node.js 18
-if (!globalThis.crypto) {
-  globalThis.crypto = nodeCrypto as unknown as Crypto;
-}
-
-// Trap unhandled errors
-trapUnhandledNodeErrors();
 
 // Listen for shutdown signal from runner
 parentPort?.on("message", (msg) => {
@@ -27,6 +20,9 @@ parentPort?.on("message", (msg) => {
 });
 
 const nitroApp = useNitroApp();
+const nitroHooks = useNitroHooks();
+
+trapUnhandledErrors();
 
 const server = new Server(toNodeHandler(nitroApp.fetch));
 let listener: Server | undefined;
@@ -84,7 +80,7 @@ async function shutdown() {
   server.closeAllConnections?.();
   await Promise.all([
     new Promise((resolve) => listener?.close(resolve)),
-    nitroApp.hooks.callHook("close").catch(console.error),
-  ]);
+    nitroHooks.callHook("close"),
+  ]).catch(console.error);
   parentPort?.postMessage({ event: "exit" });
 }

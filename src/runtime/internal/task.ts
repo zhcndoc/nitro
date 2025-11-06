@@ -7,7 +7,6 @@ import type {
   TaskPayload,
   TaskResult,
 } from "nitro/types";
-import { isTest } from "std-env";
 import { scheduledTasks, tasks } from "#nitro-internal-virtual/tasks";
 
 /** @experimental */
@@ -62,7 +61,7 @@ export async function runTask<RT = unknown>(
 
 /** @experimental */
 export function startScheduleRunner() {
-  if (!scheduledTasks || scheduledTasks.length === 0 || isTest) {
+  if (!scheduledTasks || scheduledTasks.length === 0 || process.env.TEST) {
     return;
   }
 

@@ -1,4 +1,4 @@
-import { defineNitroPreset } from "../_utils/preset";
+import { defineNitroPreset } from "../_utils/preset.ts";
 import { normalize } from "pathe";
 import { resolveModulePath } from "exsolve";
 
@@ -12,6 +12,7 @@ const nodeServer = defineNitroPreset(
   },
   {
     name: "node-server" as const,
+    aliases: ["node"],
   }
 );
 

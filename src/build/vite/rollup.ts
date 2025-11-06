@@ -5,11 +5,11 @@ import { normalize, resolve, dirname } from "pathe";
 import { runtimeDir } from "nitro/runtime/meta";
 import alias from "@rollup/plugin-alias";
 import inject from "@rollup/plugin-inject";
-import { replace } from "../plugins/replace";
-import { baseBuildConfig, type BaseBuildConfig } from "../config";
-import { baseBuildPlugins } from "../plugins";
+import { replace } from "../plugins/replace.ts";
+import { baseBuildConfig, type BaseBuildConfig } from "../config.ts";
+import { baseBuildPlugins } from "../plugins.ts";
 import type { OutputBundle, Plugin as RollupPlugin } from "rollup";
-import type { NitroPluginContext } from "./types";
+import type { NitroPluginContext } from "./types.ts";
 
 /**
  * Removed from base rollup config:
@@ -55,12 +55,20 @@ export const getViteRollupConfig = (
       ...baseBuildPlugins(nitro, base),
       alias({ entries: base.aliases }),
       replace({
-        delimiters: base.replaceDelimiters,
         preventAssignment: true,
         values: base.replacements,
       }),
-      inject(base.env.inject),
+      !ctx._isRolldown &&
+        (inject as unknown as typeof inject.default)(base.env.inject),
     ].filter(Boolean) as RollupPlugin[],
+    // rolldown-specific config
+    ...(ctx._isRolldown
+      ? {
+          transform: {
+            inject: base.env.inject as Record<string, string>,
+          },
+        }
+      : {}),
     treeshake: {
       moduleSideEffects(id) {
         const normalizedId = normalize(id);
@@ -102,7 +110,8 @@ export const getViteRollupConfig = (
           const path =
             routeHandler.route
               .replace(/:([^/]+)/g, "_$1")
-              .replace(/\/[^/]+$/g, "") || "/";
+              .replace(/\/[^/]+$/g, "")
+              .replace(/[^a-zA-Z0-9/_-]/g, "_") || "/";
           return `chunks/routes/${path}/[name].mjs`.replace(/\/+/g, "/");
         }
 
@@ -126,10 +135,12 @@ export const getViteRollupConfig = (
       intro: "",
       outro: "",
       generatedCode: {
-        constBindings: true,
+        // constBindings is not supported in rolldown
+        ...(ctx._isRolldown ? {} : { constBindings: true }),
       },
       sanitizeFileName: sanitizeFilePath,
-      sourcemapExcludeSources: true,
+      // sourcemapExcludeSources is not supported in rolldown
+      ...(ctx._isRolldown ? {} : { sourcemapExcludeSources: true }),
       sourcemapIgnoreList(relativePath) {
         return relativePath.includes("node_modules");
       },

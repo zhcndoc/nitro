@@ -1,15 +1,18 @@
 import { promises as fsp } from "node:fs";
 import { resolve, join, basename } from "pathe";
-import { describe, expect, it, vi } from "vitest";
-import { setupTest, testNitro } from "../tests";
+import { describe, expect, it, vi, afterAll } from "vitest";
+import { setupTest, testNitro, fixtureDir } from "../tests.ts";
+import { toFetchHandler } from "srvx/node";
 
-describe("nitro:preset:vercel", async () => {
-  const ctx = await setupTest("vercel");
+describe("nitro:preset:vercel:web", async () => {
+  const ctx = await setupTest("vercel", {
+    outDirSuffix: "-web",
+  });
   testNitro(
     ctx,
     async () => {
       const { fetch: fetchHandler } = await import(
-        resolve(ctx.outDir, "functions/__fallback.func/index.mjs")
+        resolve(ctx.outDir, "functions/__server.func/index.mjs")
       ).then((r) => r.default || r);
       return async ({ url, ...options }) => {
         const req = new Request(new URL(url, "https://example.com"), options);
@@ -119,11 +122,11 @@ describe("nitro:preset:vercel", async () => {
                 "src": "/rules/_/noncached/cached",
               },
               {
-                "dest": "/__fallback",
+                "dest": "/__server",
                 "src": "/rules/_/cached/noncached",
               },
               {
-                "dest": "/__fallback",
+                "dest": "/__server",
                 "src": "(?<url>/rules/_/noncached/.*)",
               },
               {
@@ -131,7 +134,7 @@ describe("nitro:preset:vercel", async () => {
                 "src": "(?<url>/rules/_/cached/.*)",
               },
               {
-                "dest": "/__fallback",
+                "dest": "/__server",
                 "src": "/rules/dynamic",
               },
               {
@@ -435,7 +438,7 @@ describe("nitro:preset:vercel", async () => {
                 "src": "/api/typed/catchall/(?<slug>[^/]+)/?(?<another>.+)",
               },
               {
-                "dest": "/__fallback",
+                "dest": "/__server",
                 "src": "/(.*)",
               },
             ],
@@ -487,12 +490,12 @@ describe("nitro:preset:vercel", async () => {
         expect(functionsFiles).toMatchInlineSnapshot(`
           [
             "functions/500.func (symlink)",
-            "functions/__fallback.func/.vc-config.json",
-            "functions/__fallback.func/chunks",
-            "functions/__fallback.func/index.mjs",
-            "functions/__fallback.func/index.mjs.map",
-            "functions/__fallback.func/node_modules",
-            "functions/__fallback.func/package.json",
+            "functions/__server.func/.vc-config.json",
+            "functions/__server.func/chunks",
+            "functions/__server.func/index.mjs",
+            "functions/__server.func/index.mjs.map",
+            "functions/__server.func/node_modules",
+            "functions/__server.func/package.json",
             "functions/_openapi.json.func (symlink)",
             "functions/_scalar.func (symlink)",
             "functions/_swagger.func (symlink)",
@@ -580,4 +583,91 @@ describe("nitro:preset:vercel", async () => {
       });
     }
   );
+});
+
+describe("nitro:preset:vercel:node", async () => {
+  const ctx = await setupTest("vercel", {
+    outDirSuffix: "-node",
+    config: {
+      vercel: { entryFormat: "node" },
+    },
+  });
+  testNitro(ctx, async () => {
+    const nodeHandler = await import(
+      resolve(ctx.outDir, "functions/__server.func/index.mjs")
+    ).then((r) => r.default || r);
+    const fetchHandler = toFetchHandler(nodeHandler);
+    return async ({ url, ...options }) => {
+      const req = new Request(new URL(url, "https://example.com"), options);
+      const res = await fetchHandler(req);
+      return res;
+    };
+  });
+});
+
+describe("nitro:preset:vercel:bun", async () => {
+  const ctx = await setupTest("vercel", {
+    outDirSuffix: "-bun",
+    config: {
+      preset: "vercel",
+      vercel: {
+        functions: {
+          runtime: "bun1.x",
+        },
+      },
+    },
+  });
+
+  it("should generate function config with bun runtime", async () => {
+    const config = await fsp
+      .readFile(
+        resolve(ctx.outDir, "functions/__server.func/.vc-config.json"),
+        "utf8"
+      )
+      .then((r) => JSON.parse(r));
+    expect(config).toMatchInlineSnapshot(`
+      {
+        "handler": "index.mjs",
+        "launcherType": "Nodejs",
+        "runtime": "bun1.x",
+        "shouldAddHelpers": false,
+        "supportsResponseStreaming": true,
+      }
+    `);
+  });
+});
+
+describe("nitro:preset:vercel:bun-verceljson", async () => {
+  const vercelJsonPath = join(fixtureDir, "vercel.json");
+  // Need to make sure vercel.json is created before setupTest is called
+  await fsp.writeFile(vercelJsonPath, JSON.stringify({ bunVersion: "1.x" }));
+
+  const ctx = await setupTest("vercel", {
+    outDirSuffix: "-bun-verceljson",
+    config: {
+      preset: "vercel",
+    },
+  });
+
+  afterAll(async () => {
+    await fsp.unlink(vercelJsonPath).catch(() => {});
+  });
+
+  it("should detect bun runtime from vercel.json", async () => {
+    const config = await fsp
+      .readFile(
+        resolve(ctx.outDir, "functions/__server.func/.vc-config.json"),
+        "utf8"
+      )
+      .then((r) => JSON.parse(r));
+    expect(config).toMatchInlineSnapshot(`
+      {
+        "handler": "index.mjs",
+        "launcherType": "Nodejs",
+        "runtime": "bun1.x",
+        "shouldAddHelpers": false,
+        "supportsResponseStreaming": true,
+      }
+    `);
+  });
 });

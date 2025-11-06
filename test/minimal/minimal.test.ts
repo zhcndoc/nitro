@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it } from "vitest";
-import { createNitro, build, prepare } from "nitro";
+import { createNitro, build, prepare } from "nitro/builder";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { mkdir, rm, stat } from "node:fs/promises";
@@ -8,14 +8,16 @@ import { glob } from "tinyglobby";
 const fixtureDir = fileURLToPath(new URL("./", import.meta.url));
 const tmpDir = fileURLToPath(new URL(".tmp", import.meta.url));
 
-const sizeThresholds: Record<string, [number, number]> = {
-  rollup: [24, 15],
-  rolldown: [178, 178],
-  vite: [27, 13],
+// Rounded up
+const bundleSizes: Record<string, [kb: number, minKB: number]> = {
+  rollup: [15, 8],
+  rolldown: [20, 8],
+  vite: [18, 10],
+  "rolldown-vite": [17, 10],
 };
 
 describe("minimal fixture", () => {
-  const builders = ["rollup", "rolldown", "vite"] as const;
+  const builders = ["vite", "rollup", "rolldown", "rolldown-vite"] as const;
 
   const results: any[] = [];
 
@@ -47,10 +49,10 @@ describe("minimal fixture", () => {
           expect(await res.text()).toBe("ok");
         });
 
-        it("output size", async () => {
+        it("bundle size", async () => {
           const { sizeKB } = await analyzeDir(outDir);
-          const threshold = sizeThresholds[builder][minify ? 1 : 0];
-          expect(sizeKB).toBeLessThan(threshold);
+          const expectedSize = bundleSizes[builder][minify ? 1 : 0];
+          expect(Math.round(sizeKB)).toBe(expectedSize);
 
           results.push({
             builder: builder + (minify ? " (minified)" : ""),
@@ -62,7 +64,7 @@ describe("minimal fixture", () => {
     }
   }
 
-  if (process.env.DEBUG) {
+  if (process.env.TEST_DEBUG) {
     afterAll(() => {
       console.table(results);
     });

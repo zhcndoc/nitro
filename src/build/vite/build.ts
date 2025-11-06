@@ -1,5 +1,5 @@
 import type { Nitro } from "nitro/types";
-import { nitro as nitroPlugin } from "./plugin";
+import { nitro as nitroPlugin } from "./plugin.ts";
 import { isTest } from "std-env";
 
 export async function viteBuild(nitro: Nitro) {
@@ -8,7 +8,10 @@ export async function viteBuild(nitro: Nitro) {
       "Nitro vite builder is not supported in development mode. Please use `vite dev` instead."
     );
   }
-  const { createBuilder } = await import("vite");
+  const { createBuilder } =
+    nitro.options.builder === "rolldown-vite"
+      ? await import("rolldown-vite").catch(() => import("vite"))
+      : await import("vite");
   const builder = await createBuilder({
     base: nitro.options.rootDir,
     plugins: [await nitroPlugin({ _nitro: nitro })],

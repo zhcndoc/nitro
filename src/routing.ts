@@ -2,7 +2,7 @@ import type { Nitro, NitroEventHandler, NitroRouteRules } from "nitro/types";
 import type { RouterContext } from "rou3";
 import type { RouterCompilerOptions } from "rou3/compiler";
 
-import { join, relative } from "pathe";
+import { join } from "pathe";
 import { runtimeDir } from "nitro/runtime/meta";
 import { addRoute, createRouter, findRoute, findAllRoutes } from "rou3";
 import { compileRouterToString } from "rou3/compiler";
@@ -25,19 +25,20 @@ export function initNitroRouting(nitro: Nitro) {
     return envs.length === 0 || envs.some((env) => envConditions.has(env));
   };
 
-  const routes = new Router<NitroEventHandler & { _importHash: string }>();
+  type MaybeArray<T> = T | T[];
+  const routes = new Router<
+    MaybeArray<NitroEventHandler & { _importHash: string }>
+  >(nitro.options.baseURL);
 
   const routeRules = new Router<NitroRouteRules & { _route: string }>(
-    true /* matchAll */
+    nitro.options.baseURL
   );
 
   const globalMiddleware: (NitroEventHandler & { _importHash: string })[] = [];
 
   const routedMiddleware = new Router<
     NitroEventHandler & { _importHash: string }
-  >(true /* matchAll */);
-
-  const warns: Set<string> = new Set();
+  >(nitro.options.baseURL);
 
   const sync = () => {
     // Update route rules
@@ -54,26 +55,16 @@ export function initNitroRouting(nitro: Nitro) {
 
     // Update routes
     const _routes = [
-      ...nitro.scannedHandlers,
-      ...nitro.options.handlers,
-    ].filter((h) => h && !h.middleware && matchesEnv(h));
-
-    // Renderer
-    if (nitro.options.renderer?.entry) {
-      // Check if a wildcard route already exists and remove it with a warning
-      const existingWildcard = _routes.findIndex(
-        (h) =>
-          /^\/\*\*(:.+)?$/.test(h.route) && (!h.method || h.method === "GET")
-      );
-      if (existingWildcard !== -1) {
-        const h = _routes[existingWildcard];
-        const warn = `The renderer will override \`${relative(".", h.handler)}\` (route: \`${h.route}\`). Use a more specific route or different HTTP method.`;
-        if (!warns.has(warn)) {
-          warns.add(warn);
-          nitro.logger.warn(warn);
+      ...Object.entries(nitro.options.routes).flatMap(([route, handler]) => {
+        if (typeof handler === "string") {
+          handler = { handler };
         }
-        _routes.splice(existingWildcard, 1);
-      }
+        return { ...handler, route, middleware: false };
+      }),
+      ...nitro.options.handlers,
+      ...nitro.scannedHandlers,
+    ].filter((h) => h && !h.middleware && matchesEnv(h));
+    if (nitro.options.renderer?.entry) {
       _routes.push({
         route: "/**",
         lazy: true,
@@ -85,10 +76,11 @@ export function initNitroRouting(nitro: Nitro) {
         ...h,
         method: h.method || "",
         data: handlerWithImportHash(h),
-      }))
+      })),
+      { merge: true }
     );
 
-    // Update midleware
+    // Update middleware
     const _middleware = [
       ...nitro.scannedHandlers,
       ...nitro.options.handlers,
@@ -145,21 +137,34 @@ export class Router<T> {
   #routes?: Route<T>[];
   #router?: RouterContext<T>;
   #compiled?: string;
+  #baseURL: string;
 
-  constructor(matchAll?: boolean) {
+  constructor(baseURL?: string) {
     this._update([]);
+    this.#baseURL = baseURL || "";
+    if (this.#baseURL.endsWith("/")) {
+      this.#baseURL = this.#baseURL.slice(0, -1);
+    }
   }
 
   get routes() {
     return this.#routes!;
   }
 
-  _update(routes: Route<T>[]) {
+  _update(routes: Route<T>[], opts?: { merge?: boolean }) {
     this.#routes = routes;
     this.#router = createRouter<T>();
     this.#compiled = undefined;
     for (const route of routes) {
-      addRoute(this.#router, route.method, route.route, route.data);
+      addRoute(
+        this.#router,
+        route.method,
+        this.#baseURL + route.route,
+        route.data
+      );
+    }
+    if (opts?.merge) {
+      mergeCatchAll(this.#router);
     }
   }
 
@@ -167,11 +172,24 @@ export class Router<T> {
     return this.#routes!.length > 0;
   }
 
-  compileToString(opts?: RouterCompilerOptions) {
-    return (
-      this.#compiled ||
-      (this.#compiled = compileRouterToString(this.#router!, undefined, opts))
-    );
+  compileToString(opts?: RouterCompilerOptions<T>) {
+    if (this.#compiled) {
+      return this.#compiled;
+    }
+    this.#compiled = compileRouterToString(this.#router!, undefined, opts);
+
+    // TODO: Upstream to rou3 compiler
+    const onlyWildcard =
+      this.routes.length === 1 &&
+      this.routes[0].route === "/**" &&
+      this.routes[0].method === "";
+    if (onlyWildcard) {
+      // Optimize for single wildcard route
+      const data = (opts?.serialize || JSON.stringify)(this.routes[0].data);
+      this.#compiled = /* js */ `/* @__PURE__ */ (() => {const data=${data};return ((_m, p)=>{return {data,params:{"_":p.slice(1)}};})})()`;
+    }
+
+    return this.#compiled;
   }
 
   match(method: string, path: string): undefined | T {
@@ -184,4 +202,15 @@ export class Router<T> {
       (route) => route.data
     );
   }
+}
+
+function mergeCatchAll(router: RouterContext<unknown>) {
+  const handlers = router.root?.wildcard?.methods?.[""];
+  if (!handlers || handlers.length < 2) {
+    return;
+  }
+  handlers.splice(0, handlers.length, {
+    ...handlers[0],
+    data: handlers.map((h) => h.data),
+  });
 }

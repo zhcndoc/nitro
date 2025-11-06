@@ -1,6 +1,6 @@
 import type { ExistingRawSourceMap, Plugin } from "rollup";
 
-export function sourcemapMininify() {
+export function sourcemapMinify() {
   return {
     name: "nitro:sourcemap-minify",
     generateBundle(_options, bundle) {

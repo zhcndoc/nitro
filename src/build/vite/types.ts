@@ -1,7 +1,7 @@
 import type { OutputBundle } from "rollup";
-import type { getViteRollupConfig } from "./rollup";
-import type { DevWorker, Nitro, NitroConfig } from "nitro/types";
-import type { NitroDevApp } from "../../dev/app";
+import type { getViteRollupConfig } from "./rollup.ts";
+import type { DevWorker, Nitro, NitroConfig, NitroModule } from "nitro/types";
+import type { NitroDevApp } from "../../dev/app.ts";
 
 declare module "vite" {
   interface UserConfig {
@@ -9,6 +9,16 @@ declare module "vite" {
      * Nitro Vite Plugin options.
      */
     nitro?: NitroConfig;
+  }
+
+  interface Plugin {
+    nitro?: NitroModule;
+  }
+}
+
+declare module "rollup" {
+  interface Plugin {
+    nitro?: NitroModule;
   }
 }
 
@@ -34,11 +44,19 @@ export interface NitroPluginConfig {
      * @note This is unsafe if plugins rely on temporary files on the filesystem.
      */
     virtualBundle?: boolean;
+
     /**
      * @experimental Enable `?assets` import proposed by https://github.com/vitejs/vite/discussions/20913
      * @default true
      */
     assetsImport?: boolean;
+
+    /**
+     * Reload the page when a server module is updated.
+     *
+     * @default true
+     */
+    serverReload: boolean;
   };
 }
 
@@ -76,8 +94,8 @@ export interface NitroPluginContext {
   devWorker?: DevWorker;
   devApp?: NitroDevApp;
 
+  _isRolldown?: boolean;
   _initialized?: boolean;
-  _manifest: Record<string, { file: string }>;
   _publicDistDir?: string;
   _entryPoints: Record<string, string>;
   _serviceBundles: Record<string, OutputBundle>;

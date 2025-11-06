@@ -1,4 +1,4 @@
-import type { NitroPluginContext } from "./types";
+import type { NitroPluginContext } from "./types.ts";
 import type {
   DevEnvironmentContext,
   HotChannel,
@@ -13,7 +13,7 @@ import { watch as chokidarWatch } from "chokidar";
 import { watch as fsWatch } from "node:fs";
 import { join } from "pathe";
 import { debounce } from "perfect-debounce";
-import { scanHandlers } from "../../scan";
+import { scanHandlers } from "../../scan.ts";
 
 // https://vite.dev/guide/api-environment-runtimes.html#modulerunner
 
@@ -147,8 +147,8 @@ export async function configureViteDevServer(
     }
   });
 
-  const srcDirWatcher = fsWatch(
-    nitro.options.srcDir,
+  const rootDirWatcher = fsWatch(
+    nitro.options.rootDir,
     { persistent: false },
     (_event, filename) => {
       if (filename && /^server\.[mc]?[jt]sx?$/.test(filename)) {
@@ -158,7 +158,7 @@ export async function configureViteDevServer(
   );
   nitro.hooks.hook("close", () => {
     scanDirsWatcher.close();
-    srcDirWatcher.close();
+    rootDirWatcher.close();
   });
 
   // Worker => Host IPC
@@ -169,7 +169,7 @@ export async function configureViteDevServer(
         .then((r) =>
           r.replace(
             "<!--ssr-outlet-->",
-            `{{{ fetch($REQUEST, { viteEnv: "ssr" }) }}}`
+            `{{{ globalThis.__nitro_vite_envs__?.["ssr"]?.fetch($REQUEST) || "" }}}`
           )
         );
     },

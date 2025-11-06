@@ -3,15 +3,16 @@ import type { Nitro } from "nitro/types";
 export async function build(nitro: Nitro) {
   switch (nitro.options.builder) {
     case "rollup": {
-      const { rollupBuild } = await import("./rollup/build");
+      const { rollupBuild } = await import("./rollup/build.ts");
       return rollupBuild(nitro);
     }
     case "rolldown": {
-      const { rolldownBuild } = await import("./rolldown/build");
+      const { rolldownBuild } = await import("./rolldown/build.ts");
       return rolldownBuild(nitro);
     }
-    case "vite": {
-      const { viteBuild } = await import("./vite/build");
+    case "vite":
+    case "rolldown-vite": {
+      const { viteBuild } = await import("./vite/build.ts");
       return viteBuild(nitro);
     }
     default: {

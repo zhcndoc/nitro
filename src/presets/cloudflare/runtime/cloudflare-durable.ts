@@ -2,9 +2,9 @@ import "#nitro-internal-pollyfills";
 import type * as CF from "@cloudflare/workers-types";
 import { DurableObject } from "cloudflare:workers";
 import wsAdapter from "crossws/adapters/cloudflare";
-import { useNitroApp } from "nitro/runtime";
+import { useNitroApp, useNitroHooks } from "nitro/runtime";
 import { isPublicAssetURL } from "#nitro-internal-virtual/public-assets";
-import { createHandler, fetchHandler } from "./_module-handler";
+import { createHandler, fetchHandler } from "./_module-handler.ts";
 
 const DURABLE_BINDING = "$DurableObject";
 const DURABLE_INSTANCE = "server";
@@ -15,6 +15,7 @@ interface Env {
 }
 
 const nitroApp = useNitroApp();
+const nitroHooks = useNitroHooks();
 
 const getDurableStub = (env: Env) => {
   const binding = env[DURABLE_BINDING];
@@ -61,7 +62,7 @@ export class $DurableObject extends DurableObject {
   constructor(state: DurableObjectState, env: Record<string, any>) {
     super(state, env);
     state.waitUntil(
-      nitroApp.hooks.callHook("cloudflare:durable:init", this, {
+      nitroHooks.callHook("cloudflare:durable:init", this, {
         state,
         env,
       })
@@ -86,9 +87,7 @@ export class $DurableObject extends DurableObject {
   }
 
   override alarm(): void | Promise<void> {
-    this.ctx.waitUntil(
-      nitroApp.hooks.callHook("cloudflare:durable:alarm", this)
-    );
+    this.ctx.waitUntil(nitroHooks.callHook("cloudflare:durable:alarm", this));
   }
 
   override async webSocketMessage(

@@ -1,5 +1,5 @@
 import type { Nitro } from "nitro/types";
-import { virtual } from "./virtual";
+import { virtual } from "./virtual.ts";
 import { readFile } from "node:fs/promises";
 import {
   hasTemplateSyntax,
@@ -29,12 +29,13 @@ export function rendererTemplate(nitro: Nitro) {
             });
             return /* js */ `
             import { renderToResponse } from 'rendu'
+            import { serverFetch } from 'nitro/runtime'
             const template = ${template};
-            export const rendererTemplate = (request) => renderToResponse(template, { request })
+            export const rendererTemplate = (request) => renderToResponse(template, { request, context: { serverFetch } })
             `;
           } else {
             return /* js */ `
-              import { HTTPResponse } from "nitro/deps/h3";
+              import { HTTPResponse } from "h3";
               export const rendererTemplate = () => new HTTPResponse(${JSON.stringify(html)}, { headers: { "content-type": "text/html; charset=utf-8" } });
             `;
           }

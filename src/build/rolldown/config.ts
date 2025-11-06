@@ -2,14 +2,13 @@ import type { Nitro } from "nitro/types";
 import type { RolldownOptions, RolldownPlugin } from "rolldown";
 import { sanitizeFilePath } from "mlly";
 import { normalize } from "pathe";
-import { resolveModulePath } from "exsolve";
 import { runtimeDir } from "nitro/runtime/meta";
-import { baseBuildConfig } from "../config";
-import { baseBuildPlugins } from "../plugins";
-import { replace } from "../plugins/replace";
+import { baseBuildConfig } from "../config.ts";
+import { baseBuildPlugins } from "../plugins.ts";
+import { replace } from "../plugins/replace.ts";
 import { builtinModules } from "node:module";
 import { defu } from "defu";
-import { raw } from "../plugins/raw";
+import { raw } from "../plugins/raw.ts";
 
 export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
   const base = baseBuildConfig(nitro);
@@ -36,7 +35,6 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
       ...(baseBuildPlugins(nitro, base) as RolldownPlugin[]),
       // https://github.com/rolldown/rolldown/issues/4257
       replace({
-        delimiters: base.replaceDelimiters,
         preventAssignment: true,
         values: base.replacements,
       }) as RolldownPlugin,
@@ -48,12 +46,14 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
       mainFields: ["main"], // "module" is intentionally not supported because of externals
       conditionNames: nitro.options.exportConditions,
     },
-    // @ts-expect-error (readonly values)
-    inject: base.env.inject,
-    jsx: {
-      mode: "classic",
-      factory: nitro.options.esbuild?.options?.jsxFactory,
-      fragment: nitro.options.esbuild?.options?.jsxFragment,
+    transform: {
+      inject: base.env.inject as Record<string, string>,
+      jsx: {
+        runtime: "classic", // no auto-import
+        pragma: nitro.options.esbuild?.options?.jsxFactory,
+        pragmaFrag: nitro.options.esbuild?.options?.jsxFragment,
+        development: nitro.options.dev,
+      },
     },
     onwarn(warning, warn) {
       if (
@@ -85,6 +85,7 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
     output: {
       dir: nitro.options.output.serverDir,
       entryFileNames: "index.mjs",
+      minify: nitro.options.minify,
       chunkFileNames(chunk) {
         const id = normalize(chunk.moduleIds.at(-1) || "");
         // Known path prefixes
@@ -104,7 +105,8 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
           const path =
             routeHandler.route
               .replace(/:([^/]+)/g, "_$1")
-              .replace(/\/[^/]+$/g, "") || "/";
+              .replace(/\/[^/]+$/g, "")
+              .replace(/[^a-zA-Z0-9/_-]/g, "_") || "/";
           return `chunks/routes${path}/[name].mjs`;
         }
 
@@ -131,31 +133,6 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
       },
     },
   } satisfies RolldownOptions;
-
-  config.plugins.push({
-    name: "nitro:rolldown-resolves",
-    async resolveId(id, parent, options) {
-      if (parent?.startsWith("\0virtual:#nitro-internal-virtual")) {
-        const internalRes = await this.resolve(id, import.meta.url, {
-          ...options,
-          custom: { ...options.custom, skipNoExternals: true },
-        });
-        if (internalRes) {
-          return internalRes;
-        }
-        return (
-          resolveModulePath(id, {
-            from: [nitro.options.rootDir, import.meta.url],
-            try: true,
-          }) ||
-          resolveModulePath("./" + id, {
-            from: [nitro.options.rootDir, import.meta.url],
-            try: true,
-          })
-        );
-      }
-    },
-  });
 
   config = defu(nitro.options.rollupConfig as any, config);
 

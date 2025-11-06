@@ -1,7 +1,5 @@
 import type { Nitro, NitroStaticBuildFlags } from "nitro/types";
-import { pathToFileURL } from "node:url";
 import { join, resolve } from "pathe";
-import { isWindows } from "std-env";
 import { defineEnv } from "unenv";
 import { runtimeDir } from "nitro/runtime/meta";
 
@@ -47,12 +45,6 @@ export function baseBuildConfig(nitro: Nitro) {
     _websocket: nitro.options.experimental.websocket,
     _tasks: nitro.options.experimental.tasks,
   };
-
-  // https://github.com/rollup/plugins/tree/master/packages/replace#delimiters
-  const replaceDelimiters: [string, string] = [
-    String.raw`\b`,
-    String.raw`(?![\w.$])`,
-  ];
 
   const replacements = {
     "typeof window": '"undefined"',
@@ -111,7 +103,6 @@ export function baseBuildConfig(nitro: Nitro) {
     isNodeless,
     buildEnvVars,
     staticFlags,
-    replaceDelimiters,
     replacements,
     env,
     aliases,

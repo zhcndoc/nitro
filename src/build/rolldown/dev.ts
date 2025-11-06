@@ -4,9 +4,9 @@ import { watch as chokidarWatch } from "chokidar";
 import { watch } from "node:fs";
 import { join } from "pathe";
 import { debounce } from "perfect-debounce";
-import { scanHandlers } from "../../scan";
-import { nitroServerName } from "../../utils/nitro";
-import { writeTypes } from "../types";
+import { scanHandlers } from "../../scan.ts";
+import { nitroServerName } from "../../utils/nitro.ts";
+import { writeTypes } from "../types.ts";
 
 export async function watchDev(nitro: Nitro, config: RolldownOptions) {
   const rolldown = await import("rolldown");
@@ -41,8 +41,8 @@ export async function watchDev(nitro: Nitro, config: RolldownOptions) {
     }
   });
 
-  const srcDirWatcher = watch(
-    nitro.options.srcDir,
+  const rootDirWatcher = watch(
+    nitro.options.rootDir,
     { persistent: false },
     (_event, filename) => {
       if (filename && /^server\.[mc]?[jt]sx?$/.test(filename)) {
@@ -54,7 +54,7 @@ export async function watchDev(nitro: Nitro, config: RolldownOptions) {
   nitro.hooks.hook("close", () => {
     watcher.close();
     scanDirsWatcher.close();
-    srcDirWatcher.close();
+    rootDirWatcher.close();
   });
 
   nitro.hooks.hook("rollup:reload", () => reload());

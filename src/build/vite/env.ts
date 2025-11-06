@@ -1,11 +1,11 @@
 import type { EnvironmentOptions } from "vite";
-import type { NitroPluginContext, ServiceConfig } from "./types";
+import type { NitroPluginContext, ServiceConfig } from "./types.ts";
 
-import { NodeDevWorker } from "../../dev/worker";
+import { NodeDevWorker } from "../../dev/worker.ts";
 import { join, resolve } from "node:path";
 import { runtimeDependencies, runtimeDir } from "nitro/runtime/meta";
 import { resolveModulePath } from "exsolve";
-import { createFetchableDevEnvironment } from "./dev";
+import { createFetchableDevEnvironment } from "./dev.ts";
 import { isAbsolute } from "pathe";
 
 export function createDevWorker(ctx: NitroPluginContext) {
@@ -42,8 +42,7 @@ export function createNitroEnvironment(
       noExternal: ctx.nitro!.options.dev
         ? // Workaround for dev: external dependencies are not resolvable with respect to nodeModulePaths
           new RegExp(runtimeDependencies.join("|"))
-        : // Workaround for build: externals tracing is unstable
-          (ctx.nitro!.options.noExternals === false ? undefined : true), // prettier-ignore
+        : true,
       conditions: ctx.nitro!.options.exportConditions,
       externalConditions: ctx.nitro!.options.exportConditions,
     },

@@ -1,21 +1,22 @@
-import { defineNitroPreset } from "../_utils/preset";
+import { defineNitroPreset } from "../_utils/preset.ts";
 import type { Nitro } from "nitro/types";
 import {
   deprecateSWR,
   generateFunctionFiles,
   generateStaticFiles,
-} from "./utils";
+  resolveVercelRuntime,
+} from "./utils.ts";
 
-export type { VercelOptions as PresetOptions } from "./types";
+export type { VercelOptions as PresetOptions } from "./types.ts";
 
 // https://vercel.com/docs/build-output-api/v3
 
 const vercel = defineNitroPreset(
   {
-    entry: "./vercel/runtime/vercel",
+    entry: "./vercel/runtime/vercel.{format}",
     output: {
       dir: "{{ rootDir }}/.vercel/output",
-      serverDir: "{{ output.dir }}/functions/__fallback.func",
+      serverDir: "{{ output.dir }}/functions/__server.func",
       publicDir: "{{ output.dir }}/static/{{ baseURL }}",
     },
     commands: {
@@ -23,6 +24,22 @@ const vercel = defineNitroPreset(
       preview: "",
     },
     hooks: {
+      "build:before": async (nitro: Nitro) => {
+        // Runtime
+        const runtime = await resolveVercelRuntime(nitro);
+        if (
+          runtime.startsWith("bun") &&
+          !nitro.options.exportConditions!.includes("bun")
+        ) {
+          nitro.options.exportConditions!.push("bun");
+        }
+
+        // Entry handler format
+        nitro.options.entry = nitro.options.entry.replace(
+          "{format}",
+          nitro.options.vercel?.entryFormat === "node" ? "node" : "web"
+        );
+      },
       "rollup:before": (nitro: Nitro) => {
         deprecateSWR(nitro);
       },

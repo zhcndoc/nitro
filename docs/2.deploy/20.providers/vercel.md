@@ -30,6 +30,31 @@ Nitro 的 `/api` 目录与 Vercel 不兼容。相反，您应使用：
 
 - `routes/api/`，用于独立使用
 
+## Bun 运行时
+
+:read-more{title="Vercel" to="https://vercel.com/docs/functions/runtimes/bun"}
+
+您可以通过在 `nitro.config` 内使用 `vercel.functions` 键指定运行时，来使用 [Bun](https://bun.com) 替代 Node.js：
+
+```ts [nitro.config.ts]
+export default defineNitroConfig({
+  vercel: {
+    functions: {
+      runtime: "bun1.x"
+    }
+  }
+})
+```
+
+或者，如果您在 `vercel.json` 中指定了 `bunVersion` 属性，Nitro 也会自动检测 Bun：
+
+```json [vercel.json]
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "bunVersion": "1.x"
+}
+```
+
 ## 自定义构建输出配置
 
 您可以通过在 `nitro.config` 中使用 `vercel.config` 键来提供额外的 [构建输出配置](https://vercel.com/docs/build-output-api/v3)，该配置将与内置自动生成的配置合并。

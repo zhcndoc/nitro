@@ -11,6 +11,7 @@ export const NitroDefaults: NitroConfig = {
   runtimeConfig: { app: {}, nitro: {} },
 
   // Dirs
+  serverDir: false,
   scanDirs: [],
   buildDir: ".nitro",
   output: {
@@ -52,6 +53,7 @@ export const NitroDefaults: NitroConfig = {
   handlers: [],
   devHandlers: [],
   errorHandler: undefined,
+  routes: {},
   routeRules: {},
   prerender: {
     autoSubfolderIndex: true,

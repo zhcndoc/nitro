@@ -1,7 +1,7 @@
-import { defineNitroPreset } from "../_utils/preset";
-import { writeFile } from "../_utils/fs";
+import { defineNitroPreset } from "../_utils/preset.ts";
+import { writeFile } from "../_utils/fs.ts";
 import { resolve } from "pathe";
-import { unenvDeno } from "./unenv/preset";
+import { unenvDeno } from "./unenv/preset.ts";
 
 const denoDeploy = defineNitroPreset(
   {
@@ -37,7 +37,7 @@ const denoServer = defineNitroPreset(
     serveStatic: true,
     exportConditions: ["deno"],
     commands: {
-      preview: "deno task --config ./deno.json start",
+      preview: "deno -A ./server/index.mjs",
     },
     rollupConfig: {
       external: (id) => id.startsWith("https://"),
@@ -50,8 +50,7 @@ const denoServer = defineNitroPreset(
         // https://docs.deno.com/runtime/fundamentals/configuration/
         const denoJSON = {
           tasks: {
-            start:
-              "deno run --allow-net --allow-read --allow-write --allow-env --unstable-byonm --unstable-node-globals ./server/index.mjs",
+            start: "deno run -A ./server/index.mjs",
           },
         };
         await writeFile(
@@ -62,6 +61,7 @@ const denoServer = defineNitroPreset(
     },
   },
   {
+    aliases: ["deno"],
     name: "deno-server" as const,
   }
 );

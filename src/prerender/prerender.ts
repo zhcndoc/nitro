@@ -2,7 +2,7 @@ import { pathToFileURL } from "node:url";
 import { colors } from "consola/utils";
 import { defu } from "defu";
 import mime from "mime";
-import { writeFile } from "../utils/fs";
+import { writeFile } from "../utils/fs.ts";
 import type {
   Nitro,
   NitroRouteRules,
@@ -12,16 +12,17 @@ import type {
 import { join, relative, resolve } from "pathe";
 import { createRouter, addRoute, findAllRoutes } from "rou3";
 import { joinURL, withBase, withoutBase, withTrailingSlash } from "ufo";
-import { build } from "../build/build";
-import { createNitro } from "../nitro";
-import { compressPublicAssets } from "../utils/compress";
-import { runParallel } from "../utils/parallel";
+import { build } from "../build/build.ts";
+import { createNitro } from "../nitro.ts";
+import { compressPublicAssets } from "../utils/compress.ts";
+import { runParallel } from "../utils/parallel.ts";
 import {
   extractLinks,
   formatPrerenderRoute,
   matchesIgnorePattern,
-} from "./utils";
-import { scanUnprefixedPublicAssets } from "../build/assets";
+} from "./utils.ts";
+import { scanUnprefixedPublicAssets } from "../build/assets.ts";
+import { toRequest } from "h3";
 
 const JsonSigRx = /^\s*["[{]|^\s*-?\d{1,16}(\.\d{1,17})?([Ee][+-]?\d+)?\s*$/; // From unjs/destr
 
@@ -102,11 +103,10 @@ export async function prerender(nitro: Nitro) {
     nitroRenderer.options.output.serverDir,
     serverFilename
   );
-  const { closePrerenderer, appFetch } = (await import(
-    pathToFileURL(serverEntrypoint).href
-  )) as {
-    closePrerenderer: () => Promise<void>;
-    appFetch: typeof globalThis.fetch;
+  const entryURL = pathToFileURL(serverEntrypoint).href;
+  const prerenderer = (await import(entryURL).then((m: any) => m.default)) as {
+    close: () => Promise<void>;
+    fetch: (req: Request) => Promise<Response>;
   };
 
   // Create route rule matcher
@@ -225,12 +225,13 @@ export async function prerender(nitro: Nitro) {
     // Fetch the route
     const encodedRoute = encodeURI(route);
 
-    const res = await appFetch(withBase(encodedRoute, nitro.options.baseURL), {
+    const req = toRequest(withBase(encodedRoute, nitro.options.baseURL), {
       headers: [["x-nitro-prerender", encodedRoute]],
       // TODO
       // retry: nitro.options.prerender.retry,
       // retryDelay: nitro.options.prerender.retryDelay,
     });
+    const res = await prerenderer.fetch(req);
     // Data will be removed as soon as written to the disk
     let dataBuff: Buffer | undefined = Buffer.from(await res.arrayBuffer());
 
@@ -349,7 +350,7 @@ export async function prerender(nitro: Nitro) {
     interval: nitro.options.prerender.interval,
   });
 
-  await closePrerenderer();
+  await prerenderer.close();
 
   await nitro.hooks.callHook("prerender:done", {
     prerenderedRoutes: nitro._prerenderedRoutes,

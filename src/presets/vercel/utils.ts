@@ -1,6 +1,6 @@
 import fsp from "node:fs/promises";
 import { defu } from "defu";
-import { writeFile } from "../_utils/fs";
+import { writeFile } from "../_utils/fs.ts";
 import type { Nitro, NitroRouteRules } from "nitro/types";
 import { dirname, relative, resolve } from "pathe";
 import { joinURL, withLeadingSlash, withoutLeadingSlash } from "ufo";
@@ -8,7 +8,7 @@ import type {
   PrerenderFunctionConfig,
   VercelBuildConfigV3,
   VercelServerlessFunctionConfig,
-} from "./types";
+} from "./types.ts";
 import { isTest } from "std-env";
 
 // https://vercel.com/docs/build-output-api/configuration
@@ -16,7 +16,7 @@ import { isTest } from "std-env";
 // https://vercel.com/docs/functions/runtimes/node-js/node-js-versions
 const SUPPORTED_NODE_VERSIONS = [20, 22];
 
-const FALLBACK_ROUTE = "/__fallback";
+const FALLBACK_ROUTE = "/__server";
 
 const ISR_SUFFIX = "-isr"; // Avoid using . as it can conflict with routing
 
@@ -37,18 +37,11 @@ export async function generateFunctionFiles(nitro: Nitro) {
   const buildConfig = generateBuildConfig(nitro, o11Routes);
   await writeFile(buildConfigPath, JSON.stringify(buildConfig, null, 2));
 
-  const systemNodeVersion = getSystemNodeVersion();
-  const usedNodeVersion =
-    SUPPORTED_NODE_VERSIONS.find((version) => version >= systemNodeVersion) ??
-    SUPPORTED_NODE_VERSIONS.at(-1);
-
-  const runtimeVersion = `nodejs${usedNodeVersion}.x`;
   const functionConfigPath = resolve(
     nitro.options.output.serverDir,
     ".vc-config.json"
   );
   const functionConfig: VercelServerlessFunctionConfig = {
-    runtime: runtimeVersion,
     handler: "index.mjs",
     launcherType: "Nodejs",
     shouldAddHelpers: false,
@@ -137,7 +130,7 @@ function generateBuildConfig(nitro: Nitro, o11Routes?: ObservabilityRoute[]) {
     (a, b) => b[0].split(/\/(?!\*)/).length - a[0].split(/\/(?!\*)/).length
   );
 
-  const config = defu(nitro.options.vercel?.config, <VercelBuildConfigV3>{
+  const config = defu(nitro.options.vercel?.config, {
     version: 3,
     overrides: {
       // Nitro static prerendered route overrides
@@ -184,7 +177,7 @@ function generateBuildConfig(nitro: Nitro, o11Routes?: ObservabilityRoute[]) {
         })),
       { handle: "filesystem" },
     ],
-  });
+  } as VercelBuildConfigV3);
 
   // Early return if we are building a static site
   if (nitro.options.static) {
@@ -267,6 +260,56 @@ export function deprecateSWR(nitro: Nitro) {
       "Nitro now uses `isr` option to configure ISR behavior on Vercel. Backwards-compatible support for `static` and `swr` options within the Vercel Build Options API will be removed in the future versions. Set `future.nativeSWR: true` nitro config disable this warning."
     );
   }
+}
+
+// --- vercel.json ---
+
+// https://vercel.com/docs/project-configuration
+// https://openapi.vercel.sh/vercel.json
+export interface VercelConfig {
+  bunVersion?: string;
+}
+
+export async function resolveVercelRuntime(nitro: Nitro) {
+  // 1. Respect explicit runtime from nitro config
+  let runtime: VercelServerlessFunctionConfig["runtime"] =
+    nitro.options.vercel?.functions?.runtime;
+
+  if (runtime) {
+    // Already specified
+    return runtime;
+  }
+
+  // 2. Read runtime from vercel.json if specified
+  const vercelConfig = await readVercelConfig(nitro.options.rootDir);
+
+  // 3. Use bun runtime if bunVersion is specified or bun used to build
+  if (vercelConfig.bunVersion || "Bun" in globalThis) {
+    runtime = "bun1.x";
+  } else {
+    // 3. Auto-detect runtime based on system Node.js version
+    const systemNodeVersion = getSystemNodeVersion();
+    const usedNodeVersion =
+      SUPPORTED_NODE_VERSIONS.find((version) => version >= systemNodeVersion) ??
+      SUPPORTED_NODE_VERSIONS.at(-1);
+    runtime = `nodejs${usedNodeVersion}.x`;
+  }
+
+  // Synchronize back to nitro config
+  nitro.options.vercel ??= {} as any;
+  nitro.options.vercel!.functions ??= {} as any;
+  nitro.options.vercel!.functions!.runtime = runtime;
+
+  return runtime;
+}
+
+export async function readVercelConfig(rootDir: string): Promise<VercelConfig> {
+  const vercelConfigPath = resolve(rootDir, "vercel.json");
+  const vercelConfig = await fsp
+    .readFile(vercelConfigPath)
+    .then((config) => JSON.parse(config.toString()))
+    .catch(() => ({}));
+  return vercelConfig as VercelConfig;
 }
 
 function _hasProp(obj: any, prop: string) {

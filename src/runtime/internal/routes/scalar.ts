@@ -1,6 +1,6 @@
 import type { ApiReferenceConfiguration } from "@scalar/api-reference";
 import { defineHandler, type EventHandler } from "h3";
-import { useRuntimeConfig } from "../runtime-config";
+import { useRuntimeConfig } from "../runtime-config.ts";
 
 // Served as /_scalar
 export default defineHandler((event) => {
@@ -16,7 +16,7 @@ export default defineHandler((event) => {
   const scalarConfig: ApiReferenceConfiguration = {
     ..._config,
     url: openAPIEndpoint,
-    // @ts-expect-error (missing types?)
+    // @ts-expect-error
     spec: { url: openAPIEndpoint, ..._config?.spec },
   };
 

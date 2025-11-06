@@ -1,26 +1,25 @@
 import type { Nitro, NodeExternalsOptions } from "nitro/types";
 import type { Plugin } from "rollup";
-import type { BaseBuildConfig } from "./config";
-import { pathToFileURL } from "node:url";
-import { builtinModules } from "node:module";
-import { isAbsolute, dirname } from "pathe";
+import type { BaseBuildConfig } from "./config.ts";
+import { dirname } from "pathe";
 import { hash } from "ohash";
 import { defu } from "defu";
-import { resolveModulePath } from "exsolve";
 import { runtimeDir, runtimeDependencies } from "nitro/runtime/meta";
 import unimportPlugin from "unimport/unplugin";
 import { rollup as unwasm } from "unwasm/plugin";
-import { database } from "./plugins/database";
-import { routing } from "./plugins/routing";
-import { routeMeta } from "./plugins/route-meta";
-import { serverMain } from "./plugins/server-main";
-import { publicAssets } from "./plugins/public-assets";
-import { serverAssets } from "./plugins/server-assets";
-import { storage } from "./plugins/storage";
-import { virtual } from "./plugins/virtual";
-import { errorHandler } from "./plugins/error-handler";
+import { database } from "./plugins/database.ts";
+import { routing } from "./plugins/routing.ts";
+import { routeMeta } from "./plugins/route-meta.ts";
+import { serverMain } from "./plugins/server-main.ts";
+import { publicAssets } from "./plugins/public-assets.ts";
+import { serverAssets } from "./plugins/server-assets.ts";
+import { storage } from "./plugins/storage.ts";
+import { virtual } from "./plugins/virtual.ts";
+import { errorHandler } from "./plugins/error-handler.ts";
 import { rollupNodeFileTrace } from "nf3";
-import { rendererTemplate } from "./plugins/renderer-template";
+import { rendererTemplate } from "./plugins/renderer-template.ts";
+import { featureFlags } from "./plugins/feature-flags.ts";
+import { nitroResolveIds } from "./plugins/resolve.ts";
 
 export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
   const plugins: Plugin[] = [];
@@ -59,6 +58,12 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
     )
   );
 
+  // Feature flags
+  plugins.push(featureFlags(nitro));
+
+  // Resolve imports from virtual files and mapped subpaths
+  plugins.push(nitroResolveIds());
+
   // Server assets
   plugins.push(serverAssets(nitro));
 
@@ -90,7 +95,8 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
           base.env.polyfill.map((p) => /* js */ `import '${p}';`).join("\n") ||
           /* js */ `/* No polyfills */`,
       },
-      nitro.vfs
+      nitro.vfs,
+      { moduleSideEffects: true }
     )
   );
 
@@ -103,56 +109,10 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
   }
 
   // Externals Plugin
-  if (nitro.options.noExternals) {
-    plugins.push({
-      name: "no-externals",
-      async resolveId(id, importer, resolveOpts) {
-        if (resolveOpts.custom?.skipNoExternals) {
-          return;
-        }
-        id = base.aliases[id] || id;
-        if (
-          base.env.external.includes(id) ||
-          (nitro.options.node &&
-            (id.startsWith("node:") || builtinModules.includes(id)))
-        ) {
-          return { id, external: true };
-        }
-        const resolved = await this.resolve(id, importer, resolveOpts);
-        if (!resolved) {
-          const _resolved = resolveModulePath(id, {
-            try: true,
-            from:
-              importer && isAbsolute(importer)
-                ? [pathToFileURL(importer), ...nitro.options.nodeModulesDirs]
-                : nitro.options.nodeModulesDirs,
-            suffixes: ["", "/index"],
-            extensions: [".mjs", ".cjs", ".js", ".mts", ".cts", ".ts", ".json"],
-            conditions: [
-              "default",
-              nitro.options.dev ? "development" : "production",
-              "node",
-              "import",
-              "require",
-            ],
-          });
-          if (_resolved) {
-            return { id: _resolved, external: false };
-          }
-        }
-        if (!resolved || (resolved.external && !id.endsWith(".wasm"))) {
-          throw new Error(
-            `Cannot resolve ${JSON.stringify(id)} from ${JSON.stringify(
-              importer
-            )} and externals are not allowed!`
-          );
-        }
-      },
-    });
-  } else {
+  if (!nitro.options.noExternals) {
     plugins.push(
       rollupNodeFileTrace(
-        defu(nitro.options.externals, <NodeExternalsOptions>{
+        defu(nitro.options.externals, {
           outDir: nitro.options.output.serverDir,
           moduleDirectories: nitro.options.nodeModulesDirs,
           external: [
@@ -167,13 +127,12 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
             "@@/",
             "virtual:",
             "nitro/runtime",
-            "nitro/runtime",
             dirname(nitro.options.entry),
             ...(nitro.options.experimental.wasm
               ? [(id: string) => id?.endsWith(".wasm")]
               : []),
             runtimeDir,
-            nitro.options.srcDir,
+            nitro.options.serverDir,
             ...nitro.options.handlers
               .map((m) => m.handler)
               .filter((i) => typeof i === "string"),
@@ -182,7 +141,7 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
             nitro.options.experimental.bundleRuntimeDependencies === false
               ? []
               : runtimeDependencies),
-          ],
+          ].filter(Boolean) as string[],
           traceOptions: {
             base: "/",
             processCwd: nitro.options.rootDir,
@@ -192,9 +151,9 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
             "h3-nightly": "h3",
             ...nitro.options.externals?.traceAlias,
           },
-          exportConditions: nitro.options.exportConditions,
+          exportConditions: nitro.options.exportConditions as string[],
           writePackageJson: true,
-        })
+        } satisfies NodeExternalsOptions)
       )
     );
   }
