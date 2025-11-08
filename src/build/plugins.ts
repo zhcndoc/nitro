@@ -1,12 +1,10 @@
 import type { Nitro, NodeExternalsOptions } from "nitro/types";
 import type { Plugin } from "rollup";
 import type { BaseBuildConfig } from "./config.ts";
-import { dirname } from "pathe";
 import { hash } from "ohash";
 import { defu } from "defu";
-import { runtimeDependencies, pkgDir } from "nitro/meta";
 import unimportPlugin from "unimport/unplugin";
-import { rollup as unwasm } from "unwasm/plugin";
+import { unwasm } from "unwasm/plugin";
 import { database } from "./plugins/database.ts";
 import { routing } from "./plugins/routing.ts";
 import { routeMeta } from "./plugins/route-meta.ts";
@@ -116,27 +114,7 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
           outDir: nitro.options.output.serverDir,
           moduleDirectories: nitro.options.nodeModulesDirs,
           external: nitro.options.nodeModulesDirs,
-          inline: [
-            "#",
-            "~",
-            "@/",
-            "~~",
-            "@@/",
-            "virtual:",
-            "nitro",
-            pkgDir,
-            nitro.options.serverDir,
-            dirname(nitro.options.entry),
-            ...(nitro.options.experimental.wasm
-              ? [(id: string) => id?.endsWith(".wasm")]
-              : []),
-            ...nitro.options.handlers
-              .map((m) => m.handler)
-              .filter((i) => typeof i === "string"),
-            ...(nitro.options.dev || nitro.options.preset === "nitro-prerender"
-              ? []
-              : runtimeDependencies),
-          ].filter(Boolean) as string[],
+          inline: [...base.noExternal],
           traceOptions: {
             base: "/",
             processCwd: nitro.options.rootDir,
