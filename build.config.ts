@@ -5,6 +5,8 @@ import { resolveModulePath } from "exsolve";
 import { traceNodeModules } from "nf3";
 import { parseNodeModulePath } from "mlly";
 
+const isStub = process.argv.includes("--stub");
+
 const pkg = await import("./package.json", { with: { type: "json" } }).then(
   (r) => r.default || r
 );
@@ -132,15 +134,20 @@ export default defineBuildConfig({
       };
     },
     async end() {
-      await traceNodeModules(
-        tracePkgs.map((pkg) => resolveModulePath(pkg)),
-        {}
-      );
-      for (const dep of [
-        ...Object.keys(pkg.dependencies),
-        ...Object.keys(pkg.peerDependencies),
-      ]) {
-        await rm(`dist/node_modules/${dep}`, { recursive: true, force: true });
+      if (!isStub) {
+        await traceNodeModules(
+          tracePkgs.map((pkg) => resolveModulePath(pkg)),
+          {}
+        );
+        for (const dep of [
+          ...Object.keys(pkg.dependencies),
+          ...Object.keys(pkg.peerDependencies),
+        ]) {
+          await rm(`dist/node_modules/${dep}`, {
+            recursive: true,
+            force: true,
+          });
+        }
       }
     },
   },
