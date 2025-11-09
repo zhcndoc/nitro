@@ -2,9 +2,12 @@ import "#nitro-internal-pollyfills";
 import type * as CF from "@cloudflare/workers-types";
 import { DurableObject } from "cloudflare:workers";
 import wsAdapter from "crossws/adapters/cloudflare";
+import { createHandler, fetchHandler } from "./_module-handler.ts";
+
 import { useNitroApp, useNitroHooks } from "nitro/app";
 import { isPublicAssetURL } from "#nitro-internal-virtual/public-assets";
-import { createHandler, fetchHandler } from "./_module-handler.ts";
+import { resolveWebsocketHooks } from "nitro/~internal/runtime/app";
+import { hasWebSocket } from "#nitro-internal-virtual/feature-flags";
 
 const DURABLE_BINDING = "$DurableObject";
 const DURABLE_INSTANCE = "server";
@@ -28,10 +31,9 @@ const getDurableStub = (env: Env) => {
   return binding.get(id);
 };
 
-const ws = import.meta._websocket
+const ws = hasWebSocket
   ? wsAdapter({
-      // TODO!
-      // ...nitroApp.h3App.websocket,
+      resolve: resolveWebsocketHooks,
       instanceName: DURABLE_INSTANCE,
       bindingName: DURABLE_BINDING,
     })
@@ -49,10 +51,7 @@ export default createHandler<Env>({
 
     // Websocket upgrade
     // https://crossws.unjs.io/adapters/cloudflare#durable-objects
-    if (
-      import.meta._websocket &&
-      request.headers.get("upgrade") === "websocket"
-    ) {
+    if (hasWebSocket && request.headers.get("upgrade") === "websocket") {
       return ws!.handleUpgrade(request, env, context);
     }
   },
@@ -67,16 +66,13 @@ export class $DurableObject extends DurableObject {
         env,
       })
     );
-    if (import.meta._websocket) {
+    if (hasWebSocket) {
       ws!.handleDurableInit(this, state, env);
     }
   }
 
   override fetch(request: Request) {
-    if (
-      import.meta._websocket &&
-      request.headers.get("upgrade") === "websocket"
-    ) {
+    if (hasWebSocket && request.headers.get("upgrade") === "websocket") {
       return ws!.handleDurableUpgrade(this, request);
     }
     // Main handler
@@ -94,7 +90,7 @@ export class $DurableObject extends DurableObject {
     client: WebSocket,
     message: ArrayBuffer | string
   ) {
-    if (import.meta._websocket) {
+    if (hasWebSocket) {
       return ws!.handleDurableMessage(this, client, message);
     }
   }
@@ -105,7 +101,7 @@ export class $DurableObject extends DurableObject {
     reason: string,
     wasClean: boolean
   ) {
-    if (import.meta._websocket) {
+    if (hasWebSocket) {
       return ws!.handleDurableClose(this, client, code, reason, wasClean);
     }
   }

@@ -1,15 +1,17 @@
 import "#nitro-internal-pollyfills";
-import { useNitroApp } from "nitro/app";
-import { isPublicAssetURL } from "#nitro-internal-virtual/public-assets";
-import { runCronTasks } from "nitro/~internal/runtime/task";
-
+import type { ServerRequest } from "srvx";
 import type {
   Request as CFRequest,
   EventContext,
   ExecutionContext,
 } from "@cloudflare/workers-types";
 import wsAdapter from "crossws/adapters/cloudflare";
-import type { ServerRequest } from "srvx";
+
+import { useNitroApp } from "nitro/app";
+import { isPublicAssetURL } from "#nitro-internal-virtual/public-assets";
+import { runCronTasks } from "nitro/~internal/runtime/task";
+import { resolveWebsocketHooks } from "nitro/~internal/runtime/app";
+import { hasWebSocket } from "#nitro-internal-virtual/feature-flags";
 
 /**
  * Reference: https://developers.cloudflare.com/workers/runtime-apis/fetch-event/#parameters
@@ -26,9 +28,8 @@ interface CFPagesEnv {
 
 const nitroApp = useNitroApp();
 
-const ws = import.meta._websocket
-  ? // @ts-expect-error
-    wsAdapter(nitroApp.h3App.websocket)
+const ws = hasWebSocket
+  ? wsAdapter({ resolve: resolveWebsocketHooks })
   : undefined;
 
 export default {
@@ -45,10 +46,7 @@ export default {
 
     // Websocket upgrade
     // https://crossws.unjs.io/adapters/cloudflare
-    if (
-      import.meta._websocket &&
-      cfReq.headers.get("upgrade") === "websocket"
-    ) {
+    if (hasWebSocket && cfReq.headers.get("upgrade") === "websocket") {
       return ws!.handleUpgrade(
         cfReq as any,
         env,

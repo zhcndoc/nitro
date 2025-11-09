@@ -1,15 +1,15 @@
 import "#nitro-internal-pollyfills";
-import { useNitroApp, useNitroHooks } from "nitro/app";
-
-import { startScheduleRunner } from "nitro/~internal/runtime/task";
-import { trapUnhandledErrors } from "nitro/~internal/runtime/error/hooks";
-
 import { Server } from "node:http";
 import { parentPort, threadId } from "node:worker_threads";
-
 import wsAdapter from "crossws/adapters/node";
 import { toNodeHandler } from "srvx/node";
 import { getSocketAddress, isSocketSupported } from "get-port-please";
+
+import { useNitroApp, useNitroHooks } from "nitro/app";
+import { startScheduleRunner } from "nitro/~internal/runtime/task";
+import { trapUnhandledErrors } from "nitro/~internal/runtime/error/hooks";
+import { resolveWebsocketHooks } from "nitro/~internal/runtime/app";
+import { hasWebSocket } from "#nitro-internal-virtual/feature-flags";
 
 // Listen for shutdown signal from runner
 parentPort?.on("message", (msg) => {
@@ -34,9 +34,8 @@ listen()
   });
 
 // https://crossws.unjs.io/adapters/node
-if (import.meta._websocket) {
-  // @ts-expect-error
-  const { handleUpgrade } = wsAdapter(nitroApp.h3App.websocket);
+if (hasWebSocket) {
+  const { handleUpgrade } = wsAdapter({ resolve: resolveWebsocketHooks });
   server.on("upgrade", handleUpgrade);
 }
 
