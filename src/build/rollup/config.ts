@@ -9,7 +9,7 @@ import inject from "@rollup/plugin-inject";
 import json from "@rollup/plugin-json";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import { replace } from "../plugins/replace.ts";
-import { esbuild } from "../plugins/esbuild.ts";
+import { oxc } from "../plugins/oxc.ts";
 import { sourcemapMinify } from "../plugins/sourcemap-min.ts";
 import { baseBuildConfig } from "../config.ts";
 import { baseBuildPlugins } from "../plugins.ts";
@@ -39,16 +39,22 @@ export const getRollupConfig = (nitro: Nitro): RollupConfig => {
     external: [...base.env.external],
     plugins: [
       ...baseBuildPlugins(nitro, base),
-      esbuild({
-        target: "esnext",
-        sourceMap: nitro.options.sourceMap,
-        minify: nitro.options.minify,
-        jsx: tsc?.jsx === "react" ? "transform" : "automatic",
-        jsxFactory: tsc?.jsxFactory,
-        jsxFragment: tsc?.jsxFragmentFactory,
-        jsxDev: nitro.options.dev,
-        jsxImportSource: tsc?.jsxImportSource,
-        ...nitro.options.esbuild?.options,
+      oxc({
+        sourcemap: !!nitro.options.sourcemap,
+        minify: nitro.options.minify ? { ...nitro.options.oxc?.minify } : false,
+        transform: {
+          target: "esnext",
+          cwd: nitro.options.rootDir,
+          ...nitro.options.oxc?.transform,
+          jsx: {
+            runtime: tsc?.jsx === "react" ? "classic" : "automatic",
+            pragma: tsc?.jsxFactory,
+            pragmaFrag: tsc?.jsxFragmentFactory,
+            importSource: tsc?.jsxImportSource,
+            development: nitro.options.dev,
+            ...nitro.options.oxc?.transform?.jsx,
+          },
+        },
       }),
       alias({ entries: base.aliases }),
       replace({
@@ -138,7 +144,7 @@ export const getRollupConfig = (nitro: Nitro): RollupConfig => {
         constBindings: true,
       },
       sanitizeFileName: sanitizeFilePath,
-      sourcemap: nitro.options.sourceMap,
+      sourcemap: nitro.options.sourcemap,
       sourcemapExcludeSources: true,
       sourcemapIgnoreList(relativePath) {
         return relativePath.includes("node_modules");
@@ -155,7 +161,7 @@ export const getRollupConfig = (nitro: Nitro): RollupConfig => {
 
   // Minify
   if (
-    nitro.options.sourceMap &&
+    nitro.options.sourcemap &&
     !nitro.options.dev &&
     nitro.options.experimental.sourcemapMinify !== false
   ) {
