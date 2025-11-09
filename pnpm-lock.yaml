@@ -31,8 +31,8 @@ importers:
         specifier: ^2.6.1
         version: 2.6.1
       nf3:
-        specifier: ^0.1.6
-        version: 0.1.6
+        specifier: ^0.1.9
+        version: 0.1.9
       ofetch:
         specifier: ^2.0.0-alpha.3
         version: 2.0.0-alpha.3
@@ -5488,8 +5488,8 @@ packages:
     resolution: {integrity: sha512-8Ofs/AUQh8MaEcrlq5xOX0CQ9ypTF5dl78mjlMNfOK08fzpgTHQRQPBxcPlEtIw0yRpws+Zo/3r+5WRby7u3Gg==}
     engines: {node: '>= 0.6'}
 
-  nf3@0.1.6:
-    resolution: {integrity: sha512-5OqgujdQSjABTKBkydqXqkgwpJJZs2LVQiKLWhHcg9E8Pk9ZLFXfh21FF1WX9Ud7yGhfexioNyKz18OmVTuBrw==}
+  nf3@0.1.9:
+    resolution: {integrity: sha512-zhqe/2ikL/Jh/FwhHeLUo3Y6P1T8grD72DCkcljb9tR8ZIYQP9dV9C0+zok+EFFnog+p/HPFHiktz8VZD/79Tw==}
 
   node-abi@3.80.0:
     resolution: {integrity: sha512-LyPuZJcI9HVwzXK1GPxWNzrr+vr8Hp/3UqlmWxxh8p54U1ZbclOqbSog9lWHaCX+dBaiGi6n/hIX+mKu74GmPA==}
@@ -12482,7 +12482,7 @@ snapshots:
 
   negotiator@1.0.0: {}
 
-  nf3@0.1.6: {}
+  nf3@0.1.9: {}
 
   node-abi@3.80.0:
     dependencies:
