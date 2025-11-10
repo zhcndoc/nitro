@@ -440,6 +440,12 @@ importers:
         specifier: link:../..
         version: link:../..
 
+  examples/runtime-config:
+    devDependencies:
+      nitro:
+        specifier: link:../..
+        version: link:../..
+
   examples/server-fetch:
     devDependencies:
       nitro:
