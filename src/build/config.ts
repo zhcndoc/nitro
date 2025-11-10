@@ -87,6 +87,7 @@ export function baseBuildConfig(nitro: Nitro) {
     "nitro",
     pkgDir,
     nitro.options.serverDir,
+    nitro.options.buildDir,
     dirname(nitro.options.entry),
     ...(nitro.options.experimental.wasm
       ? [(id: string) => id?.endsWith(".wasm")]
