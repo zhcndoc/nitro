@@ -4,13 +4,11 @@ import packageJson from "../../package.json" with { type: "json" };
 
 export const version: string = packageJson.version;
 
-export const pkgDir: string = fileURLToPath(new URL("../../", import.meta.url));
+const resolve = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
-export const runtimeDir: string = fileURLToPath(new URL("./", import.meta.url));
-
-export const presetsDir: string = fileURLToPath(
-  new URL("../presets/", import.meta.url)
-);
+export const pkgDir: string = /* @__PURE__ */ resolve("../../");
+export const runtimeDir: string = /* @__PURE__ */ resolve("./");
+export const presetsDir: string = /* @__PURE__ */ resolve("../presets/");
 
 export const runtimeDependencies: string[] = [
   "crossws", // dep
