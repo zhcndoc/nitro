@@ -21,6 +21,7 @@ export default defineConfig({
       },
     ],
   },
+  sourcemap: true,
   rollupConfig: {
     output: {
       // TODO: when output.dir is outside of src, rollup emits wrong relative sourcemap paths
