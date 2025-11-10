@@ -79,3 +79,4 @@ test/fixture/functions
 .pnpm-store
 .wrangler
 
+CHANGELOG.md
