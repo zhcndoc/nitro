@@ -306,29 +306,27 @@ export async function writeWranglerConfig(
   }
 
   // Compatibility flags
-  // prettier-ignore
-  const compatFlags = new Set(wranglerConfig.compatibility_flags || [])
-  if (nitro.options.cloudflare?.nodeCompat) {
-    if (
-      compatFlags.has("nodejs_compat_v2") &&
-      compatFlags.has("no_nodejs_compat_v2")
-    ) {
-      nitro.logger.warn(
-        "[cloudflare] Wrangler config `compatibility_flags` contains both `nodejs_compat_v2` and `no_nodejs_compat_v2`. Ignoring `nodejs_compat_v2`."
-      );
-      compatFlags.delete("nodejs_compat_v2");
-    }
-    if (compatFlags.has("nodejs_compat_v2")) {
-      nitro.logger.warn(
-        "[cloudflare] Please consider replacing `nodejs_compat_v2` with `nodejs_compat` in your `compatibility_flags` or USE IT AT YOUR OWN RISK as it can cause issues with nitro."
-      );
-    } else {
-      // Add default compatibility flags
-      compatFlags.add("nodejs_compat");
-      compatFlags.add("no_nodejs_compat_v2");
-    }
+  wranglerConfig.compatibility_flags ??= [];
+  if (
+    nitro.options.cloudflare?.nodeCompat &&
+    !wranglerConfig.compatibility_flags.includes("nodejs_compat")
+  ) {
+    wranglerConfig.compatibility_flags.push("nodejs_compat");
   }
-  wranglerConfig.compatibility_flags = [...compatFlags];
+
+  // Avoid double bundling
+  if (wranglerConfig.no_bundle === undefined) {
+    wranglerConfig.no_bundle = true;
+  }
+
+  // Scan all server/ chunks
+  wranglerConfig.rules ??= [];
+  if (!wranglerConfig.rules.some((rule) => rule.type === "ESModule")) {
+    wranglerConfig.rules.push({
+      type: "ESModule",
+      globs: ["**/*.mjs", "**/*.js"],
+    });
+  }
 
   // Write wrangler.json
   await writeFile(
