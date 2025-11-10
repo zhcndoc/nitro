@@ -3,7 +3,6 @@ import { writeFile } from "../_utils/fs.ts";
 import type { Nitro } from "nitro/types";
 import { resolve } from "pathe";
 import { unenvCfExternals } from "./unenv/preset.ts";
-import { presetsDir } from "nitro/meta";
 import {
   enableNodeCompat,
   writeWranglerConfig,
