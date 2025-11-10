@@ -314,18 +314,20 @@ export async function writeWranglerConfig(
     wranglerConfig.compatibility_flags.push("nodejs_compat");
   }
 
-  // Avoid double bundling
-  if (wranglerConfig.no_bundle === undefined) {
-    wranglerConfig.no_bundle = true;
-  }
+  if (cfTarget === "module") {
+    // Avoid double bundling
+    if (wranglerConfig.no_bundle === undefined) {
+      wranglerConfig.no_bundle = true;
+    }
 
-  // Scan all server/ chunks
-  wranglerConfig.rules ??= [];
-  if (!wranglerConfig.rules.some((rule) => rule.type === "ESModule")) {
-    wranglerConfig.rules.push({
-      type: "ESModule",
-      globs: ["**/*.mjs", "**/*.js"],
-    });
+    // Scan all server/ chunks
+    wranglerConfig.rules ??= [];
+    if (!wranglerConfig.rules.some((rule) => rule.type === "ESModule")) {
+      wranglerConfig.rules.push({
+        type: "ESModule",
+        globs: ["**/*.mjs", "**/*.js"],
+      });
+    }
   }
 
   // Write wrangler.json
