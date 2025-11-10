@@ -11,10 +11,10 @@ const tmpDir = fileURLToPath(new URL(".tmp", import.meta.url));
 
 // Rounded up
 const bundleSizes: Record<string, [kb: number, minKB: number]> = {
-  rollup: [15, isWindows ? 10 : 9],
-  rolldown: [20, 8],
-  vite: [18, 10],
-  "rolldown-vite": [17, 10],
+  rollup: [16, isWindows ? 12 : 11],
+  rolldown: [20, 9],
+  vite: [19, 12],
+  "rolldown-vite": [18, 11],
 };
 
 describe("minimal fixture", () => {

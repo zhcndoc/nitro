@@ -10,7 +10,6 @@ import json from "@rollup/plugin-json";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import { replace } from "../plugins/replace.ts";
 import { oxc } from "../plugins/oxc.ts";
-import { sourcemapMinify } from "../plugins/sourcemap-min.ts";
 import { baseBuildConfig } from "../config.ts";
 import { baseBuildPlugins } from "../plugins.ts";
 import { raw } from "../plugins/raw.ts";
@@ -154,15 +153,6 @@ export const getRollupConfig = (nitro: Nitro): RollupConfig => {
   if (config.output.inlineDynamicImports) {
     // @ts-ignore
     delete config.output.manualChunks;
-  }
-
-  // Minify
-  if (
-    nitro.options.sourcemap &&
-    !nitro.options.dev &&
-    nitro.options.experimental.sourcemapMinify !== false
-  ) {
-    config.plugins.push(sourcemapMinify());
   }
 
   return config;

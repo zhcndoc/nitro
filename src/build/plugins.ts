@@ -18,6 +18,7 @@ import { rollupNodeFileTrace } from "nf3";
 import { rendererTemplate } from "./plugins/renderer-template.ts";
 import { featureFlags } from "./plugins/feature-flags.ts";
 import { nitroResolveIds } from "./plugins/resolve.ts";
+import { sourcemapMinify } from "./plugins/sourcemap-min.ts";
 
 export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
   const plugins: Plugin[] = [];
@@ -129,6 +130,15 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
         } satisfies NodeExternalsOptions)
       )
     );
+  }
+
+  // Minify
+  if (
+    nitro.options.sourcemap &&
+    !nitro.options.dev &&
+    nitro.options.experimental.sourcemapMinify !== false
+  ) {
+    plugins.push(sourcemapMinify());
   }
 
   return plugins;

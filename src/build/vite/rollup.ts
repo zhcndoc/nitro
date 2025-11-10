@@ -16,7 +16,7 @@ import type { NitroPluginContext } from "./types.ts";
  *  - nodeResolve
  *  - commonjs
  *  - esbuild
- *  - sourcemapMininify
+ *  - sourcemapMinify
  *  - json
  *  - raw
  *

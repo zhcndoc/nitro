@@ -13,16 +13,20 @@ export function sourcemapMinify() {
         ) {
           continue;
         }
+
         // Parse sourcemap
         const sourcemap: ExistingRawSourceMap = JSON.parse(asset.source);
-        // Only process sourcemaps with node_module sources
-        if (
-          !(sourcemap.sources || []).some((s) => s.includes("node_modules"))
-        ) {
-          continue;
+
+        // Remove sourcesContent
+        delete sourcemap.sourcesContent;
+
+        // Remove x_google_ignoreList
+        delete sourcemap.x_google_ignoreList;
+
+        if ((sourcemap.sources || []).some((s) => s.includes("node_modules"))) {
+          sourcemap.mappings = ""; // required key
         }
-        // TODO: Try to treeshake mappings instead
-        sourcemap.mappings = "";
+
         asset.source = JSON.stringify(sourcemap);
       }
     },

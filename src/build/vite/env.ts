@@ -31,6 +31,7 @@ export function createNitroEnvironment(
       rollupOptions: ctx.rollupConfig!.config as any,
       minify: ctx.nitro!.options.minify,
       emptyOutDir: false,
+      sourcemap: ctx.nitro!.options.sourcemap,
       commonjsOptions: {
         ...(ctx.nitro!.options.commonJS as any),
       },
@@ -64,6 +65,7 @@ export function createServiceEnvironment(
     build: {
       rollupOptions: { input: serviceConfig.entry },
       minify: ctx.nitro!.options.minify,
+      sourcemap: ctx.nitro!.options.sourcemap,
       outDir: join(ctx.nitro!.options.buildDir, "vite/services", name),
       emptyOutDir: true,
     },
