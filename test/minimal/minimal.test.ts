@@ -4,14 +4,13 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { mkdir, rm, stat } from "node:fs/promises";
 import { glob } from "tinyglobby";
-import { isWindows } from "std-env";
 
 const fixtureDir = fileURLToPath(new URL("./", import.meta.url));
 const tmpDir = fileURLToPath(new URL(".tmp", import.meta.url));
 
 // Rounded up
 const bundleSizes: Record<string, [kb: number, minKB: number]> = {
-  rollup: [16, isWindows ? 12 : 11],
+  rollup: [16, 11],
   rolldown: [20, 9],
   vite: [19, 12],
   "rolldown-vite": [18, 11],
