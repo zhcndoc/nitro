@@ -5,7 +5,6 @@ import { normalize } from "pathe";
 import { runtimeDir } from "nitro/meta";
 import { baseBuildConfig } from "../config.ts";
 import { baseBuildPlugins } from "../plugins.ts";
-import { replace } from "../plugins/replace.ts";
 import { builtinModules } from "node:module";
 import { defu } from "defu";
 
@@ -30,14 +29,7 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
       ...builtinModules,
       ...builtinModules.map((m) => `node:${m}`),
     ],
-    plugins: [
-      ...(baseBuildPlugins(nitro, base) as RolldownPlugin[]),
-      // https://github.com/rolldown/rolldown/issues/4257
-      replace({
-        preventAssignment: true,
-        values: base.replacements,
-      }) as RolldownPlugin,
-    ],
+    plugins: [...(baseBuildPlugins(nitro, base) as RolldownPlugin[])],
     resolve: {
       alias: base.aliases,
       extensions: base.extensions,
