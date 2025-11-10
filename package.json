@@ -48,7 +48,8 @@
     "nitro": "node ./src/cli/index.ts",
     "release": "pnpm test && pnpm build && changelogen --release --prerelease --push",
     "stub": "obuild --stub",
-    "test": "pnpm lint && pnpm test:types && pnpm vitest run",
+    "test": "pnpm lint && pnpm test:types && pnpm test:rollup && pnpm test:rolldown",
+    "test:rollup": "NITRO_BUILDER=rollup pnpm vitest",
     "test:rolldown": "NITRO_BUILDER=rolldown pnpm vitest",
     "test:types": "tsc --noEmit"
   },
