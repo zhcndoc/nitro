@@ -11,6 +11,18 @@ export async function cloudflareDevModule(nitro: Nitro) {
     return; // Production doesn't need this
   }
 
+  nitro.options.unenv.push({
+    meta: {
+      name: "nitro:cloudflare-dev",
+    },
+    alias: {
+      "cloudflare:workers": resolve(
+        presetsDir,
+        "cloudflare/runtime/shims/workers.dev.mjs"
+      ),
+    },
+  });
+
   // Try to resolve wrangler
   const wranglerPath = await resolveModulePath("wrangler", {
     from: nitro.options.nodeModulesDirs,
