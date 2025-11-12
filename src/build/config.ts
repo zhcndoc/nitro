@@ -1,13 +1,11 @@
 import type { Nitro, NitroImportMeta } from "nitro/types";
-import { dirname, resolve } from "pathe";
+import { dirname } from "pathe";
 import { defineEnv } from "unenv";
-import { pkgDir, runtimeDependencies, runtimeDir } from "nitro/meta";
+import { pkgDir, runtimeDependencies, presetsDir } from "nitro/meta";
 
 export type BaseBuildConfig = ReturnType<typeof baseBuildConfig>;
 
 export function baseBuildConfig(nitro: Nitro) {
-  const presetsDir = resolve(runtimeDir, "../presets");
-
   // prettier-ignore
   const extensions: string[] = [".ts", ".mjs", ".js", ".json", ".node", ".tsx", ".jsx" ];
 
