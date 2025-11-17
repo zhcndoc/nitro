@@ -1,77 +1,31 @@
-import type { Nitro, NitroStaticBuildFlags } from "nitro/types";
-import { join, resolve } from "pathe";
+import type { Nitro, NitroImportMeta } from "nitro/types";
+import { dirname } from "pathe";
 import { defineEnv } from "unenv";
-import { runtimeDir } from "nitro/runtime/meta";
+import { pkgDir, runtimeDependencies, presetsDir } from "nitro/meta";
 
 export type BaseBuildConfig = ReturnType<typeof baseBuildConfig>;
 
 export function baseBuildConfig(nitro: Nitro) {
-  const buildServerDir = join(nitro.options.buildDir, "dist/server");
-  const presetsDir = resolve(runtimeDir, "../presets");
-
   // prettier-ignore
   const extensions: string[] = [".ts", ".mjs", ".js", ".json", ".node", ".tsx", ".jsx" ];
 
   const isNodeless = nitro.options.node === false;
 
-  // Build-time environment variables
-  let NODE_ENV = nitro.options.dev ? "development" : "production";
-  if (nitro.options.preset === "nitro-prerender") {
-    NODE_ENV = "prerender";
-  }
-
-  const buildEnvVars = {
-    NODE_ENV,
-    prerender: nitro.options.preset === "nitro-prerender",
-    server: true,
-    client: false,
-    dev: String(nitro.options.dev),
-    DEBUG: nitro.options.dev,
-  };
-
-  const staticFlags: NitroStaticBuildFlags = {
+  const importMetaInjections: NitroImportMeta = {
     dev: nitro.options.dev,
     preset: nitro.options.preset,
     prerender: nitro.options.preset === "nitro-prerender",
+    nitro: true,
     server: true,
     client: false,
-    nitro: true,
     baseURL: nitro.options.baseURL,
-    // @ts-expect-error
-    "versions.nitro": "",
-    "versions?.nitro": "",
-    // Internal
     _asyncContext: nitro.options.experimental.asyncContext,
-    _websocket: nitro.options.experimental.websocket,
     _tasks: nitro.options.experimental.tasks,
   };
 
   const replacements = {
-    "typeof window": '"undefined"',
-    _import_meta_url_: "import.meta.url",
-    "globalThis.process.": "process.",
-    "process.env.RUNTIME_CONFIG": () =>
-      JSON.stringify(nitro.options.runtimeConfig, null, 2),
     ...Object.fromEntries(
-      Object.entries(buildEnvVars).map(([key, val]) => [
-        `process.env.${key}`,
-        JSON.stringify(val),
-      ])
-    ),
-    ...Object.fromEntries(
-      Object.entries(buildEnvVars).map(([key, val]) => [
-        `import.meta.env.${key}`,
-        JSON.stringify(val),
-      ])
-    ),
-    ...Object.fromEntries(
-      Object.entries(staticFlags).map(([key, val]) => [
-        `process.${key}`,
-        JSON.stringify(val),
-      ])
-    ),
-    ...Object.fromEntries(
-      Object.entries(staticFlags).map(([key, val]) => [
+      Object.entries(importMetaInjections).map(([key, val]) => [
         `import.meta.${key}`,
         JSON.stringify(val),
       ])
@@ -79,9 +33,31 @@ export function baseBuildConfig(nitro: Nitro) {
     ...nitro.options.replace,
   };
 
+  const noExternal: (string | RegExp | ((id: string) => boolean))[] = [
+    "#",
+    "~",
+    "@/",
+    "~~",
+    "@@/",
+    "virtual:",
+    "nitro",
+    pkgDir,
+    nitro.options.serverDir,
+    nitro.options.buildDir,
+    dirname(nitro.options.entry),
+    ...(nitro.options.wasm === false
+      ? []
+      : [(id: string) => id.endsWith(".wasm")]),
+    ...nitro.options.handlers
+      .map((m) => m.handler)
+      .filter((i) => typeof i === "string"),
+    ...(nitro.options.dev || nitro.options.preset === "nitro-prerender"
+      ? []
+      : runtimeDependencies),
+  ].filter(Boolean) as string[];
+
   const { env } = defineEnv({
     nodeCompat: isNodeless,
-    npmShims: true,
     resolve: true,
     presets: nitro.options.unenv,
     overrides: {
@@ -89,23 +65,16 @@ export function baseBuildConfig(nitro: Nitro) {
     },
   });
 
-  const aliases = resolveAliases({
-    "#internal/nitro": runtimeDir,
-    "nitro/runtime": runtimeDir,
-    "nitropack/runtime": runtimeDir, // Backwards compatibility
-    ...env.alias,
-  });
+  const aliases = resolveAliases({ ...env.alias });
 
   return {
-    buildServerDir,
     presetsDir,
     extensions,
     isNodeless,
-    buildEnvVars,
-    staticFlags,
     replacements,
     env,
     aliases,
+    noExternal,
   };
 }
 

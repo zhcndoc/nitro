@@ -1,6 +1,4 @@
-import { runtimeDir } from "nitro/runtime/meta";
 import type { NitroConfig } from "nitro/types";
-import { resolve } from "pathe";
 import { isDebug, isTest } from "std-env";
 
 export const NitroDefaults: NitroConfig = {
@@ -13,7 +11,7 @@ export const NitroDefaults: NitroConfig = {
   // Dirs
   serverDir: false,
   scanDirs: [],
-  buildDir: ".nitro",
+  buildDir: `node_modules/.nitro`,
   output: {
     dir: "{{ rootDir }}/.output",
     serverDir: "{{ output.dir }}/server",
@@ -21,11 +19,11 @@ export const NitroDefaults: NitroConfig = {
   },
 
   // Features
+  features: {},
   experimental: {},
   future: {},
   storage: {},
   devStorage: {},
-  bundledStorage: [],
   publicAssets: [],
   serverAssets: [],
   plugins: [],
@@ -69,25 +67,18 @@ export const NitroDefaults: NitroConfig = {
 
   // Rollup
   builder: undefined,
-  moduleSideEffects: ["unenv/polyfill/", resolve(runtimeDir, "polyfill/")],
+  moduleSideEffects: ["unenv/polyfill/"],
   replace: {},
   node: true,
-  sourceMap: true,
-  esbuild: {
-    options: {
-      jsxFactory: "h",
-      jsxFragment: "Fragment",
-    },
-  },
+  sourcemap: false,
 
   // Advanced
   typescript: {
     strict: true,
     generateRuntimeConfigTypes: false,
     generateTsConfig: false,
-    tsconfigPath: "types/tsconfig.json",
-    internalPaths: false,
-    tsConfig: {},
+    tsconfigPath: "tsconfig.json",
+    tsConfig: undefined,
   },
   nodeModulesDirs: [],
   hooks: {},

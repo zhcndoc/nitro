@@ -1,5 +1,5 @@
 import { prettyPath, resolveNitroPath } from "../../utils/fs.ts";
-import { pkgDir, runtimeDir } from "nitro/runtime/meta";
+import { pkgDir, runtimeDir } from "nitro/meta";
 import type { NitroOptions } from "nitro/types";
 import { join, resolve } from "pathe";
 import { findWorkspaceDir } from "pkg-types";
@@ -26,6 +26,9 @@ export async function resolvePathOptions(options: NitroOptions) {
   }
 
   if (options.serverDir !== false) {
+    if ((options as any).serverDir === true) {
+      options.serverDir = "server";
+    }
     options.serverDir =
       resolve(options.rootDir, options.serverDir || ".") + "/";
   }
@@ -41,6 +44,7 @@ export async function resolvePathOptions(options: NitroOptions) {
   if (options.entry) {
     options.entry = resolveNitroPath(options.entry, options);
   }
+
   options.output.dir =
     resolveNitroPath(
       options.output.dir || NitroDefaults.output!.dir!,
@@ -101,35 +105,38 @@ export async function resolvePathOptions(options: NitroOptions) {
     })
   );
 
-  // Auto-detected server entry
-  if (
-    !options.routes["/**"] &&
-    !options.handlers.some((h) => h.route === "/**")
-  ) {
-    const serverEntry = resolveModulePath("./server", {
-      from: [options.rootDir, ...options.scanDirs],
-      extensions: RESOLVE_EXTENSIONS,
-      try: true,
-    });
-    if (serverEntry) {
-      const alreadyRegistered =
-        options.handlers.some((h) => h.handler === serverEntry) ||
-        Object.values(options.routes).some(
-          (r) => (r as { handler: string }).handler === serverEntry
-        );
-      if (!alreadyRegistered) {
-        options.routes["/**"] = { handler: serverEntry };
-        consola.info(
-          `Using \`${prettyPath(serverEntry)}\` as default route handler.`
-        );
+  // Server entry
+  if (options.serverEntry !== false) {
+    if (typeof options?.serverEntry === "string") {
+      options.serverEntry = { handler: options.serverEntry };
+    }
+    if (options.serverEntry?.handler) {
+      options.serverEntry.handler = resolveNitroPath(
+        options.serverEntry.handler,
+        options
+      );
+    } else {
+      const detected = resolveModulePath("./server", {
+        try: true,
+        from: options.rootDir,
+        extensions: RESOLVE_EXTENSIONS.flatMap((ext) => [ext, `.node${ext}`]),
+      });
+      if (detected) {
+        options.serverEntry ??= { handler: "" };
+        options.serverEntry.handler = detected;
+        consola.info(`Detected \`${prettyPath(detected)}\` as server entry.`);
       }
+    }
+    if (options.serverEntry?.handler && !options.serverEntry?.format) {
+      const isNode = /\.(node)\.\w+$/.test(options.serverEntry.handler);
+      options.serverEntry.format = isNode ? "node" : "web";
     }
   }
 
-  // Resolve renderer entry
-  if (options.renderer?.entry) {
-    options.renderer.entry = resolveModulePath(
-      resolveNitroPath(options.renderer?.entry, options),
+  // Resolve renderer handler
+  if (options.renderer?.handler) {
+    options.renderer.handler = resolveModulePath(
+      resolveNitroPath(options.renderer?.handler, options),
       {
         from: [options.rootDir, ...options.scanDirs],
         extensions: RESOLVE_EXTENSIONS,
@@ -146,7 +153,7 @@ export async function resolvePathOptions(options: NitroOptions) {
         extensions: [".html"],
       }
     )!;
-  } else if (!options.renderer?.entry) {
+  } else if (!options.renderer?.handler) {
     const defaultIndex = resolveModulePath("./index.html", {
       from: [options.rootDir, ...options.scanDirs],
       extensions: [".html"],
@@ -161,10 +168,10 @@ export async function resolvePathOptions(options: NitroOptions) {
     }
   }
 
-  // Default renderer entry if template is set
-  if (options.renderer?.template && !options.renderer?.entry) {
+  // Default renderer handler if template is set
+  if (options.renderer?.template && !options.renderer?.handler) {
     options.renderer ??= {};
-    options.renderer.entry = join(
+    options.renderer.handler = join(
       runtimeDir,
       "internal/routes/renderer-template" + (options.dev ? ".dev" : "")
     );

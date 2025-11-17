@@ -1,12 +1,11 @@
 import type { Nitro, NodeExternalsOptions } from "nitro/types";
 import type { Plugin } from "rollup";
 import type { BaseBuildConfig } from "./config.ts";
-import { dirname } from "pathe";
 import { hash } from "ohash";
 import { defu } from "defu";
-import { runtimeDir, runtimeDependencies } from "nitro/runtime/meta";
 import unimportPlugin from "unimport/unplugin";
-import { rollup as unwasm } from "unwasm/plugin";
+import { unwasm } from "unwasm/plugin";
+import replace from "@rollup/plugin-replace";
 import { database } from "./plugins/database.ts";
 import { routing } from "./plugins/routing.ts";
 import { routeMeta } from "./plugins/route-meta.ts";
@@ -20,6 +19,9 @@ import { rollupNodeFileTrace } from "nf3";
 import { rendererTemplate } from "./plugins/renderer-template.ts";
 import { featureFlags } from "./plugins/feature-flags.ts";
 import { nitroResolveIds } from "./plugins/resolve.ts";
+import { sourcemapMinify } from "./plugins/sourcemap-min.ts";
+import { raw } from "./plugins/raw.ts";
+import { runtimeConfig } from "./plugins/runtime-config.ts";
 
 export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
   const plugins: Plugin[] = [];
@@ -30,7 +32,7 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
   }
 
   // WASM loader
-  if (nitro.options.experimental.wasm) {
+  if (nitro.options.wasm !== false) {
     plugins.push(unwasm(nitro.options.wasm || {}));
   }
 
@@ -79,10 +81,16 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
   // Routing
   plugins.push(routing(nitro));
 
+  // Raw Imports
+  plugins.push(raw());
+
   // Route meta
   if (nitro.options.experimental.openAPI) {
     plugins.push(routeMeta(nitro));
   }
+
+  // Runtime config
+  plugins.push(runtimeConfig(nitro));
 
   // Error handler
   plugins.push(errorHandler(nitro));
@@ -108,6 +116,14 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
     plugins.push(rendererTemplate(nitro));
   }
 
+  // Replace Plugin
+  plugins.push(
+    (replace as unknown as typeof replace.default)({
+      preventAssignment: true,
+      values: base.replacements,
+    })
+  );
+
   // Externals Plugin
   if (!nitro.options.noExternals) {
     plugins.push(
@@ -115,33 +131,8 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
         defu(nitro.options.externals, {
           outDir: nitro.options.output.serverDir,
           moduleDirectories: nitro.options.nodeModulesDirs,
-          external: [
-            ...(nitro.options.dev ? [nitro.options.buildDir] : []),
-            ...nitro.options.nodeModulesDirs,
-          ],
-          inline: [
-            "#",
-            "~",
-            "@/",
-            "~~",
-            "@@/",
-            "virtual:",
-            "nitro/runtime",
-            dirname(nitro.options.entry),
-            ...(nitro.options.experimental.wasm
-              ? [(id: string) => id?.endsWith(".wasm")]
-              : []),
-            runtimeDir,
-            nitro.options.serverDir,
-            ...nitro.options.handlers
-              .map((m) => m.handler)
-              .filter((i) => typeof i === "string"),
-            ...(nitro.options.dev ||
-            nitro.options.preset === "nitro-prerender" ||
-            nitro.options.experimental.bundleRuntimeDependencies === false
-              ? []
-              : runtimeDependencies),
-          ].filter(Boolean) as string[],
+          external: nitro.options.nodeModulesDirs,
+          inline: [...base.noExternal],
           traceOptions: {
             base: "/",
             processCwd: nitro.options.rootDir,
@@ -156,6 +147,15 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
         } satisfies NodeExternalsOptions)
       )
     );
+  }
+
+  // Minify
+  if (
+    nitro.options.sourcemap &&
+    !nitro.options.dev &&
+    nitro.options.experimental.sourcemapMinify !== false
+  ) {
+    plugins.push(sourcemapMinify());
   }
 
   return plugins;

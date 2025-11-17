@@ -1,28 +1,56 @@
+import "#nitro-internal-pollyfills";
 import cluster from "node:cluster";
-import os from "node:os";
+import { NodeRequest, serve } from "srvx/node";
+import wsAdapter from "crossws/adapters/node";
 
-function runMaster() {
-  const numberOfWorkers =
-    Number.parseInt(process.env.NITRO_CLUSTER_WORKERS || "") ||
-    (os.cpus().length > 0 ? os.cpus().length : 1);
+import { useNitroApp } from "nitro/app";
+import { startScheduleRunner } from "nitro/~internal/runtime/task";
+import { trapUnhandledErrors } from "nitro/~internal/runtime/error/hooks";
+import { resolveWebsocketHooks } from "nitro/~internal/runtime/app";
+import { hasWebSocket } from "#nitro-internal-virtual/feature-flags";
 
-  for (let i = 0; i < numberOfWorkers; i++) {
-    cluster.fork({
-      WORKER_ID: i + 1,
-    });
-  }
+const port =
+  Number.parseInt(process.env.NITRO_PORT || process.env.PORT || "") || 3000;
+
+const host = process.env.NITRO_HOST || process.env.HOST;
+const cert = process.env.NITRO_SSL_CERT;
+const key = process.env.NITRO_SSL_KEY;
+// const socketPath = process.env.NITRO_UNIX_SOCKET; // TODO
+
+const clusterId = cluster.isWorker && process.env.WORKER_ID;
+if (clusterId) {
+  console.log(`Worker #${clusterId} started`);
 }
 
-function runWorker() {
-  import("./node-server.ts").catch((error) => {
-    console.error(error);
-    // eslint-disable-next-line unicorn/no-process-exit
-    process.exit(1);
+const nitroApp = useNitroApp();
+
+const server = serve({
+  port,
+  hostname: host,
+  tls: cert && key ? { cert, key } : undefined,
+  node: { exclusive: false },
+  silent: clusterId ? clusterId !== "1" : undefined,
+  fetch: nitroApp.fetch,
+});
+
+if (hasWebSocket) {
+  const { handleUpgrade } = wsAdapter({ resolve: resolveWebsocketHooks });
+  server.node!.server!.on("upgrade", (req, socket, head) => {
+    handleUpgrade(
+      req,
+      socket,
+      head,
+      // @ts-expect-error (upgrade is not typed)
+      new NodeRequest({ req, upgrade: { socket, head } })
+    );
   });
 }
 
-if (cluster.isPrimary) {
-  runMaster();
-} else {
-  runWorker();
+trapUnhandledErrors();
+
+// Scheduled tasks
+if (import.meta._tasks) {
+  startScheduleRunner();
 }
+
+export default {};

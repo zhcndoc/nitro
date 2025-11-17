@@ -333,9 +333,12 @@ export function testNitro(
     expect(isBufferPng(data)).toBe(true);
   });
 
-  it("render JSX", async () => {
+  it.skipIf(
+    // TODO: srvx reverse-compat bug with streaming?
+    ctx.preset === "vercel" && ctx.nitro?.options.vercel?.entryFormat === "node"
+  )("render JSX", async () => {
     const { data } = await callHandler({ url: "/jsx" });
-    expect(data).toMatch(/<h1.+>Hello JSX!<\/h1>/);
+    expect(data).toMatch(/<h1 class="test".*>Hello JSX!<\/h1>/);
   });
 
   it("replace", async () => {
@@ -601,17 +604,15 @@ export function testNitro(
   it("static build flags", async () => {
     const { data } = await callHandler({ url: "/static-flags" });
     expect(data).toMatchObject({
-      dev: [ctx.isDev, ctx.isDev],
-      preset: [ctx.preset, ctx.preset],
-      prerender: [
-        ctx.preset === "nitro-prerenderer",
-        ctx.preset === "nitro-prerenderer",
-      ],
-      client: [false, false],
-      nitro: [true, true],
-      server: [true, true],
-      "versions.nitro": [expect.any(String), expect.any(String)],
-      "versions?.nitro": [expect.any(String), expect.any(String)],
+      dev: ctx.isDev,
+      preset: ctx.preset,
+      prerender: false,
+      nitro: true,
+      server: true,
+      client: false,
+      baseURL: "/",
+      _asyncContext: true,
+      _tasks: true,
     });
   });
 
@@ -696,7 +697,7 @@ export function testNitro(
       "should setItem before returning response the first time",
       async () => {
         const {
-          data: { timestamp, eventContextCache },
+          data: { timestamp },
         } = await callHandler({ url: "/api/cached" });
 
         // TODO

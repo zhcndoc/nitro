@@ -1,27 +1,16 @@
 import type { Nitro } from "nitro/types";
 import type { RolldownOptions, RolldownPlugin } from "rolldown";
 import { sanitizeFilePath } from "mlly";
-import { normalize } from "pathe";
-import { runtimeDir } from "nitro/runtime/meta";
 import { baseBuildConfig } from "../config.ts";
 import { baseBuildPlugins } from "../plugins.ts";
-import { replace } from "../plugins/replace.ts";
 import { builtinModules } from "node:module";
 import { defu } from "defu";
-import { raw } from "../plugins/raw.ts";
+import { getChunkName } from "../chunks.ts";
 
 export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
   const base = baseBuildConfig(nitro);
 
-  const chunkNamePrefixes = [
-    [nitro.options.buildDir, "build"],
-    [base.buildServerDir, "app"],
-    [runtimeDir, "nitro"],
-    [base.presetsDir, "nitro"],
-    ["\0raw:", "raw"],
-    ["\0nitro-wasm:", "wasm"],
-    ["\0", "virtual"],
-  ] as const;
+  const tsc = nitro.options.typescript.tsConfig?.compilerOptions;
 
   let config = {
     cwd: nitro.options.rootDir,
@@ -31,15 +20,7 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
       ...builtinModules,
       ...builtinModules.map((m) => `node:${m}`),
     ],
-    plugins: [
-      ...(baseBuildPlugins(nitro, base) as RolldownPlugin[]),
-      // https://github.com/rolldown/rolldown/issues/4257
-      replace({
-        preventAssignment: true,
-        values: base.replacements,
-      }) as RolldownPlugin,
-      raw() as RolldownPlugin,
-    ],
+    plugins: [...(baseBuildPlugins(nitro, base) as RolldownPlugin[])],
     resolve: {
       alias: base.aliases,
       extensions: base.extensions,
@@ -49,9 +30,10 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
     transform: {
       inject: base.env.inject as Record<string, string>,
       jsx: {
-        runtime: "classic", // no auto-import
-        pragma: nitro.options.esbuild?.options?.jsxFactory,
-        pragmaFrag: nitro.options.esbuild?.options?.jsxFragment,
+        runtime: tsc?.jsx === "react" ? "classic" : "automatic",
+        pragma: tsc?.jsxFactory,
+        pragmaFrag: tsc?.jsxFragmentFactory,
+        importSource: tsc?.jsxImportSource,
         development: nitro.options.dev,
       },
     },
@@ -65,69 +47,18 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
     },
     treeshake: {
       moduleSideEffects(id) {
-        const normalizedId = normalize(id);
-        const idWithoutNodeModules = normalizedId.split("node_modules/").pop();
-        if (!idWithoutNodeModules) {
-          return false;
-        }
-        if (
-          normalizedId.startsWith(runtimeDir) ||
-          idWithoutNodeModules.startsWith(runtimeDir)
-        ) {
-          return true;
-        }
-        return nitro.options.moduleSideEffects.some(
-          (m) =>
-            normalizedId.startsWith(m) || idWithoutNodeModules.startsWith(m)
-        );
+        return nitro.options.moduleSideEffects.some((p) => id.startsWith(p));
       },
     },
     output: {
-      dir: nitro.options.output.serverDir,
-      entryFileNames: "index.mjs",
-      minify: nitro.options.minify,
-      chunkFileNames(chunk) {
-        const id = normalize(chunk.moduleIds.at(-1) || "");
-        // Known path prefixes
-        for (const [dir, name] of chunkNamePrefixes) {
-          if (id.startsWith(dir)) {
-            return `chunks/${name}/[name].mjs`;
-          }
-        }
-
-        // Route handlers
-        const routeHandler =
-          nitro.options.handlers.find((h) =>
-            id.startsWith(h.handler as string)
-          ) ||
-          nitro.scannedHandlers.find((h) => id.startsWith(h.handler as string));
-        if (routeHandler?.route) {
-          const path =
-            routeHandler.route
-              .replace(/:([^/]+)/g, "_$1")
-              .replace(/\/[^/]+$/g, "")
-              .replace(/[^a-zA-Z0-9/_-]/g, "_") || "/";
-          return `chunks/routes${path}/[name].mjs`;
-        }
-
-        // Task handlers
-        const taskHandler = Object.entries(nitro.options.tasks).find(
-          ([_, task]) => task.handler === id
-        );
-        if (taskHandler) {
-          return `chunks/tasks/[name].mjs`;
-        }
-
-        // Unknown path
-        return `chunks/_/[name].mjs`;
-      },
-      inlineDynamicImports: nitro.options.inlineDynamicImports,
       format: "esm",
-      exports: "auto",
-      intro: "",
-      outro: "",
+      entryFileNames: "index.mjs",
+      chunkFileNames: (chunk) => getChunkName(nitro, chunk.moduleIds),
+      dir: nitro.options.output.serverDir,
+      inlineDynamicImports: nitro.options.inlineDynamicImports,
+      minify: nitro.options.minify,
       sanitizeFileName: sanitizeFilePath,
-      sourcemap: nitro.options.sourceMap,
+      sourcemap: nitro.options.sourcemap,
       sourcemapIgnoreList(relativePath) {
         return relativePath.includes("node_modules");
       },

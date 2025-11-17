@@ -164,6 +164,26 @@ function generateBuildConfig(nitro: Nitro, o11Routes?: ObservabilityRoute[]) {
           }
           return route;
         }),
+      // Skew protection
+      ...(nitro.options.vercel?.skewProtection &&
+      nitro.options.manifest?.deploymentId
+        ? [
+            {
+              src: "/.*",
+              has: [
+                {
+                  type: "header",
+                  key: "Sec-Fetch-Dest",
+                  value: "document",
+                },
+              ],
+              headers: {
+                "Set-Cookie": `__vdpl=${nitro.options.manifest.deploymentId}; Path=${nitro.options.baseURL}; SameSite=Strict; Secure; HttpOnly`,
+              },
+              continue: true,
+            },
+          ]
+        : []),
       // Public asset rules
       ...nitro.options.publicAssets
         .filter((asset) => !asset.fallthrough)
@@ -239,7 +259,7 @@ export function deprecateSWR(nitro: Nitro) {
     return;
   }
   let hasLegacyOptions = false;
-  for (const [key, value] of Object.entries(nitro.options.routeRules)) {
+  for (const [_key, value] of Object.entries(nitro.options.routeRules)) {
     if (_hasProp(value, "isr")) {
       continue;
     }

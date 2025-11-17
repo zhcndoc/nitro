@@ -1,6 +1,6 @@
-export default defineHandler(async (event) => {
-  const md = await import("../../assets/test.md" as string).then(
+export default async () => {
+  const md = await import("raw:../../assets/test.md" as string).then(
     (r) => r.default
   );
   return md;
-});
+};

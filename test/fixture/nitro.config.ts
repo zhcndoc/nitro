@@ -7,6 +7,7 @@ export default defineConfig({
   compressPublicAssets: true,
   compatibilityDate: "latest",
   serverDir: "server",
+  builder: (process.env.NITRO_BUILDER as any) || "rollup",
   framework: {
     name: "nitro",
     version: "2.x",
@@ -20,6 +21,7 @@ export default defineConfig({
       },
     ],
   },
+  sourcemap: true,
   rollupConfig: {
     output: {
       // TODO: when output.dir is outside of src, rollup emits wrong relative sourcemap paths
@@ -33,12 +35,12 @@ export default defineConfig({
   handlers: [
     {
       route: "/api/test/*/foo",
-      handler: "./server/api/hello.ts",
+      handler: "./server/routes/api/hello.ts",
       method: "GET",
     },
     {
       route: "/api/hello2",
-      handler: "server/api/hello.ts",
+      handler: "./server/routes/api/hello.ts",
       middleware: true,
     },
   ],
@@ -60,7 +62,12 @@ export default defineConfig({
       dir: "server/files",
     },
   ],
-  ignore: ["api/**/_*", "middleware/_ignored.ts", "routes/_*.ts", "**/_*.txt"],
+  ignore: [
+    "routes/api/**/_*",
+    "middleware/_ignored.ts",
+    "routes/_*.ts",
+    "**/_*.txt",
+  ],
   runtimeConfig: {
     dynamic: "initial",
     url: "https://{{APP_DOMAIN}}",
@@ -114,7 +121,6 @@ export default defineConfig({
   experimental: {
     openAPI: true,
     asyncContext: true,
-    wasm: true,
     envExpansion: true,
     database: true,
     tasks: true,
@@ -123,8 +129,6 @@ export default defineConfig({
     "* * * * *": "test",
   },
   cloudflare: {
-    nodeCompat: true,
-    deployConfig: true,
     pages: {
       routes: {
         include: ["/*"],
@@ -145,11 +149,6 @@ export default defineConfig({
       title: "Nitro Test Fixture",
       description: "Nitro Test Fixture API",
       version: "2.0",
-    },
-    ui: {
-      scalar: {
-        theme: "purple",
-      },
     },
   },
 });

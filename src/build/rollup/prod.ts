@@ -3,9 +3,7 @@ import { formatCompatibilityDate } from "compatx";
 import { relative } from "pathe";
 import { scanHandlers } from "../../scan.ts";
 import { generateFSTree } from "../../utils/fs-tree.ts";
-import { nitroServerName } from "../../utils/nitro.ts";
 import { writeTypes } from "../types.ts";
-import { snapshot } from "../snapshot.ts";
 import { writeBuildInfo } from "../info.ts";
 import { formatRollupError } from "./error.ts";
 
@@ -15,13 +13,14 @@ export async function buildProduction(
 ) {
   const rollup = await import("rollup");
 
+  const buildStartTime = Date.now();
+
   await scanHandlers(nitro);
   await writeTypes(nitro);
-  await snapshot(nitro);
 
   if (!nitro.options.static) {
     nitro.logger.info(
-      `Building ${nitroServerName(nitro)} (rollup, preset: \`${nitro.options.preset}\`, compatibility date: \`${formatCompatibilityDate(nitro.options.compatibilityDate)}\`)`
+      `Building server (builder: \`rollup\`, preset: \`${nitro.options.preset}\`, compatibility date: \`${formatCompatibilityDate(nitro.options.compatibilityDate)}\`)`
     );
     const build = await rollup.rollup(rollupConfig).catch((error) => {
       nitro.logger.error(formatRollupError(error));
@@ -35,7 +34,7 @@ export async function buildProduction(
 
   if (!nitro.options.static) {
     if (nitro.options.logging.buildSuccess) {
-      nitro.logger.success(`${nitroServerName(nitro)} built`);
+      nitro.logger.success(`Server built in ${Date.now() - buildStartTime}ms`);
     }
     if (nitro.options.logLevel > 1) {
       process.stdout.write(

@@ -1,5 +1,4 @@
 import { pathToFileURL } from "node:url";
-import { colors } from "consola/utils";
 import { defu } from "defu";
 import mime from "mime";
 import { writeFile } from "../utils/fs.ts";
@@ -26,7 +25,7 @@ import { toRequest } from "h3";
 
 const JsonSigRx = /^\s*["[{]|^\s*-?\d{1,16}(\.\d{1,17})?([Ee][+-]?\d+)?\s*$/; // From unjs/destr
 
-const linkParents = new Map<string, Set<string>>();
+// const linkParents = new Map<string, Set<string>>();
 
 export async function prerender(nitro: Nitro) {
   if (nitro.options.noPublicDir) {
@@ -274,7 +273,7 @@ export async function prerender(nitro: Nitro) {
     const isImplicitHTML =
       !route.endsWith(".html") &&
       contentType.includes("html") &&
-      !JsonSigRx.test(dataBuff.subarray(0, 32).toString("utf8"));
+      !JsonSigRx.test(dataBuff!.subarray(0, 32).toString("utf8"));
     const routeWithIndex = route.endsWith("/") ? route + "index" : route;
     const htmlPath =
       route.endsWith("/") || nitro.options.prerender.autoSubfolderIndex
@@ -311,7 +310,7 @@ export async function prerender(nitro: Nitro) {
     // Write to the disk
     if (canWriteToDisk(_route)) {
       const filePath = join(nitro.options.output.publicDir, _route.fileName);
-      await writeFile(filePath, dataBuff);
+      await writeFile(filePath, dataBuff!);
       nitro._prerenderedRoutes!.push(_route);
     } else {
       _route.skip = true;
@@ -320,7 +319,7 @@ export async function prerender(nitro: Nitro) {
     // Crawl route links
     if (!_route.error && (isImplicitHTML || route.endsWith(".html"))) {
       const extractedLinks = await extractLinks(
-        dataBuff.toString("utf8"),
+        dataBuff!.toString("utf8"),
         route,
         res,
         nitro.options.prerender.crawlLinks
@@ -360,12 +359,12 @@ export async function prerender(nitro: Nitro) {
   if (nitro.options.prerender.failOnError && failedRoutes.size > 0) {
     nitro.logger.log("\nErrors prerendering:");
     for (const route of failedRoutes) {
-      const parents = linkParents.get(route.route);
-      const parentsText = parents?.size
-        ? `\n${[...parents.values()]
-            .map((link) => colors.gray(`  │ └── Linked from ${link}`))
-            .join("\n")}`
-        : "";
+      // const parents = linkParents.get(route.route);
+      // const parentsText = parents?.size
+      //   ? `\n${[...parents.values()]
+      //       .map((link) => colors.gray(`  │ └── Linked from ${link}`))
+      //       .join("\n")}`
+      //   : "";
       nitro.logger.log(formatPrerenderRoute(route));
     }
     nitro.logger.log("");

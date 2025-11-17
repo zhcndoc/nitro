@@ -14,17 +14,25 @@ export type { VercelOptions as PresetOptions } from "./types.ts";
 const vercel = defineNitroPreset(
   {
     entry: "./vercel/runtime/vercel.{format}",
+    manifest: {
+      deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
+    },
+    vercel: {
+      skewProtection: !!process.env.VERCEL_SKEW_PROTECTION_ENABLED,
+    },
     output: {
       dir: "{{ rootDir }}/.vercel/output",
       serverDir: "{{ output.dir }}/functions/__server.func",
       publicDir: "{{ output.dir }}/static/{{ baseURL }}",
     },
     commands: {
-      deploy: "",
       preview: "",
+      deploy: "npx vercel deploy --prebuilt",
     },
     hooks: {
       "build:before": async (nitro: Nitro) => {
+        const logger = nitro.logger.withTag("vercel");
+
         // Runtime
         const runtime = await resolveVercelRuntime(nitro);
         if (
@@ -33,11 +41,20 @@ const vercel = defineNitroPreset(
         ) {
           nitro.options.exportConditions!.push("bun");
         }
+        logger.info(`Using \`${runtime}\` runtime.`);
 
         // Entry handler format
+        let serverFormat = nitro.options.vercel?.entryFormat;
+        if (!serverFormat) {
+          const hasNodeHandler = nitro.routing.routes.routes
+            .flatMap((r) => r.data)
+            .some((h) => h.format === "node");
+          serverFormat = hasNodeHandler ? "node" : "web";
+        }
+        logger.info(`Using \`${serverFormat}\` entry format.`);
         nitro.options.entry = nitro.options.entry.replace(
           "{format}",
-          nitro.options.vercel?.entryFormat === "node" ? "node" : "web"
+          serverFormat
         );
       },
       "rollup:before": (nitro: Nitro) => {
@@ -57,6 +74,12 @@ const vercel = defineNitroPreset(
 const vercelStatic = defineNitroPreset(
   {
     extends: "static",
+    manifest: {
+      deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
+    },
+    vercel: {
+      skewProtection: !!process.env.VERCEL_SKEW_PROTECTION_ENABLED,
+    },
     output: {
       dir: "{{ rootDir }}/.vercel/output",
       publicDir: "{{ output.dir }}/static/{{ baseURL }}",

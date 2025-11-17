@@ -3,7 +3,7 @@ import type { NitroPluginContext, ServiceConfig } from "./types.ts";
 
 import { NodeDevWorker } from "../../dev/worker.ts";
 import { join, resolve } from "node:path";
-import { runtimeDependencies, runtimeDir } from "nitro/runtime/meta";
+import { runtimeDependencies, runtimeDir } from "nitro/meta";
 import { resolveModulePath } from "exsolve";
 import { createFetchableDevEnvironment } from "./dev.ts";
 import { isAbsolute } from "pathe";
@@ -31,18 +31,20 @@ export function createNitroEnvironment(
       rollupOptions: ctx.rollupConfig!.config as any,
       minify: ctx.nitro!.options.minify,
       emptyOutDir: false,
+      sourcemap: ctx.nitro!.options.sourcemap,
       commonjsOptions: {
-        strictRequires: "auto", // TODO: set to true (default) in v3
-        esmExternals: (id) => !id.startsWith("unenv/"),
-        requireReturnsDefault: "auto",
         ...(ctx.nitro!.options.commonJS as any),
       },
     },
     resolve: {
       noExternal: ctx.nitro!.options.dev
-        ? // Workaround for dev: external dependencies are not resolvable with respect to nodeModulePaths
-          new RegExp(runtimeDependencies.join("|"))
-        : true,
+        ? [
+            ...ctx.rollupConfig!.base.noExternal.filter(
+              (i) => typeof i === "string" || i instanceof RegExp
+            ),
+            ...runtimeDependencies,
+          ]
+        : true, // in production, NF3 tracks externals
       conditions: ctx.nitro!.options.exportConditions,
       externalConditions: ctx.nitro!.options.exportConditions,
     },
@@ -68,7 +70,8 @@ export function createServiceEnvironment(
     build: {
       rollupOptions: { input: serviceConfig.entry },
       minify: ctx.nitro!.options.minify,
-      outDir: join(ctx.nitro!.options.buildDir, "vite", "services", name),
+      sourcemap: ctx.nitro!.options.sourcemap,
+      outDir: join(ctx.nitro!.options.buildDir, "vite/services", name),
       emptyOutDir: true,
     },
     resolve: {
@@ -91,7 +94,7 @@ export function createServiceEnvironments(
   ctx: NitroPluginContext
 ): Record<string, EnvironmentOptions> {
   return Object.fromEntries(
-    Object.entries(ctx.pluginConfig.services || {}).map(([name, config]) => [
+    Object.entries(ctx.services).map(([name, config]) => [
       name,
       createServiceEnvironment(ctx, name, config),
     ])

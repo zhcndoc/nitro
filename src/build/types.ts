@@ -3,7 +3,7 @@ import { defu } from "defu";
 import { lookupNodeModuleSubpath, parseNodeModulePath } from "mlly";
 import { resolveModulePath } from "exsolve";
 import { isDirectory, resolveNitroPath, writeFile } from "../utils/fs.ts";
-import { runtimeDir } from "nitro/runtime/meta";
+import { runtimeDir } from "nitro/meta";
 import type { Nitro, NitroTypes } from "nitro/types";
 import { dirname, isAbsolute, join, resolve } from "pathe";
 import { relative } from "pathe";
@@ -18,7 +18,10 @@ export async function writeTypes(nitro: Nitro) {
     routes: {},
   };
 
-  const typesDir = resolve(nitro.options.buildDir, "types");
+  const generatedTypesDir = resolve(
+    nitro.options.rootDir,
+    nitro.options.typescript.generatedTypesDir || "node_modules/.nitro/types"
+  );
 
   const middleware = [...nitro.scannedHandlers, ...nitro.options.handlers];
 
@@ -27,7 +30,7 @@ export async function writeTypes(nitro: Nitro) {
       continue;
     }
     const relativePath = relative(
-      typesDir,
+      generatedTypesDir,
       resolveNitroPath(mw.handler, nitro.options)
     ).replace(/\.(js|mjs|cjs|ts|mts|cts|tsx|jsx)$/, "");
 
@@ -52,7 +55,7 @@ export async function writeTypes(nitro: Nitro) {
 
     autoImportExports = toExports(allImports).replace(
       /#internal\/nitro/g,
-      relative(typesDir, runtimeDir)
+      relative(generatedTypesDir, runtimeDir)
     );
 
     const resolvedImportPathMap = new Map<string, string>();
@@ -85,7 +88,7 @@ export async function writeTypes(nitro: Nitro) {
         path = path.replace(/\.[a-z]+$/, "");
       }
       if (isAbsolute(path)) {
-        path = relative(typesDir, path);
+        path = relative(generatedTypesDir, path);
       }
       resolvedImportPathMap.set(from, path);
     }
@@ -153,7 +156,7 @@ export async function writeTypes(nitro: Nitro) {
   ];
 
   const declarations = [
-    // local nitropack augmentations
+    // local nitro augmentations
     '/// <reference path="./nitro-routes.d.ts" />',
     '/// <reference path="./nitro-config.d.ts" />',
     // global server auto-imports
@@ -163,30 +166,30 @@ export async function writeTypes(nitro: Nitro) {
   const buildFiles: { path: string; contents: string | (() => string) }[] = [];
 
   buildFiles.push({
-    path: join(typesDir, "nitro-routes.d.ts"),
+    path: join(generatedTypesDir, "nitro-routes.d.ts"),
     contents: () => generateRoutes().join("\n"),
   });
 
   buildFiles.push({
-    path: join(typesDir, "nitro-config.d.ts"),
+    path: join(generatedTypesDir, "nitro-config.d.ts"),
     contents: config.join("\n"),
   });
 
   buildFiles.push({
-    path: join(typesDir, "nitro-imports.d.ts"),
+    path: join(generatedTypesDir, "nitro-imports.d.ts"),
     contents: [...autoImportedTypes, autoImportExports || "export {}"].join(
       "\n"
     ),
   });
 
   buildFiles.push({
-    path: join(typesDir, "nitro.d.ts"),
+    path: join(generatedTypesDir, "nitro.d.ts"),
     contents: declarations.join("\n"),
   });
 
   if (nitro.options.typescript.generateTsConfig) {
     const tsConfigPath = resolve(
-      nitro.options.buildDir,
+      generatedTypesDir,
       nitro.options.typescript.tsconfigPath
     );
     const tsconfigDir = dirname(tsConfigPath);
@@ -215,31 +218,18 @@ export async function writeTypes(nitro: Nitro) {
         jsxFragmentFactory: "Fragment",
         paths: {
           "#imports": [
-            relativeWithDot(tsconfigDir, join(typesDir, "nitro-imports")),
+            relativeWithDot(
+              tsconfigDir,
+              join(generatedTypesDir, "nitro-imports")
+            ),
           ],
-          ...(nitro.options.typescript.internalPaths
-            ? {
-                "nitro/runtime": [
-                  relativeWithDot(tsconfigDir, join(runtimeDir, "index")),
-                ],
-                "#internal/nitro": [
-                  relativeWithDot(tsconfigDir, join(runtimeDir, "index")),
-                ],
-                "nitro/runtime/*": [
-                  relativeWithDot(tsconfigDir, join(runtimeDir, "*")),
-                ],
-                "#internal/nitro/*": [
-                  relativeWithDot(tsconfigDir, join(runtimeDir, "*")),
-                ],
-              }
-            : {}),
         },
       },
       include: [
-        relativeWithDot(tsconfigDir, join(typesDir, "nitro.d.ts")).replace(
-          /^(?=[^.])/,
-          "./"
-        ),
+        relativeWithDot(
+          tsconfigDir,
+          join(generatedTypesDir, "nitro.d.ts")
+        ).replace(/^(?=[^.])/, "./"),
         join(relativeWithDot(tsconfigDir, nitro.options.rootDir), "**/*"),
         ...(!nitro.options.serverDir ||
         nitro.options.serverDir === nitro.options.rootDir
@@ -303,7 +293,7 @@ export async function writeTypes(nitro: Nitro) {
   await Promise.all(
     buildFiles.map(async (file) => {
       await writeFile(
-        resolve(nitro.options.buildDir, file.path),
+        resolve(generatedTypesDir, file.path),
         typeof file.contents === "string" ? file.contents : file.contents()
       );
     })

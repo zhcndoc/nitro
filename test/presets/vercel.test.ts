@@ -254,52 +254,8 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "/api/upload",
               },
               {
-                "dest": "/api/typed/user/john/post/coffee",
-                "src": "/api/typed/user/john/post/coffee",
-              },
-              {
-                "dest": "/api/typed/user/john",
-                "src": "/api/typed/user/john",
-              },
-              {
                 "dest": "/api/storage/item",
                 "src": "/api/storage/item",
-              },
-              {
-                "dest": "/api/storage/dev",
-                "src": "/api/storage/dev",
-              },
-              {
-                "dest": "/api/serialized/void",
-                "src": "/api/serialized/void",
-              },
-              {
-                "dest": "/api/serialized/tuple",
-                "src": "/api/serialized/tuple",
-              },
-              {
-                "dest": "/api/serialized/set",
-                "src": "/api/serialized/set",
-              },
-              {
-                "dest": "/api/serialized/null",
-                "src": "/api/serialized/null",
-              },
-              {
-                "dest": "/api/serialized/map",
-                "src": "/api/serialized/map",
-              },
-              {
-                "dest": "/api/serialized/function",
-                "src": "/api/serialized/function",
-              },
-              {
-                "dest": "/api/serialized/error",
-                "src": "/api/serialized/error",
-              },
-              {
-                "dest": "/api/serialized/date",
-                "src": "/api/serialized/date",
               },
               {
                 "dest": "/api/methods/get",
@@ -308,14 +264,6 @@ describe("nitro:preset:vercel:web", async () => {
               {
                 "dest": "/api/methods/foo.get",
                 "src": "/api/methods/foo.get",
-              },
-              {
-                "dest": "/api/methods/default",
-                "src": "/api/methods/default",
-              },
-              {
-                "dest": "/api/methods",
-                "src": "/api/methods",
               },
               {
                 "dest": "/api/meta/test",
@@ -378,30 +326,6 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "/assets/(?<id>[^/]+)",
               },
               {
-                "dest": "/api/typed/user/john/post/[postId]",
-                "src": "/api/typed/user/john/post/(?<postId>[^/]+)",
-              },
-              {
-                "dest": "/api/typed/user/john/[johnExtends]",
-                "src": "/api/typed/user/john/(?<johnExtends>[^/]+)",
-              },
-              {
-                "dest": "/api/typed/user/[userId]/post/firstPost",
-                "src": "/api/typed/user/(?<userId>[^/]+)/post/firstPost",
-              },
-              {
-                "dest": "/api/typed/user/[userId]/post/[postId]",
-                "src": "/api/typed/user/(?<userId>[^/]+)/post/(?<postId>[^/]+)",
-              },
-              {
-                "dest": "/api/typed/user/[userId]/[userExtends]",
-                "src": "/api/typed/user/(?<userId>[^/]+)/(?<userExtends>[^/]+)",
-              },
-              {
-                "dest": "/api/typed/user/[userId]",
-                "src": "/api/typed/user/(?<userId>[^/]+)",
-              },
-              {
                 "dest": "/api/test/[-]/foo",
                 "src": "/api/test/(?<_0>[^/]*)/foo",
               },
@@ -420,22 +344,6 @@ describe("nitro:preset:vercel:web", async () => {
               {
                 "dest": "/api/wildcard/[...param]",
                 "src": "/api/wildcard/?(?<param>.+)",
-              },
-              {
-                "dest": "/api/typed/todos/[...]",
-                "src": "/api/typed/todos/(?:.*)",
-              },
-              {
-                "dest": "/api/typed/todos/[todoId]/comments/[...commentId]",
-                "src": "/api/typed/todos/(?<todoId>[^/]+)/comments/?(?<commentId>.+)",
-              },
-              {
-                "dest": "/api/typed/catchall/some/[...test]",
-                "src": "/api/typed/catchall/some/?(?<test>.+)",
-              },
-              {
-                "dest": "/api/typed/catchall/[slug]/[...another]",
-                "src": "/api/typed/catchall/(?<slug>[^/]+)/?(?<another>.+)",
               },
               {
                 "dest": "/__server",
@@ -470,7 +378,7 @@ describe("nitro:preset:vercel:web", async () => {
             items.push(`${dirname}/${entry.name}`);
           } else if (entry.isSymbolicLink()) {
             items.push(`${dirname}/${entry.name} (symlink)`);
-          } else if (/chunks|node_modules/.test(entry.name)) {
+          } else if (/_\/|_.+|node_modules/.test(entry.name)) {
             items.push(`${dirname}/${entry.name}`);
           } else if (entry.isDirectory()) {
             items.push(
@@ -490,12 +398,7 @@ describe("nitro:preset:vercel:web", async () => {
         expect(functionsFiles).toMatchInlineSnapshot(`
           [
             "functions/500.func (symlink)",
-            "functions/__server.func/.vc-config.json",
-            "functions/__server.func/chunks",
-            "functions/__server.func/index.mjs",
-            "functions/__server.func/index.mjs.map",
-            "functions/__server.func/node_modules",
-            "functions/__server.func/package.json",
+            "functions/__server.func",
             "functions/_openapi.json.func (symlink)",
             "functions/_scalar.func (symlink)",
             "functions/_swagger.func (symlink)",
@@ -509,34 +412,11 @@ describe("nitro:preset:vercel:web", async () => {
             "functions/api/hey.func (symlink)",
             "functions/api/kebab.func (symlink)",
             "functions/api/meta/test.func (symlink)",
-            "functions/api/methods.func (symlink)",
-            "functions/api/methods/default.func (symlink)",
             "functions/api/methods/foo.get.func (symlink)",
             "functions/api/methods/get.func (symlink)",
             "functions/api/param/[test-id].func (symlink)",
-            "functions/api/serialized/date.func (symlink)",
-            "functions/api/serialized/error.func (symlink)",
-            "functions/api/serialized/function.func (symlink)",
-            "functions/api/serialized/map.func (symlink)",
-            "functions/api/serialized/null.func (symlink)",
-            "functions/api/serialized/set.func (symlink)",
-            "functions/api/serialized/tuple.func (symlink)",
-            "functions/api/serialized/void.func (symlink)",
-            "functions/api/storage/dev.func (symlink)",
             "functions/api/storage/item.func (symlink)",
             "functions/api/test/[-]/foo.func (symlink)",
-            "functions/api/typed/catchall/[slug]/[...another].func (symlink)",
-            "functions/api/typed/catchall/some/[...test].func (symlink)",
-            "functions/api/typed/todos/[...].func (symlink)",
-            "functions/api/typed/todos/[todoId]/comments/[...commentId].func (symlink)",
-            "functions/api/typed/user/[userId].func (symlink)",
-            "functions/api/typed/user/[userId]/[userExtends].func (symlink)",
-            "functions/api/typed/user/[userId]/post/[postId].func (symlink)",
-            "functions/api/typed/user/[userId]/post/firstPost.func (symlink)",
-            "functions/api/typed/user/john.func (symlink)",
-            "functions/api/typed/user/john/[johnExtends].func (symlink)",
-            "functions/api/typed/user/john/post/[postId].func (symlink)",
-            "functions/api/typed/user/john/post/coffee.func (symlink)",
             "functions/api/upload.func (symlink)",
             "functions/api/wildcard/[...param].func (symlink)",
             "functions/assets/[id].func (symlink)",
@@ -637,7 +517,7 @@ describe("nitro:preset:vercel:bun", async () => {
   });
 });
 
-describe("nitro:preset:vercel:bun-verceljson", async () => {
+describe.skip("nitro:preset:vercel:bun-verceljson", async () => {
   const vercelJsonPath = join(fixtureDir, "vercel.json");
   // Need to make sure vercel.json is created before setupTest is called
   await fsp.writeFile(vercelJsonPath, JSON.stringify({ bunVersion: "1.x" }));

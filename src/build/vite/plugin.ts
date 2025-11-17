@@ -18,13 +18,14 @@ import {
   createServiceEnvironments,
 } from "./env.ts";
 import { configureViteDevServer } from "./dev.ts";
-import { runtimeDir } from "nitro/runtime/meta";
+import { runtimeDir } from "nitro/meta";
 import { resolveModulePath } from "exsolve";
 import { defu } from "defu";
 import { prettyPath } from "../../utils/fs.ts";
 import { NitroDevApp } from "../../dev/app.ts";
 import { nitroPreviewPlugin } from "./preview.ts";
 import { assetsPlugin } from "@hiogawa/vite-plugin-fullstack";
+import type { NitroConfig } from "nitro/types";
 
 // https://vite.dev/guide/api-environment-plugins
 // https://vite.dev/guide/api-environment-frameworks.html
@@ -44,7 +45,7 @@ export function nitro(pluginConfig: NitroPluginConfig = {}): VitePlugin[] {
     nitroPrepare(ctx),
     nitroService(ctx),
     nitroPreviewPlugin(ctx),
-    pluginConfig.experimental?.assetsImport !== false &&
+    pluginConfig.experimental?.vite?.assetsImport !== false &&
       assetsPlugin({
         experimental: {
           // See https://github.com/hi-ogawa/vite-plugins/pull/1289
@@ -116,8 +117,8 @@ function nitroEnv(ctx: NitroPluginContext): VitePlugin {
         config.build!.outDir = useNitro(ctx).options.output.publicDir;
       } else {
         if (
-          ctx.pluginConfig.experimental?.virtualBundle &&
-          name in (ctx.pluginConfig.services || {})
+          ctx.pluginConfig.experimental?.vite?.virtualBundle &&
+          name in (ctx.services || {})
         ) {
           debug("[env]  Configuring service environment for virtual:", name);
           config.build ??= {};
@@ -165,30 +166,6 @@ function nitroMain(ctx: NitroPluginContext): VitePlugin {
       };
     },
 
-    configResolved(config) {
-      if (config.command === "build") {
-        debug("[main] Inferring caching routes");
-        // Add cache-control to immutable client assets
-        for (const env of Object.values(config.environments)) {
-          if (env.consumer === "client") {
-            const rule = (ctx.nitro!.options.routeRules[
-              `/${env.build.assetsDir}/**`
-            ] ??= {});
-            if (!rule.headers?.["cache-control"]) {
-              rule.headers = {
-                ...rule.headers,
-                "cache-control": `public, max-age=31536000, immutable`,
-              };
-            }
-          }
-        }
-      }
-
-      // Refresh nitro routes
-      debug("[main] Syncing nitro routes");
-      ctx.nitro!.routing.sync();
-    },
-
     buildApp: {
       order: "post",
       handler(builder) {
@@ -204,8 +181,7 @@ function nitroMain(ctx: NitroPluginContext): VitePlugin {
           "[main] Generating manifest and entry points for environment:",
           environment.name
         );
-        const services = ctx.pluginConfig.services || {};
-        const serviceNames = Object.keys(services);
+        const serviceNames = Object.keys(ctx.services);
         const isRegisteredService = serviceNames.includes(environment.name);
 
         // Find entry point of this service
@@ -243,7 +219,7 @@ function nitroMain(ctx: NitroPluginContext): VitePlugin {
     async hotUpdate({ server, modules, timestamp }) {
       const env = this.environment;
       if (
-        ctx.pluginConfig.experimental?.serverReload === false ||
+        ctx.pluginConfig.experimental?.vite.serverReload === false ||
         env.config.consumer === "client"
       ) {
         return;
@@ -321,6 +297,7 @@ function nitroService(ctx: NitroPluginContext): VitePlugin {
 function createContext(pluginConfig: NitroPluginConfig): NitroPluginContext {
   return {
     pluginConfig,
+    services: {},
     _entryPoints: {},
     _serviceBundles: {},
   };
@@ -339,10 +316,14 @@ async function setupNitroContext(
   userConfig: UserConfig
 ) {
   // Nitro config overrides
-  const nitroConfig = {
+  const nitroConfig: NitroConfig = {
     dev: configEnv.command === "serve",
     rootDir: userConfig.root,
-    ...defu(ctx.pluginConfig.config, userConfig.nitro),
+    ...defu(
+      ctx.pluginConfig,
+      (ctx.pluginConfig as any).config, // TODO: Remove shortly
+      userConfig.nitro
+    ),
   };
 
   // Register Nitro modules from Vite plugins
@@ -362,8 +343,7 @@ async function setupNitroContext(
   ctx.nitro.options.builder = ctx._isRolldown ? "rolldown-vite" : "vite";
 
   // Config ssr env as a fetchable ssr service
-  if (!ctx.pluginConfig.services?.ssr) {
-    ctx.pluginConfig.services ??= {};
+  if (!ctx.services?.ssr) {
     if (userConfig.environments?.ssr === undefined) {
       const ssrEntry = resolveModulePath("./entry-server", {
         from: ["app", "src", ""].flatMap((d) =>
@@ -375,7 +355,7 @@ async function setupNitroContext(
         try: true,
       });
       if (ssrEntry) {
-        ctx.pluginConfig.services.ssr = { entry: ssrEntry };
+        ctx.services.ssr = { entry: ssrEntry };
         ctx.nitro!.logger.info(
           `Using \`${prettyPath(ssrEntry)}\` as vite ssr entry.`
         );
@@ -392,22 +372,32 @@ async function setupNitroContext(
             suffixes: ["", "/index"],
             try: true,
           }) || ssrEntry;
-        ctx.pluginConfig.services.ssr = { entry: ssrEntry };
+        ctx.services.ssr = { entry: ssrEntry };
       }
     }
+  }
+  if (
+    ctx.nitro.options.serverEntry &&
+    ctx.nitro.options.serverEntry.handler === ctx.services.ssr?.entry
+  ) {
+    ctx.nitro.logger.warn(
+      `Nitro server entry and Vite SSR both set to ${prettyPath(ctx.services.ssr.entry)}. Use a separate SSR entry (e.g. \`src/server.ts\`).`
+    );
+    ctx.nitro.options.serverEntry = false;
   }
 
   // Default SSR renderer
   if (
-    !ctx.nitro.options.renderer?.entry &&
+    !ctx.nitro.options.renderer?.handler &&
     !ctx.nitro.options.renderer?.template &&
-    ctx.pluginConfig.services.ssr?.entry
+    ctx.services.ssr?.entry
   ) {
     ctx.nitro.options.renderer ??= {};
-    ctx.nitro.options.renderer.entry = resolve(
+    ctx.nitro.options.renderer.handler = resolve(
       runtimeDir,
       "internal/vite/ssr-renderer"
     );
+    ctx.nitro!.routing.sync();
   }
 
   // Determine default Vite dist directory

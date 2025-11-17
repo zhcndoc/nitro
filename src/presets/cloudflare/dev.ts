@@ -4,12 +4,24 @@ import { fileURLToPath } from "mlly";
 import type { Nitro } from "nitro/types";
 import { findFile } from "pkg-types";
 import { resolveModulePath } from "exsolve";
-import { presetsDir } from "nitro/runtime/meta";
+import { presetsDir } from "nitro/meta";
 
 export async function cloudflareDevModule(nitro: Nitro) {
   if (!nitro.options.dev) {
     return; // Production doesn't need this
   }
+
+  nitro.options.unenv.push({
+    meta: {
+      name: "nitro:cloudflare-dev",
+    },
+    alias: {
+      "cloudflare:workers": resolve(
+        presetsDir,
+        "cloudflare/runtime/shims/workers.dev.mjs"
+      ),
+    },
+  });
 
   // Try to resolve wrangler
   const wranglerPath = await resolveModulePath("wrangler", {
@@ -51,14 +63,14 @@ export async function cloudflareDevModule(nitro: Nitro) {
     startingFrom: nitro.options.rootDir,
   }).catch(() => undefined);
 
-  let addedToGitIgnore = false;
+  // let addedToGitIgnore = false;
   if (gitIgnorePath && persistDir === ".wrangler/state/v3") {
     const gitIgnore = await fs.readFile(gitIgnorePath, "utf8");
     if (!gitIgnore.includes(".wrangler/state/v3")) {
       await fs
         .writeFile(gitIgnorePath, gitIgnore + "\n.wrangler/state/v3\n")
         .catch(() => {});
-      addedToGitIgnore = true;
+      // addedToGitIgnore = true;
     }
   }
 

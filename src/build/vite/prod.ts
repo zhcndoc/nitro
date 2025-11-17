@@ -95,6 +95,27 @@ export async function buildEnvironments(
   // Copy public assets to the final output directory
   await copyPublicAssets(nitro);
 
+  // Add route rule for asset dirs
+  const assetDirs = new Set(
+    Object.values(builder.environments)
+      .filter((env) => env.config.consumer === "client")
+      .map((env) => env.config.build.assetsDir)
+      .filter(Boolean) as string[]
+  );
+  for (const assetsDir of assetDirs) {
+    if (!existsSync(resolve(nitro.options.output.publicDir, assetsDir))) {
+      continue;
+    }
+    const rule = (ctx.nitro!.options.routeRules[`/${assetsDir}/**`] ??= {});
+    if (!rule.headers?.["cache-control"]) {
+      rule.headers = {
+        ...rule.headers,
+        "cache-control": `public, max-age=31536000, immutable`,
+      };
+    }
+  }
+  ctx.nitro!.routing.sync();
+
   // Prerender routes if configured
   // TODO
   // await prerender(nitro);
@@ -135,12 +156,11 @@ export async function buildEnvironments(
 }
 
 export function prodSetup(ctx: NitroPluginContext): string {
-  const services = ctx.pluginConfig.services || {};
-  const serviceNames = Object.keys(services);
+  const serviceNames = Object.keys(ctx.services);
 
   const serviceEntries = serviceNames.map((name) => {
     let entry: string;
-    if (ctx.pluginConfig.experimental?.virtualBundle) {
+    if (ctx.pluginConfig.experimental?.vite?.virtualBundle) {
       entry = ctx._entryPoints[name];
     } else {
       entry = resolve(

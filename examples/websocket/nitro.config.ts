@@ -1,7 +1,7 @@
 import { defineConfig } from "nitro";
 
 export default defineConfig({
-  experimental: {
-    websocket: true,
-  },
+  serverDir: "./",
+  renderer: { static: true },
+  features: { websocket: true },
 });

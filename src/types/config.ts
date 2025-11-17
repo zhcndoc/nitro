@@ -25,10 +25,10 @@ import type { UnwasmPluginOptions } from "unwasm/plugin";
 import type { DeepPartial } from "./_utils.ts";
 import type { NitroDevServerOptions } from "./dev.ts";
 import type {
+  EventHandlerFormat,
   NitroDevEventHandler,
   NitroErrorHandler,
   NitroEventHandler,
-  EventHandlerFormat,
 } from "./handler.ts";
 import type { NitroHooks } from "./hooks.ts";
 import type { NitroModuleInput } from "./module.ts";
@@ -36,7 +36,7 @@ import type { NitroFrameworkInfo } from "./nitro.ts";
 import type { NitroOpenAPIConfig } from "./openapi.ts";
 export type { NitroOpenAPIConfig } from "./openapi.ts";
 import type { NitroPreset } from "./preset.ts";
-import type { EsbuildOptions, NodeExternalsOptions } from "./rollup.ts";
+import type { NodeExternalsOptions, OXCOptions } from "./rollup.ts";
 import type { RollupConfig } from "./rollup.ts";
 import type { NitroRouteConfig, NitroRouteRules } from "./route-rules.ts";
 
@@ -83,14 +83,13 @@ export interface NitroOptions extends PresetOptions {
   devStorage: StorageMounts;
   database: DatabaseConnectionConfigs;
   devDatabase: DatabaseConnectionConfigs;
-  bundledStorage: string[];
-  renderer?: {
-    entry?: string;
-    template?: string;
-  };
+  renderer?: { handler?: string; static?: boolean; template?: string };
   ssrRoutes: string[];
   serveStatic: boolean | "node" | "deno" | "inline";
   noPublicDir: boolean;
+  manifest?: {
+    deploymentId?: string;
+  };
   features: {
     /**
      * Enable runtime hooks for request and response.
@@ -98,14 +97,18 @@ export interface NitroOptions extends PresetOptions {
      * By default this feature will be enabled if there is at least one nitro plugin.
      */
     runtimeHooks: boolean;
+
+    /**
+     * Enable WebSocket support
+     */
+    websocket: boolean;
   };
 
   /**
-   * @experimental Requires `experimental.wasm` to work
    *
    * @see https://github.com/unjs/unwasm
    */
-  wasm?: UnwasmPluginOptions;
+  wasm?: false | UnwasmPluginOptions;
   openAPI?: NitroOpenAPIConfig;
   experimental: {
     openAPI?: boolean;
@@ -118,16 +121,6 @@ export interface NitroOptions extends PresetOptions {
      */
     asyncContext?: boolean;
     /**
-     * Enable Experimental WebAssembly Support
-     *
-     * @see https://github.com/unjs/unwasm
-     */
-    wasm?: boolean;
-    /**
-     * Disable Experimental bundling of Nitro Runtime Dependencies
-     */
-    bundleRuntimeDependencies?: false;
-    /**
      * Disable Experimental Sourcemap Minification
      */
     sourcemapMinify?: false;
@@ -138,9 +131,11 @@ export interface NitroOptions extends PresetOptions {
      */
     envExpansion?: boolean;
     /**
-     * Enable experimental WebSocket support
+     * Enable WebSocket support
      *
      * @see https://nitro.build/guide/websocket
+     *
+     * @deprecated use `features.websocket` instead.
      */
     websocket?: boolean;
     /**
@@ -155,6 +150,12 @@ export interface NitroOptions extends PresetOptions {
      * @see https://nitro.build/guide/tasks
      */
     tasks?: boolean;
+    /**
+     * Infer path aliases from tsconfig.json
+     *
+     * @default true
+     */
+    tsconfigPaths?: boolean;
   };
   future: {
     nativeSWR: boolean;
@@ -187,14 +188,14 @@ export interface NitroOptions extends PresetOptions {
   baseURL: string;
   apiBaseURL: string;
 
+  serverEntry: false | { handler: string; format?: EventHandlerFormat };
+  handlers: NitroEventHandler[];
+  devHandlers: NitroDevEventHandler[];
+  routeRules: { [path: string]: NitroRouteRules };
   routes: Record<
     string,
     string | Omit<NitroEventHandler, "route" | "middleware">
   >;
-  handlers: NitroEventHandler[];
-  devHandlers: NitroDevEventHandler[];
-
-  routeRules: { [path: string]: NitroRouteRules };
 
   errorHandler: string | string[];
   devErrorHandler: NitroErrorHandler;
@@ -233,12 +234,10 @@ export interface NitroOptions extends PresetOptions {
   alias: Record<string, string>;
   minify: boolean;
   inlineDynamicImports: boolean;
-  sourceMap: boolean | "inline" | "hidden";
+  sourcemap: boolean;
   node: boolean;
   moduleSideEffects: string[];
-  esbuild?: {
-    options?: Partial<EsbuildOptions>;
-  };
+  oxc?: OXCOptions;
   noExternals: boolean;
   externals: NodeExternalsOptions;
   replace: Record<string, string | ((id: string) => string)>;
@@ -248,12 +247,23 @@ export interface NitroOptions extends PresetOptions {
   // Advanced
   typescript: {
     strict?: boolean;
-    internalPaths?: boolean;
     generateRuntimeConfigTypes?: boolean;
     generateTsConfig?: boolean;
-    /** the path of the generated `tsconfig.json`, relative to buildDir */
-    tsconfigPath: string;
     tsConfig?: Partial<TSConfig>;
+
+    /**
+     * Path of the generated types directory.
+     *
+     * Default is `node_modules/.nitro/types`
+     */
+    generatedTypesDir?: string;
+
+    /**
+     * Path of the generated `tsconfig.json` relative to `typescript.generatedTypesDir`
+     *
+     * Default is `tsconfig.json` (`node_modules/.nitro/types/tsconfig.json`)
+     */
+    tsconfigPath: string;
   };
   hooks: NestedHooks<NitroHooks>;
   nodeModulesDirs: string[];
@@ -284,8 +294,10 @@ export interface NitroConfig
         | "preset"
         | "compatibilityDate"
         | "unenv"
+        | "serverDir"
         | "_config"
         | "_c12"
+        | "serverEntry"
       >
     >,
     C12InputConfig<NitroConfig> {
@@ -295,6 +307,8 @@ export interface NitroConfig
   rollupConfig?: Partial<RollupConfig>;
   compatibilityDate?: CompatibilityDateSpec;
   unenv?: UnenvPreset | UnenvPreset[];
+  serverDir?: boolean | "./" | "./server" | (string & {});
+  serverEntry?: string | NitroOptions["serverEntry"];
 }
 
 // ------------------------------------------------------------
