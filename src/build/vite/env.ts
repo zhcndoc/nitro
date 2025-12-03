@@ -39,12 +39,11 @@ export function createNitroEnvironment(
     resolve: {
       noExternal: ctx.nitro!.options.dev
         ? [
-            ...ctx.rollupConfig!.base.noExternal.filter(
-              (i) => typeof i === "string" || i instanceof RegExp
-            ),
-            ...runtimeDependencies,
+            /^nitro$/, // i have absolutely no idea why and how it fixes issues!
+            new RegExp(`^(${runtimeDependencies.join("|")})$`), // virtual resolutions in vite skip plugin hooks
+            ...ctx.rollupConfig!.base.noExternal,
           ]
-        : true, // in production, NF3 tracks externals
+        : true, // production build is standalone
       conditions: ctx.nitro!.options.exportConditions,
       externalConditions: ctx.nitro!.options.exportConditions,
     },
@@ -75,6 +74,9 @@ export function createServiceEnvironment(
       emptyOutDir: true,
     },
     resolve: {
+      noExternal: ctx.nitro!.options.dev
+        ? ctx.rollupConfig!.base.noExternal
+        : true, // production build is standalone
       conditions: ctx.nitro!.options.exportConditions,
       externalConditions: ctx.nitro!.options.exportConditions,
     },
