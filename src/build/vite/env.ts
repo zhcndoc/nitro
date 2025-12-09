@@ -70,6 +70,7 @@ export function createServiceEnvironment(
       emptyOutDir: true,
     },
     resolve: {
+      noExternal: ctx.nitro!.options.dev ? undefined : [/react/],
       conditions: ctx.nitro!.options.exportConditions,
       externalConditions: ctx.nitro!.options.exportConditions?.filter(
         (c) => !/browser|wasm/.test(c)
