@@ -39,7 +39,9 @@ export function createNitroEnvironment(
           ]
         : true, // production build is standalone
       conditions: ctx.nitro!.options.exportConditions,
-      externalConditions: ctx.nitro!.options.exportConditions,
+      externalConditions: ctx.nitro!.options.exportConditions?.filter(
+        (c) => !/browser|wasm/.test(c)
+      ),
     },
     dev: {
       createEnvironment: (envName, envConfig) =>
@@ -72,7 +74,9 @@ export function createServiceEnvironment(
         ? ctx.rollupConfig!.base.noExternal
         : true, // production build is standalone
       conditions: ctx.nitro!.options.exportConditions,
-      externalConditions: ctx.nitro!.options.exportConditions,
+      externalConditions: ctx.nitro!.options.exportConditions?.filter(
+        (c) => !/browser|wasm/.test(c)
+      ),
     },
     dev: {
       createEnvironment: (envName, envConfig) =>
