@@ -77,10 +77,6 @@ export default defineBuildConfig({
       );
     },
     rolldownOutput(config) {
-      config.advancedChunks!.groups?.push(
-        { name: "_build/virtual", test: /src\/build\/virtual\// },
-        { name: "_config", test: /src\/config\// }
-      );
       config.chunkFileNames = (chunk) => {
         if (chunk.name.startsWith("_")) {
           return `[name].mjs`;
