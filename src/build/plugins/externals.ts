@@ -144,14 +144,9 @@ export function externals(opts: ExternalsOptions): Plugin {
         });
         await traceNodeModules([...tracedPaths], {
           ...opts.trace,
-          exportConditions: opts.conditions,
+          conditions: opts.conditions,
           rootDir: opts.rootDir,
           writePackageJson: true, // deno compat
-          traceOptions: {
-            base: "/",
-            exportsOnly: true,
-            processCwd: opts.rootDir,
-          },
         });
       },
     },
