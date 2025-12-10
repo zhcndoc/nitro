@@ -221,8 +221,8 @@ importers:
         specifier: ^1.8.0
         version: 1.8.0
       nf3:
-        specifier: ^0.3.0
-        version: 0.3.0
+        specifier: ^0.3.1
+        version: 0.3.1
       nypm:
         specifier: ^0.6.2
         version: 0.6.2
@@ -5696,8 +5696,8 @@ packages:
     resolution: {integrity: sha512-8Ofs/AUQh8MaEcrlq5xOX0CQ9ypTF5dl78mjlMNfOK08fzpgTHQRQPBxcPlEtIw0yRpws+Zo/3r+5WRby7u3Gg==}
     engines: {node: '>= 0.6'}
 
-  nf3@0.3.0:
-    resolution: {integrity: sha512-vrBs2VOcAF70La1uLbyw6EgcfSiU8BdGwIi7upA09IoyJVuiPrgO45m4bCORAgRXFwsuXpa0cO0/LQrLJHq2RA==}
+  nf3@0.3.1:
+    resolution: {integrity: sha512-P/mHoL3M5NASEq6mySPvCzEGNF1h6r663ORK3zmP5ErMM31zAdupRebkZG3YL+ozrViquN6nD3oEucKXsYvGIQ==}
 
   node-abi@3.85.0:
     resolution: {integrity: sha512-zsFhmbkAzwhTft6nd3VxcG0cvJsT70rL+BIGHWVq5fi6MwGrHwzqKaxXE+Hl2GmnGItnDKPPkO5/LQqjVkIdFg==}
@@ -12617,7 +12617,7 @@ snapshots:
 
   negotiator@1.0.0: {}
 
-  nf3@0.3.0: {}
+  nf3@0.3.1: {}
 
   node-abi@3.85.0:
     dependencies:

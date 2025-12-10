@@ -156,9 +156,10 @@ export function externals(opts: ExternalsOptions): Plugin {
 // ---- Internal utils ----
 
 const NODE_MODULES_RE =
-  /^(?<dir>.+\/node_modules\/)(?<name>[^/@]+|@[^/]+\/[^/]+)(?:\/(?<subpath>.+))?$/;
+  /^(?<dir>.+[\\/]node_modules[\\/])(?<name>[^@\\/]+|@[^\\/]+[\\/][^\\/]+)(?:[\\/](?<subpath>.+))?$/;
 
-const IMPORT_RE = /^(?!\.)(?<name>[^/@]+|@[^/]+\/[^/]+)(?:\/(?<subpath>.+))?$/;
+const IMPORT_RE =
+  /^(?!\.)(?<name>[^@/\\]+|@[^/\\]+[/\\][^/\\]+)(?:[/\\](?<subpath>.+))?$/;
 
 function toImport(id: string): string | undefined {
   if (isAbsolute(id)) {
