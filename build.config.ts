@@ -77,10 +77,16 @@ export default defineBuildConfig({
       );
     },
     rolldownOutput(config) {
-      // Use better chunk names (without degrading optimization)
+      config.advancedChunks!.groups?.push(
+        { name: "_build/virtual", test: /src\/build\/virtual\// },
+        { name: "_config", test: /src\/config\// }
+      );
       config.chunkFileNames = (chunk) => {
         if (chunk.name.startsWith("_")) {
           return `[name].mjs`;
+        }
+        if (chunk.name === "rolldown-runtime") {
+          return `_rolldown.mjs`;
         }
         if (chunk.name.startsWith("libs/")) {
           return `_[name].mjs`;
@@ -108,11 +114,18 @@ export default defineBuildConfig({
           return `_presets.mjs`;
         }
         if (
-          chunk.moduleIds.every((id) => /src\/build\/|src\/presets/.test(id))
+          chunk.moduleIds.every((id) =>
+            /src\/build\/|src\/presets|src\/utils/.test(id)
+          )
         ) {
-          return `_build/common.mjs`;
+          return `_build/shared.mjs`;
         }
-        return "_chunks/[hash].mjs";
+        if (
+          chunk.moduleIds.every((id) => /src\/(runner|dev|runtime)/.test(id))
+        ) {
+          return `_dev.mjs`;
+        }
+        return "_nitro.mjs";
       };
     },
     async end() {
