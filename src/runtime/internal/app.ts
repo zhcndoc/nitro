@@ -40,8 +40,16 @@ declare global {
 const APP_ID = import.meta.prerender ? "prerender" : "default";
 
 export function useNitroApp(_id = APP_ID): NitroApp {
+  let instance = globalThis.__nitro__?.[_id];
+  if (instance) {
+    return instance;
+  }
   globalThis.__nitro__ ??= {};
-  return (globalThis.__nitro__[_id] ??= initNitroApp());
+  instance = globalThis.__nitro__[_id] = createNitroApp();
+  if (hasPlugins) {
+    initNitroPlugins(instance);
+  }
+  return instance;
 }
 
 export function useNitroHooks(_id = APP_ID): HookableCore<NitroRuntimeHooks> {
@@ -87,23 +95,6 @@ export function fetch(
   }
   resource = (resource as any)._request || resource; // unwrap srvx request
   return fetch(resource, init);
-}
-
-function initNitroApp(): NitroApp {
-  const nitroApp = (globalThis.__nitro__ = createNitroApp());
-  if (hasPlugins) {
-    for (const plugin of plugins) {
-      try {
-        plugin(
-          nitroApp as NitroApp & { hooks: NonNullable<NitroApp["hooks"]> }
-        );
-      } catch (error: any) {
-        nitroApp.captureError?.(error, { tags: ["plugin"] });
-        throw error;
-      }
-    }
-  }
-  return nitroApp;
 }
 
 function createNitroApp(): NitroApp {
@@ -168,6 +159,18 @@ function createNitroApp(): NitroApp {
     captureError,
   };
 
+  return app;
+}
+
+function initNitroPlugins(app: NitroApp) {
+  for (const plugin of plugins) {
+    try {
+      plugin(app as NitroApp & { hooks: NonNullable<NitroApp["hooks"]> });
+    } catch (error: any) {
+      app.captureError?.(error, { tags: ["plugin"] });
+      throw error;
+    }
+  }
   return app;
 }
 
