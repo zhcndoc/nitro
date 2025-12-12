@@ -39,6 +39,11 @@ export const getViteRollupConfig = (
         return nitro.options.moduleSideEffects.some((p) => id.startsWith(p));
       },
     },
+    onwarn(warning, warn) {
+      if (!base.ignoreWarningCodes.has(warning.code || "")) {
+        warn(warning);
+      }
+    },
     output: {
       format: "esm",
       entryFileNames: "index.mjs",

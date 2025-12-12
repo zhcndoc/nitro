@@ -38,12 +38,8 @@ export const getRolldownConfig = (nitro: Nitro): RolldownOptions => {
       },
     },
     onwarn(warning, warn) {
-      if (
-        !["CIRCULAR_DEPENDENCY", "EVAL", "EMPTY_CHUNK"].includes(
-          warning.code || ""
-        ) &&
-        !warning.message.includes("Unsupported source map comment")
-      ) {
+      if (!base.ignoreWarningCodes.has(warning.code || "")) {
+        console.log(warning.code);
         warn(warning);
       }
     },

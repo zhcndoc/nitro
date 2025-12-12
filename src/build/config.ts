@@ -46,6 +46,13 @@ export function baseBuildConfig(nitro: Nitro) {
 
   const noExternal: RegExp[] = getNoExternals(nitro);
 
+  const ignoreWarningCodes = new Set([
+    "EVAL",
+    "CIRCULAR_DEPENDENCY",
+    "THIS_IS_UNDEFINED",
+    "EMPTY_BUNDLE",
+  ]);
+
   return {
     extensions,
     isNodeless,
@@ -53,6 +60,7 @@ export function baseBuildConfig(nitro: Nitro) {
     env,
     aliases,
     noExternal,
+    ignoreWarningCodes,
   };
 }
 
