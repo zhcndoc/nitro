@@ -75,6 +75,8 @@ function setupTest(name: string) {
         const builder = await createBuilder({ logLevel: "warn" });
         await builder.buildApp();
 
+        delete globalThis.__nitro__;
+
         const { default: entryMod } = await import(
           pathToFileURL(join(rootDir, ".output/server/index.mjs")).href
         );
