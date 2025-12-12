@@ -55,6 +55,12 @@ export function externals(opts: ExternalsOptions): Plugin {
 
   const tracedPaths = new Set<string>();
 
+  if (include && include.length === 0) {
+    return {
+      name: PLUGIN_NAME,
+    };
+  }
+
   return {
     name: PLUGIN_NAME,
     resolveId: {
