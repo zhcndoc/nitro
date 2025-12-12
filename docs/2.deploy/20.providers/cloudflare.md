@@ -279,12 +279,9 @@ defineHandler(async (event) => {
 
 ### Access to the bindings in local dev
 
-> [!NOTE]
-> The `nitro-cloudflare-dev` module is experimental. The Nitro team is looking into a more native integration  which could in the near future make the module unneeded.
+To access bindings in dev mode, we first define them. You can do this in a `wrangler.toml`/`wrangler.json` file, or directly in your Nitro config under `cloudflare.wrangler` (accepts the same type as `wrangler.json`).
 
-In order to access bindings in dev mode we start by defining the bindings. You can do this in a `wrangler.toml`/`wrangler.json` file, or directly in your Nitro config under `cloudflare.wrangler` (accepts the same type as `wrangler.json`).
-
-For example to define a variable and a KV namespace in a `wrangler.toml`
+For example, to define a variable and a KV namespace in `wrangler.toml`:
 
 ::code-group
 
@@ -318,7 +315,6 @@ Or in your Nitro config:
 
 ```js [nitro.config.js]
 import { defineNitroConfig } from "nitro/config";
-import nitroCloudflareBindings from "nitro-cloudflare-dev";
 
 export default defineNitroConfig({
     cloudflare: {
@@ -340,19 +336,9 @@ export default defineNitroConfig({
 > [!NOTE]
 > Only bindings in the default environment are recognized.
 
-Next we install the `nitro-cloudflare-dev` module as well as the required `wrangler` package (if not already installed):
+Next we install the required `wrangler` package (if not already installed):
 
-:pm-install{name="-D nitro-cloudflare-dev wrangler"}
-
-Then define module:
-
-```js [nitro.config.js]
-import nitroCloudflareBindings from "nitro-cloudflare-dev";
-
-export default defineNitroConfig({
-  modules: [nitroCloudflareBindings],
-});
-```
+:pm-install{name="wrangler -D"}
 
 From this moment, when running
 
