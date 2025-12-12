@@ -30,15 +30,22 @@ import {
 } from "#nitro/virtual/feature-flags";
 
 declare global {
-  var __nitro__: NitroApp | undefined;
+  var __nitro__:
+    | Partial<
+        Record<"default" | "prerender" | (string & {}), NitroApp | undefined>
+      >
+    | undefined;
 }
 
-export function useNitroApp(): NitroApp {
-  return (globalThis.__nitro__ ??= initNitroApp());
+const APP_ID = import.meta.prerender ? "prerender" : "default";
+
+export function useNitroApp(_id = APP_ID): NitroApp {
+  globalThis.__nitro__ ??= {};
+  return (globalThis.__nitro__[_id] ??= initNitroApp());
 }
 
-export function useNitroHooks(): HookableCore<NitroRuntimeHooks> {
-  const nitroApp = useNitroApp();
+export function useNitroHooks(_id = APP_ID): HookableCore<NitroRuntimeHooks> {
+  const nitroApp = useNitroApp(_id);
   const hooks = nitroApp.hooks;
   if (hooks) {
     return hooks;
