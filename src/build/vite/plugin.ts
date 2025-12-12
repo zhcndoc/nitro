@@ -269,6 +269,7 @@ function nitroService(ctx: NitroPluginContext): VitePlugin {
     applyToEnvironment: (env) => env.name === "nitro",
 
     resolveId: {
+      filter: { id: /^#nitro-vite-setup$/ },
       async handler(id) {
         // Virtual modules
         if (id === "#nitro-vite-setup") {
@@ -278,6 +279,7 @@ function nitroService(ctx: NitroPluginContext): VitePlugin {
     },
 
     load: {
+      filter: { id: /^#nitro-vite-setup$/ },
       async handler(id) {
         // Virtual modules
         if (id === "#nitro-vite-setup") {
