@@ -14,6 +14,7 @@ import { watch as fsWatch } from "node:fs";
 import { join } from "pathe";
 import { debounce } from "perfect-debounce";
 import { scanHandlers } from "../../scan.ts";
+import { getEnvRunner } from "./env.ts";
 
 // https://vite.dev/guide/api-environment-runtimes.html#modulerunner
 
@@ -131,7 +132,7 @@ export async function configureViteDevServer(
         // Vite upgrade. TODO: Is there a better way?
         return;
       }
-      ctx.devWorker?.upgrade(req, socket, head);
+      getEnvRunner(ctx).upgrade?.(req, socket, head);
     });
   }
 
@@ -204,49 +205,56 @@ export async function configureViteDevServer(
   const nitroDevMiddleware = async (
     nodeReq: IncomingMessage & { _nitroHandled?: boolean },
     nodeRes: ServerResponse,
-    next: () => void
+    next: (error?: unknown) => void
   ) => {
     // Skip for vite internal requests or if already handled
-    if (/^\/@(?:vite|fs|id)\//.test(nodeReq.url!) || nodeReq._nitroHandled) {
+    if (
+      !nodeReq.url ||
+      /^\/@(?:vite|fs|id)\//.test(nodeReq.url) ||
+      nodeReq._nitroHandled ||
+      server.middlewares.stack
+        .map((mw) => mw.route)
+        .some((base) => base && nodeReq.url!.startsWith(base))
+    ) {
       return next();
     }
     nodeReq._nitroHandled = true;
+    try {
+      // Create web API compat request
+      const req = new NodeRequest({ req: nodeReq, res: nodeRes });
 
-    // Create web API compat request
-    const req = new NodeRequest({ req: nodeReq, res: nodeRes });
+      // Try dev app
+      const devAppRes = await ctx.devApp!.fetch(req);
+      if (nodeRes.writableEnded || nodeRes.headersSent) {
+        return;
+      }
+      if (devAppRes.status !== 404) {
+        return await sendNodeResponse(nodeRes, devAppRes);
+      }
 
-    // Try dev app
-    const devAppRes = await ctx.devApp!.fetch(req);
-    if (nodeRes.writableEnded || nodeRes.headersSent) {
-      return;
-    }
-    if (devAppRes.status !== 404) {
-      return await sendNodeResponse(nodeRes, devAppRes);
-    }
-
-    // Dispatch the request to the nitro environment
-    const envRes = await nitroEnv.dispatchFetch(req);
-    if (nodeRes.writableEnded || nodeRes.headersSent) {
-      return;
-    }
-    if (envRes.status !== 404) {
+      // Dispatch the request to the nitro environment
+      const envRes = await nitroEnv.dispatchFetch(req);
+      if (nodeRes.writableEnded || nodeRes.headersSent) {
+        return;
+      }
       return await sendNodeResponse(nodeRes, envRes);
+    } catch (error) {
+      return next(error);
     }
-
-    return next();
   };
 
-  // Handle as first middleware for direct requests
+  // Handle server routes first to avoid conflicts with static assets served by Vite from the root
   // https://github.com/vitejs/vite/pull/20866
   server.middlewares.use(function nitroDevMiddlewarePre(req, res, next) {
     const fetchDest = req.headers["sec-fetch-dest"];
-    if (fetchDest) {
-      res.setHeader("vary", "sec-fetch-dest");
-    }
-    const ext = (req.url || "").match(/\.([a-z0-9]+)(?:[?#]|$)/i)?.[1] || "";
+    res.setHeader("vary", "sec-fetch-dest");
     if (
-      !ext &&
-      (!fetchDest || /^(document|iframe|frame|empty)$/.test(fetchDest))
+      // Originating from browser tab or no fetch dest (curl, fetch, etc) and (not script, style, image, etc)
+      (!fetchDest || /^(document|iframe|frame|empty)$/.test(fetchDest)) &&
+      // No file extension (not /src/index.ts)
+      !req.url!.match(/\.([a-z0-9]+)(?:[?#]|$)/i)?.[1] &&
+      // Special prefixes (/__vue-router/auto-routes, /@vite-plugin-layouts/, etc)
+      !/^\/(?:__|@)/.test(req.url!)
     ) {
       nitroDevMiddleware(req, res, next);
     } else {

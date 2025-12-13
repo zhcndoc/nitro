@@ -45,10 +45,10 @@ export default defineNuxtConfig({
 ```
 ::
 
-通过设置 `deployConfig: true`，Nitro 将自动为您生成一个正确配置的 `wrangler.json`。  
+通过设置 `deployConfig: true`，Nitro 将自动为您生成一个正确配置的 `wrangler.json`。
 如果您需要添加 [Cloudflare Workers 配置](https://developers.cloudflare.com/workers/wrangler/configuration/)，例如 [bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/)，您可以：
 
-- 在您的 Nitro 配置中设置 `cloudflare: { wrangler : {} }`。这与 `wrangler.json` 的类型相同。  
+- 在您的 Nitro 配置中设置 `cloudflare: { wrangler : {} }`。这与 `wrangler.json` 的类型相同。
 - 提供您自己的 `wrangler.json`。Nitro 将与适当的设置合并您的配置，包括指向构建输出。
 
 ### 本地预览
@@ -83,6 +83,33 @@ export default defineNuxtConfig({
 - [`cloudflare:tail`](https://developers.cloudflare.com/workers/runtime-apis/handlers/tail/)
 - `cloudflare:trace`
 
+### 额外导出
+
+你可以在项目根目录下添加一个 `exports.cloudflare.ts` 文件，以向 Cloudflare Worker 入口点导出额外的处理程序或属性。
+
+```ts [exports.cloudflare.ts]
+export class MyWorkflow extends WorkflowEntrypoint {
+  async run(event: WorkflowEvent, step: WorkflowStep) {
+    // ...
+  }
+}
+```
+
+Nitro 将自动检测此文件，并在最终构建中包含其导出内容。
+
+::warning
+`exports.cloudflare.ts` 文件不能有默认导出。
+::
+
+您还可以在 `nitro.config.ts` 中使用 `cloudflare.exports` 选项自定义入口文件的位置：
+
+```ts [nitro.config.ts]
+export default defineConfig({
+  cloudflare: {
+    exports: "custom-exports-entry.ts"
+  }
+})
+```
 
 ## Cloudflare Pages
 
@@ -277,12 +304,9 @@ defineHandler(async (event) => {
 
 ### 在本地开发中访问绑定
 
-> [!NOTE]
-> `nitro-cloudflare-dev` 模块是实验性的。Nitro 团队正在寻找更本地化的集成，这可能在不久的将来使该模块不再需要。
+要在开发模式下访问绑定，首先需要定义它们。你可以在 `wrangler.toml`/`wrangler.json` 文件中进行定义，或者直接在你的 Nitro 配置中的 `cloudflare.wrangler` 下定义（接受与 `wrangler.json` 相同的类型）。
 
-为了在开发模式中访问绑定，我们首先定义绑定。您可以在 `wrangler.toml`/`wrangler.json` 文件中完成此操作，或在 Nitro 配置中的 `cloudflare.wrangler` 下直接完成（接受与 `wrangler.json` 相同的类型）。
-
-例如，在 `wrangler.toml` 中定义变量和 KV 命名空间：
+例如，在 `wrangler.toml` 中定义一个变量和一个 KV 命名空间：
 
 ::code-group
 
@@ -315,7 +339,6 @@ id = "xxx"
 
 ```js [nitro.config.js]
 import { defineNitroConfig } from "nitro/config";
-import nitroCloudflareBindings from "nitro-cloudflare-dev";
 
 export default defineNitroConfig({
     cloudflare: {
@@ -337,19 +360,9 @@ export default defineNitroConfig({
 > [!NOTE]
 > 仅默认环境中的绑定被识别。
 
-接下来，我们安装 `nitro-cloudflare-dev` 模块和所需的 `wrangler` 包（如果尚未安装）：
+接下来我们安装所需的 `wrangler` 包（如果尚未安装）：
 
-:pm-install{name="-D nitro-cloudflare-dev wrangler"}
-
-然后定义模块：
-
-```js [nitro.config.js]
-import nitroCloudflareBindings from "nitro-cloudflare-dev";
-
-export default defineNitroConfig({
-  modules: [nitroCloudflareBindings],
-});
-```
+:pm-install{name="wrangler -D"}
 
 ```ts [nuxt.config.ts]
 export default defineNuxtConfig({

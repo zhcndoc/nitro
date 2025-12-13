@@ -82,25 +82,11 @@ export default defineNitroConfig({
     })
     ```
 
-    ```ts [nuxt.config.ts]
-    export default defineNuxtConfig({
-      nitro: {
-        vercel: {
-          config: {
-            bypassToken: process.env.VERCEL_BYPASS_TOKEN
-          }
-        }
-      }
-    })
-    ```
-
-    ::
-
-3. 要触发“按需增量静态再生（ISR）”并重新验证指向预渲染函数的路径，向该路径发出带有头部 `x-prerender-revalidate: bypassToken` 的 GET 或 HEAD 请求。当带有此头部的预渲染函数端点被访问时，缓存将被重新验证。之后的请求将返回最新响应。
+3. 要触发“按需增量静态再生（ISR）”并重新验证到预渲染函数的路径，请使用带有 x-prerender-revalidate: `bypassToken` 头的 GET 或 HEAD 请求访问该路径。当使用此请求头访问该预渲染函数端点时，缓存将被重新验证。下一次对该函数的请求应该返回最新的响应。
 
 ### 通过路由规则进行细粒度 ISR 配置
 
-默认情况下，缓存将忽略查询参数。
+默认情况下，查询参数会影响缓存键，但不会传递给路由处理器，除非另有指定。
 
 您可以向 `isr` 路由规则传递一个选项对象来配置缓存行为。
 

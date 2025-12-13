@@ -2,36 +2,46 @@ import { promises as fsp } from "node:fs";
 import mime from "mime";
 import type { Plugin } from "rollup";
 
-const HELPER_ID = "virtual:raw-helpers";
-const RESOLVED_RAW_PREFIX = "virtual:raw:";
+const HELPER_ID = "\0nitro-raw-helpers";
+const RESOLVED_PREFIX = "\0nitro:raw:";
+const PREFIX = "raw:";
 
 export function raw(): Plugin {
   return {
-    name: "raw",
+    name: "nitro:raw",
     resolveId: {
       order: "pre",
+      filter: {
+        id: [new RegExp(`^${HELPER_ID}$`), new RegExp(`^${PREFIX}`)],
+      },
       async handler(id, importer, resolveOpts) {
         if (id === HELPER_ID) {
           return id;
         }
-        if (id.startsWith("raw:")) {
+        if (id.startsWith(PREFIX)) {
           const resolvedId = (
-            await this.resolve(id.slice(4 /* raw: */), importer, resolveOpts)
+            await this.resolve(id.slice(PREFIX.length), importer, resolveOpts)
           )?.id;
-          return { id: RESOLVED_RAW_PREFIX + resolvedId };
+          if (!resolvedId) {
+            return null;
+          }
+          return { id: RESOLVED_PREFIX + resolvedId };
         }
       },
     },
     load: {
       order: "pre",
+      filter: {
+        id: [new RegExp(`^${HELPER_ID}$`), new RegExp(`^${RESOLVED_PREFIX}`)],
+      },
       handler(id) {
         if (id === HELPER_ID) {
           return getHelpers();
         }
-        if (id.startsWith(RESOLVED_RAW_PREFIX)) {
-          // this.addWatchFile(id.substring(RESOLVED_RAW_PREFIX.length));
+        if (id.startsWith(RESOLVED_PREFIX)) {
+          // this.addWatchFile(id.substring(RESOLVED_PREFIX.length));
           return fsp.readFile(
-            id.slice(RESOLVED_RAW_PREFIX.length),
+            id.slice(RESOLVED_PREFIX.length),
             isBinary(id) ? "binary" : "utf8"
           );
         }
@@ -39,20 +49,21 @@ export function raw(): Plugin {
     },
     transform: {
       order: "pre",
+      filter: {
+        id: new RegExp(`^${RESOLVED_PREFIX}`),
+      },
       handler(code, id) {
-        if (!id.startsWith(RESOLVED_RAW_PREFIX)) {
-          return;
-        }
+        const path = id.slice(RESOLVED_PREFIX.length);
         if (isBinary(id)) {
           const serialized = Buffer.from(code, "binary").toString("base64");
           return {
             code: `import {base64ToUint8Array } from "${HELPER_ID}" \n export default base64ToUint8Array("${serialized}")`,
-            map: null,
+            map: rawAssetMap(path),
           };
         }
         return {
           code: `export default ${JSON.stringify(code)}`,
-          map: null,
+          map: rawAssetMap(path),
           moduleType: "js",
         };
       },
@@ -72,8 +83,7 @@ function isBinary(id: string) {
 }
 
 function getHelpers() {
-  const js = String.raw;
-  return js`
+  return /* js */ `
 export function base64ToUint8Array(str) {
   const data = atob(str);
   const size = data.length;
@@ -84,4 +94,15 @@ export function base64ToUint8Array(str) {
   return bytes;
 }
   `;
+}
+
+function rawAssetMap(id: string) {
+  return {
+    version: 3,
+    file: id,
+    sources: [id],
+    sourcesContent: [],
+    names: [],
+    mappings: "",
+  };
 }

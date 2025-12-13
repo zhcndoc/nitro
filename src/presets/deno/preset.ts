@@ -2,6 +2,7 @@ import { defineNitroPreset } from "../_utils/preset.ts";
 import { writeFile } from "../_utils/fs.ts";
 import { resolve } from "pathe";
 import { unenvDeno } from "./unenv/preset.ts";
+import { builtinModules } from "node:module";
 
 const denoDeploy = defineNitroPreset(
   {
@@ -13,7 +14,6 @@ const denoDeploy = defineNitroPreset(
     },
     exportConditions: ["deno"],
     node: false,
-    noExternals: true,
     serveStatic: "deno",
     commands: {
       preview: "",
@@ -45,7 +45,10 @@ const denoServer = defineNitroPreset(
       preview: "deno -A ./server/index.mjs",
     },
     rollupConfig: {
-      external: (id) => id.startsWith("https://"),
+      external: (id) =>
+        id.startsWith("https://") ||
+        id.startsWith("node:") ||
+        builtinModules.includes(id),
       output: {
         hoistTransitiveImports: false,
       },

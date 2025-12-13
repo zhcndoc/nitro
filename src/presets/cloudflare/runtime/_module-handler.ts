@@ -1,9 +1,9 @@
-import "#nitro-internal-pollyfills";
+import "#nitro-internal-polyfills";
 import type * as CF from "@cloudflare/workers-types";
 import type { ExportedHandler } from "@cloudflare/workers-types";
 import type { ServerRequest } from "srvx";
 
-import { runCronTasks } from "nitro/~internal/runtime/task";
+import { runCronTasks } from "#nitro/runtime/task";
 import { useNitroApp, useNitroHooks } from "nitro/app";
 
 type MaybePromise<T> = T | Promise<T>;
