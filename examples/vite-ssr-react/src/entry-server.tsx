@@ -3,7 +3,6 @@ import { renderToReadableStream } from "react-dom/server.edge";
 import { App } from "./app.tsx";
 
 import clientAssets from "./entry-client?assets=client";
-
 import serverAssets from "./entry-server?assets=ssr";
 
 export default {
