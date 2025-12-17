@@ -18,7 +18,7 @@
     "./config": "./dist/runtime/config.mjs",
     "./context": "./dist/runtime/context.mjs",
     "./database": "./dist/runtime/database.mjs",
-    "./h3": "./lib/deps/h3.mjs",
+    "./h3": "./lib/h3.mjs",
     "./meta": "./dist/runtime/meta.mjs",
     "./package.json": "./package.json",
     "./runtime-config": "./dist/runtime/runtime-config.mjs",
@@ -27,7 +27,8 @@
     "./tsconfig": "./lib/tsconfig.json",
     "./types": "./dist/types/index.mjs",
     "./vite": "./dist/vite.mjs",
-    "./vite/runtime": "./dist/runtime/vite.mjs"
+    "./vite/runtime": "./dist/runtime/vite.mjs",
+    "./vite/types": "./lib/vite.d.mts"
   },
   "types": "./lib/index.d.mts",
   "bin": {
