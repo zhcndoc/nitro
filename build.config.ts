@@ -1,8 +1,8 @@
-import { rm } from "node:fs/promises";
 import { defineBuildConfig } from "obuild/config";
 
 import { resolveModulePath } from "exsolve";
 import { traceNodeModules } from "nf3";
+import { readFile, writeFile, rm } from "node:fs/promises";
 
 const isStub = process.argv.includes("--stub");
 
@@ -145,6 +145,22 @@ export default defineBuildConfig({
           },
         }
       );
+
+      // Generate type hints
+      const nitroImports = Object.keys(pkg.exports || {}).map((key) =>
+        key.replace(/^./, "nitro")
+      );
+      const nitroTypes = nitroImports
+        .map((imp) => `import "${imp}";`)
+        .join("\n");
+
+      const types = await readFile("dist/types/index.d.mts", "utf8");
+      await writeFile(
+        "dist/types/index.d.mts",
+        `${nitroTypes}\n${types}`,
+        "utf8"
+      );
+      await rm("dist/types/index.mjs");
     },
   },
 });
