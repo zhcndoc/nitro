@@ -8,6 +8,11 @@ overrides:
   nitro: link:.
   undici: ^7.16.0
 
+patchedDependencies:
+  '@hiogawa/vite-plugin-fullstack':
+    hash: aef5693ec569067da78c3402c9b2884429e322ae23571cf5474f77028b4264d1
+    path: patches/@hiogawa__vite-plugin-fullstack.patch
+
 importers:
 
   .:
@@ -66,7 +71,7 @@ importers:
         version: 0.0.1
       '@hiogawa/vite-plugin-fullstack':
         specifier: ^0.0.8
-        version: 0.0.8(vite@8.0.0-beta.2(@types/node@25.0.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
+        version: 0.0.8(patch_hash=aef5693ec569067da78c3402c9b2884429e322ae23571cf5474f77028b4264d1)(vite@8.0.0-beta.2(@types/node@25.0.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
       '@netlify/edge-functions':
         specifier: ^3.0.3
         version: 3.0.3
@@ -7850,7 +7855,7 @@ snapshots:
       '@tanstack/vue-virtual': 3.13.13(vue@3.5.25(typescript@5.9.3))
       vue: 3.5.25(typescript@5.9.3)
 
-  '@hiogawa/vite-plugin-fullstack@0.0.8(vite@8.0.0-beta.2(@types/node@25.0.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))':
+  '@hiogawa/vite-plugin-fullstack@0.0.8(patch_hash=aef5693ec569067da78c3402c9b2884429e322ae23571cf5474f77028b4264d1)(vite@8.0.0-beta.2(@types/node@25.0.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       magic-string: 0.30.21
       srvx: 0.8.16
