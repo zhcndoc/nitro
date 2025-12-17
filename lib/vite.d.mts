@@ -1,10 +1,10 @@
 // Based on https://github.com/hi-ogawa/vite-plugins/blob/main/packages/fullstack/types/query.d.ts
 
-export type ImportAssetsResult = ImportAssetsResultRaw & {
+type ImportAssetsResult = ImportAssetsResultRaw & {
   merge(...args: ImportAssetsResultRaw[]): ImportAssetsResult;
 };
 
-export type ImportAssetsResultRaw = {
+type ImportAssetsResultRaw = {
   entry?: string;
   js: { href: string }[];
   css: { href: string; "data-vite-dev-id"?: string }[];
