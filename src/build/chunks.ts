@@ -1,7 +1,7 @@
 import type { Nitro } from "nitro/types";
 import { presetsDir, runtimeDir } from "nitro/meta";
 
-const virtualRe = /^\0|^virtual:/;
+const virtualRe = /^(?:\0|#|virtual:)/;
 
 export const NODE_MODULES_RE = /node_modules[/\\][^.]/;
 
@@ -21,7 +21,7 @@ export function getChunkName(
     return `${chunk.name}.mjs`;
   }
   if (chunk.name === "rolldown-runtime") {
-    return "_runtime/rolldown.mjs";
+    return "_rolldown.mjs";
   }
 
   // No moduleIds
@@ -58,7 +58,7 @@ export function getChunkName(
   if (
     ids.every((id) => id.startsWith(runtimeDir) || id.startsWith(presetsDir))
   ) {
-    return `_runtime/[name].mjs`;
+    return `_nitro/[name].mjs`;
   }
 
   // Try to match user defined routes or tasks
