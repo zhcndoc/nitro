@@ -124,21 +124,27 @@ export default defineBuildConfig({
       };
     },
     async end() {
-      if (!isStub) {
-        await traceNodeModules(
-          tracePkgs.map((pkg) => resolveModulePath(pkg)),
-          {}
-        );
-        for (const dep of [
-          ...Object.keys(pkg.dependencies),
-          ...Object.keys(pkg.peerDependencies),
-        ]) {
-          await rm(`dist/node_modules/${dep}`, {
-            recursive: true,
-            force: true,
-          });
-        }
+      if (isStub) {
+        return;
       }
+      // Trace included dependencies
+      await traceNodeModules(
+        tracePkgs.map((pkg) => resolveModulePath(pkg)),
+        {
+          hooks: {
+            tracedPackages(packages) {
+              // Avoid tracing direct dependencies
+              const deps = new Set([
+                ...Object.keys(pkg.dependencies),
+                ...Object.keys(pkg.peerDependencies),
+              ]);
+              for (const dep of deps) {
+                delete packages[dep];
+              }
+            },
+          },
+        }
+      );
     },
   },
 });
