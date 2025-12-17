@@ -24,12 +24,6 @@ export interface NitroPluginConfig extends NitroConfig {
   experimental?: NitroConfig["experimental"] & {
     vite: {
       /**
-       * @experimental Use the virtual filesystem for intermediate environment build output files.
-       * @note This is unsafe if plugins rely on temporary files on the filesystem.
-       */
-      virtualBundle?: boolean;
-
-      /**
        * @experimental Enable `?assets` import proposed by https://github.com/vitejs/vite/discussions/20913
        * @default true
        */
@@ -61,5 +55,4 @@ export interface NitroPluginContext {
   _envRunner?: EnvRunner;
   _publicDistDir?: string;
   _entryPoints: Record<string, string>;
-  _serviceBundles: Record<string, any>;
 }

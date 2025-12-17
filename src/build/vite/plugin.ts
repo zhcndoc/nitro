@@ -115,15 +115,6 @@ function nitroEnv(ctx: NitroPluginContext): VitePlugin {
         );
         config.build!.emptyOutDir = false;
         config.build!.outDir = useNitro(ctx).options.output.publicDir;
-      } else {
-        if (
-          ctx.pluginConfig.experimental?.vite?.virtualBundle &&
-          name in (ctx.services || {})
-        ) {
-          debug("[env]  Configuring service environment for virtual:", name);
-          config.build ??= {};
-          config.build.write = config.build.write ?? false;
-        }
       }
     },
   };
@@ -200,7 +191,6 @@ function nitroMain(ctx: NitroPluginContext): VitePlugin {
             );
           }
           ctx._entryPoints![this.environment.name] = entryFile!;
-          ctx._serviceBundles[this.environment.name] = bundle;
         }
       },
     },
@@ -297,7 +287,6 @@ function createContext(pluginConfig: NitroPluginConfig): NitroPluginContext {
     pluginConfig,
     services: {},
     _entryPoints: {},
-    _serviceBundles: {},
   };
 }
 

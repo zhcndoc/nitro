@@ -159,17 +159,12 @@ export function prodSetup(ctx: NitroPluginContext): string {
   const serviceNames = Object.keys(ctx.services);
 
   const serviceEntries = serviceNames.map((name) => {
-    let entry: string;
-    if (ctx.pluginConfig.experimental?.vite?.virtualBundle) {
-      entry = ctx._entryPoints[name];
-    } else {
-      entry = resolve(
-        ctx.nitro!.options.buildDir,
-        "vite/services",
-        name,
-        ctx._entryPoints[name]
-      );
-    }
+    const entry = resolve(
+      ctx.nitro!.options.buildDir,
+      "vite/services",
+      name,
+      ctx._entryPoints[name]
+    );
     return [name, entry];
   });
 
