@@ -2,6 +2,7 @@ import { defineBuildConfig } from "obuild/config";
 
 import { resolveModulePath } from "exsolve";
 import { traceNodeModules } from "nf3";
+import { readFile, writeFile } from "node:fs/promises";
 
 const isStub = process.argv.includes("--stub");
 
@@ -144,6 +145,12 @@ export default defineBuildConfig({
             },
           },
         }
+      );
+
+      // Vite types
+      await writeFile(
+        "dist/vite.d.mts",
+        `import "vite/client";\nimport "nitro/vite/types";\n${await readFile("dist/vite.d.mts", "utf8")}`
       );
     },
   },
