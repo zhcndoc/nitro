@@ -1,3 +1,4 @@
+import "vite/client";
 import "nitro/vite/types";
 
 export { nitro } from "./build/vite/plugin.ts";
