@@ -2,7 +2,6 @@ import { defineBuildConfig } from "obuild/config";
 
 import { resolveModulePath } from "exsolve";
 import { traceNodeModules } from "nf3";
-import { rm } from "node:fs/promises";
 
 const isStub = process.argv.includes("--stub");
 
@@ -127,8 +126,6 @@ export default defineBuildConfig({
       if (isStub) {
         return;
       }
-
-      await rm("dist/types/index.mjs");
 
       // Trace included dependencies
       await traceNodeModules(

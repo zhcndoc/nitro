@@ -28,7 +28,7 @@
     "./types": "./dist/types/index.mjs",
     "./vite": "./dist/vite.mjs",
     "./vite/runtime": "./dist/runtime/vite.mjs",
-    "./vite/types": "./lib/vite.d.mts"
+    "./vite/types": "./lib/vite.types.mjs"
   },
   "types": "./lib/index.d.mts",
   "bin": {
