@@ -22,13 +22,13 @@ importers:
         specifier: ^0.3.4
         version: 0.3.4
       h3:
-        specifier: 2.0.1-rc.6
+        specifier: ^2.0.1-rc.6
         version: 2.0.1-rc.6(crossws@0.4.1(srvx@0.9.8))
       jiti:
         specifier: ^2.6.1
         version: 2.6.1
       ofetch:
-        specifier: 2.0.0-alpha.3
+        specifier: ^2.0.0-alpha.3
         version: 2.0.0-alpha.3
       ohash:
         specifier: ^2.0.11
@@ -46,10 +46,10 @@ importers:
         specifier: ^7.16.0
         version: 7.16.0
       unenv:
-        specifier: 2.0.0-rc.24
+        specifier: ^2.0.0-rc.24
         version: 2.0.0-rc.24
       unstorage:
-        specifier: 2.0.0-alpha.4
+        specifier: ^2.0.0-alpha.4
         version: 2.0.0-alpha.4(@azure/identity@4.13.0)(chokidar@5.0.0)(db0@0.3.4)(ofetch@2.0.0-alpha.3)
     devDependencies:
       '@azure/functions':
