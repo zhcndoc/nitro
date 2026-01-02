@@ -151,6 +151,10 @@ parentPort.on("message", (payload) => {
   }
 });
 
+// Trap unhandled errors to avoid worker crash
+process.on("unhandledRejection", (error) => console.error(error));
+process.on("uncaughtException", (error) => console.error(error));
+
 // ----- Server -----
 
 async function reload() {
