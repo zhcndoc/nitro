@@ -36,6 +36,14 @@ export default defineBuildConfig({
         "src/cli/index.ts",
         "src/types/index.ts",
       ],
+      rolldown: {
+        resolve: {
+          alias: {
+            "node-fetch-native/proxy": "node-fetch-native/native",
+            "node-fetch-native": "node-fetch-native/native",
+          },
+        },
+      },
     },
     {
       type: "transform",
