@@ -170,8 +170,8 @@ importers:
         specifier: ^9.39.2
         version: 9.39.2(jiti@2.6.1)
       eslint-config-unjs:
-        specifier: ^0.6.0
-        version: 0.6.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+        specifier: ^0.6.2
+        version: 0.6.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
       etag:
         specifier: ^1.8.1
         version: 1.8.1
@@ -4160,8 +4160,8 @@ packages:
     resolution: {integrity: sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw==}
     engines: {node: '>=12'}
 
-  eslint-config-unjs@0.6.0:
-    resolution: {integrity: sha512-wqY7R2lxmZFzmswSFMOzDoc0MxumWNMwq8KyarVeilMzZ/CPoFVu0PNAk/Bu/9gPvszRcAbA+F+VY/B6e/Rwyw==}
+  eslint-config-unjs@0.6.2:
+    resolution: {integrity: sha512-u80AQy4W4B+gbd/Ow1xlUrvNhTq/tqs1mpfYNzFfazp1wF5L0ZY4gizspfXgr8QDeugMfo+rno6Iwd89jKSJSw==}
     peerDependencies:
       eslint: '*'
       typescript: '*'
@@ -10627,7 +10627,7 @@ snapshots:
 
   escape-string-regexp@5.0.0: {}
 
-  eslint-config-unjs@0.6.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3):
+  eslint-config-unjs@0.6.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3):
     dependencies:
       '@eslint/js': 9.39.2
       '@eslint/markdown': 7.5.1
