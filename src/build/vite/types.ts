@@ -34,7 +34,12 @@ export interface NitroPluginConfig extends NitroConfig {
        *
        * @default true
        */
-      serverReload: boolean;
+      serverReload?: boolean;
+
+      /**
+       * Additional Vite environment services to register.
+       */
+      services?: Record<string, ServiceConfig>;
     };
   };
 }
