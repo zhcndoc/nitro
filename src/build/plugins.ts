@@ -8,14 +8,20 @@ import replace from "@rollup/plugin-replace";
 import { unwasm } from "unwasm/plugin";
 import { routeMeta } from "./plugins/route-meta.ts";
 import { serverMain } from "./plugins/server-main.ts";
-import { virtual } from "./plugins/virtual.ts";
-import { nitroResolveIds } from "./plugins/resolve.ts";
+import { virtual, virtualDeps } from "./plugins/virtual.ts";
 import { sourcemapMinify } from "./plugins/sourcemap-min.ts";
 import { raw } from "./plugins/raw.ts";
 import { externals } from "./plugins/externals.ts";
 
 export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
   const plugins: Plugin[] = [];
+
+  // Virtual
+  const virtualPlugin = virtual(
+    virtualTemplates(nitro, [...base.env.polyfill])
+  );
+  nitro.vfs = virtualPlugin.api.modules;
+  plugins.push(virtualPlugin, virtualDeps());
 
   // Auto imports
   if (nitro.options.imports) {
@@ -30,9 +36,6 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
   // Inject globalThis.__server_main__
   plugins.push(serverMain(nitro));
 
-  // Resolve imports from virtual files and mapped subpaths
-  plugins.push(nitroResolveIds());
-
   // Raw Imports
   plugins.push(raw());
 
@@ -40,13 +43,6 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
   if (nitro.options.experimental.openAPI) {
     plugins.push(routeMeta(nitro));
   }
-
-  // Virtual templates
-  const virtualPlugin = virtual(
-    virtualTemplates(nitro, [...base.env.polyfill])
-  );
-  nitro.vfs = virtualPlugin.api.modules;
-  plugins.push(virtualPlugin);
 
   // Replace
   plugins.push(

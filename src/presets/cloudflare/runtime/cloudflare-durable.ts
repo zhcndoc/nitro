@@ -1,4 +1,4 @@
-import "#nitro-internal-polyfills";
+import "#nitro/virtual/polyfills";
 import type * as CF from "@cloudflare/workers-types";
 import { DurableObject } from "cloudflare:workers";
 import wsAdapter from "crossws/adapters/cloudflare";
@@ -64,7 +64,7 @@ export class $DurableObject extends DurableObject {
       nitroHooks.callHook("cloudflare:durable:init", this, {
         state,
         env,
-      })
+      }) || Promise.resolve()
     );
     if (hasWebSocket) {
       ws!.handleDurableInit(this, state, env);
@@ -83,7 +83,9 @@ export class $DurableObject extends DurableObject {
   }
 
   override alarm(): void | Promise<void> {
-    this.ctx.waitUntil(nitroHooks.callHook("cloudflare:durable:alarm", this));
+    this.ctx.waitUntil(
+      nitroHooks.callHook("cloudflare:durable:alarm", this) || Promise.resolve()
+    );
   }
 
   override async webSocketMessage(

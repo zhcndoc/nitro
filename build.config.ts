@@ -1,8 +1,8 @@
-import { rm } from "node:fs/promises";
 import { defineBuildConfig } from "obuild/config";
 
 import { resolveModulePath } from "exsolve";
 import { traceNodeModules } from "nf3";
+import { readFile, writeFile } from "node:fs/promises";
 
 const isStub = process.argv.includes("--stub");
 
@@ -36,6 +36,14 @@ export default defineBuildConfig({
         "src/cli/index.ts",
         "src/types/index.ts",
       ],
+      rolldown: {
+        resolve: {
+          alias: {
+            "node-fetch-native/proxy": "node-fetch-native/native",
+            "node-fetch-native": "node-fetch-native/native",
+          },
+        },
+      },
     },
     {
       type: "transform",
@@ -124,21 +132,34 @@ export default defineBuildConfig({
       };
     },
     async end() {
-      if (!isStub) {
-        await traceNodeModules(
-          tracePkgs.map((pkg) => resolveModulePath(pkg)),
-          {}
-        );
-        for (const dep of [
-          ...Object.keys(pkg.dependencies),
-          ...Object.keys(pkg.peerDependencies),
-        ]) {
-          await rm(`dist/node_modules/${dep}`, {
-            recursive: true,
-            force: true,
-          });
-        }
+      if (isStub) {
+        return;
       }
+
+      // Trace included dependencies
+      await traceNodeModules(
+        tracePkgs.map((pkg) => resolveModulePath(pkg)),
+        {
+          hooks: {
+            tracedPackages(packages) {
+              // Avoid tracing direct dependencies
+              const deps = new Set([
+                ...Object.keys(pkg.dependencies),
+                ...Object.keys(pkg.peerDependencies),
+              ]);
+              for (const dep of deps) {
+                delete packages[dep];
+              }
+            },
+          },
+        }
+      );
+
+      // Vite types
+      await writeFile(
+        "dist/vite.d.mts",
+        `import "vite/client";\nimport "nitro/vite/types";\n${await readFile("dist/vite.d.mts", "utf8")}`
+      );
     },
   },
 });

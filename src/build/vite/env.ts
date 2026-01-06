@@ -39,7 +39,7 @@ export function createNitroEnvironment(
         : true, // production build is standalone
       conditions: ctx.nitro!.options.exportConditions,
       externalConditions: ctx.nitro!.options.exportConditions?.filter(
-        (c) => !/browser|wasm/.test(c)
+        (c) => !/browser|wasm|module/.test(c)
       ),
     },
     define: {
@@ -68,7 +68,7 @@ export function createServiceEnvironment(
   return {
     consumer: "server",
     build: {
-      rollupOptions: { input: serviceConfig.entry },
+      rollupOptions: { input: { index: serviceConfig.entry } },
       minify: ctx.nitro!.options.minify,
       sourcemap: ctx.nitro!.options.sourcemap,
       outDir: join(ctx.nitro!.options.buildDir, "vite/services", name),
@@ -77,7 +77,7 @@ export function createServiceEnvironment(
     resolve: {
       conditions: ctx.nitro!.options.exportConditions,
       externalConditions: ctx.nitro!.options.exportConditions?.filter(
-        (c) => !/browser|wasm/.test(c)
+        (c) => !/browser|wasm|module/.test(c)
       ),
     },
     dev: {

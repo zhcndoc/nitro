@@ -1,4 +1,4 @@
-import "#nitro-internal-polyfills";
+import "#nitro/virtual/polyfills";
 import type * as CF from "@cloudflare/workers-types";
 import type { ExportedHandler } from "@cloudflare/workers-types";
 import type { ServerRequest } from "srvx";
@@ -50,7 +50,7 @@ export function createHandler<Env>(hooks: {
           controller,
           env,
           context,
-        })
+        }) || Promise.resolve()
       );
       if (import.meta._tasks) {
         context.waitUntil(
@@ -75,7 +75,7 @@ export function createHandler<Env>(hooks: {
           event: message, // backward compat
           env,
           context,
-        })
+        }) || Promise.resolve()
       );
     },
 
@@ -87,7 +87,7 @@ export function createHandler<Env>(hooks: {
           event: batch,
           env,
           context,
-        })
+        }) || Promise.resolve()
       );
     },
 
@@ -98,7 +98,7 @@ export function createHandler<Env>(hooks: {
           traces,
           env,
           context,
-        })
+        }) || Promise.resolve()
       );
     },
 
@@ -109,7 +109,7 @@ export function createHandler<Env>(hooks: {
           traces,
           env,
           context,
-        })
+        }) || Promise.resolve()
       );
     },
   } satisfies ExportedHandler<Env>;

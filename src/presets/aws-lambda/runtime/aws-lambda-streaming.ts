@@ -1,4 +1,4 @@
-import "#nitro-internal-polyfills";
+import "#nitro/virtual/polyfills";
 import { useNitroApp } from "nitro/app";
 import { awsRequest, awsResponseHeaders } from "./_utils.ts";
 
@@ -31,7 +31,6 @@ export const handler = awslambda.streamifyResponse(
       });
 
     const writer = awslambda.HttpResponseStream.from(
-      // @ts-expect-error TODO: IMPORTANT! It should be a Writable according to the aws-lambda types
       responseStream,
       httpResponseMetadata
     );

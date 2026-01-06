@@ -192,13 +192,14 @@ Nitro 允许您通过 `process.env` 或 `import.meta.env` 或运行时配置通�
 
 ```ts
 import { defineHandler } from "nitro/h3";
+import { useRuntimeConfig } from "nitro/runtime-config";
 
 console.log(process.env.SECRET) // 请注意，这是在全局范围内！因此实际上它不起作用，变量是未定义的！
 
 export default defineHandler((event) => {
   // 请注意，所有以下方式都是访问上述变量的有效方法
-  useRuntimeConfig(event).helloThere
-  useRuntimeConfig(event).secret
+  useRuntimeConfig().helloThere
+  useRuntimeConfig().secret
   process.env.NITRO_HELLO_THERE
   import.meta.env.SECRET
 });

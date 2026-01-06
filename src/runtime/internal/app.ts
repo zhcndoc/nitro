@@ -39,21 +39,22 @@ declare global {
 
 const APP_ID = import.meta.prerender ? "prerender" : "default";
 
-export function useNitroApp(_id = APP_ID): NitroApp {
-  let instance = globalThis.__nitro__?.[_id];
+export function useNitroApp(): NitroApp {
+  let instance: NitroApp | undefined = (useNitroApp as any)._instance;
   if (instance) {
     return instance;
   }
-  globalThis.__nitro__ ??= {};
-  instance = globalThis.__nitro__[_id] = createNitroApp();
+  instance = (useNitroApp as any)._instance = createNitroApp();
+  globalThis.__nitro__ = globalThis.__nitro__ || {};
+  globalThis.__nitro__[APP_ID] = instance;
   if (hasPlugins) {
     initNitroPlugins(instance);
   }
   return instance;
 }
 
-export function useNitroHooks(_id = APP_ID): HookableCore<NitroRuntimeHooks> {
-  const nitroApp = useNitroApp(_id);
+export function useNitroHooks(): HookableCore<NitroRuntimeHooks> {
+  const nitroApp = useNitroApp();
   const hooks = nitroApp.hooks;
   if (hooks) {
     return hooks;
@@ -111,7 +112,11 @@ function createNitroApp(): NitroApp {
       if (errors) {
         errors.push({ error, context: errorCtx });
       }
-      if (hasHooks && typeof errorCtx.event.req.waitUntil === "function") {
+      if (
+        hasHooks &&
+        promise &&
+        typeof errorCtx.event.req.waitUntil === "function"
+      ) {
         errorCtx.event.req.waitUntil(promise);
       }
     }

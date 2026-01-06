@@ -24,7 +24,7 @@ import { defu } from "defu";
 import { prettyPath } from "../../utils/fs.ts";
 import { NitroDevApp } from "../../dev/app.ts";
 import { nitroPreviewPlugin } from "./preview.ts";
-import { assetsPlugin } from "@hiogawa/vite-plugin-fullstack";
+import assetsPlugin from "@hiogawa/vite-plugin-fullstack/assets";
 import type { NitroConfig } from "nitro/types";
 
 // https://vite.dev/guide/api-environment-plugins
@@ -115,15 +115,6 @@ function nitroEnv(ctx: NitroPluginContext): VitePlugin {
         );
         config.build!.emptyOutDir = false;
         config.build!.outDir = useNitro(ctx).options.output.publicDir;
-      } else {
-        if (
-          ctx.pluginConfig.experimental?.vite?.virtualBundle &&
-          name in (ctx.services || {})
-        ) {
-          debug("[env]  Configuring service environment for virtual:", name);
-          config.build ??= {};
-          config.build.write = config.build.write ?? false;
-        }
       }
     },
   };
@@ -200,7 +191,6 @@ function nitroMain(ctx: NitroPluginContext): VitePlugin {
             );
           }
           ctx._entryPoints![this.environment.name] = entryFile!;
-          ctx._serviceBundles[this.environment.name] = bundle;
         }
       },
     },
@@ -295,9 +285,8 @@ function nitroService(ctx: NitroPluginContext): VitePlugin {
 function createContext(pluginConfig: NitroPluginConfig): NitroPluginContext {
   return {
     pluginConfig,
-    services: {},
+    services: { ...pluginConfig.experimental?.vite?.services },
     _entryPoints: {},
-    _serviceBundles: {},
   };
 }
 
