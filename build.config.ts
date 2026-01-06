@@ -30,11 +30,12 @@ export default defineBuildConfig({
   entries: [
     {
       type: "bundle",
-      input: ["src/builder.ts", "src/cli/index.ts", "src/types/index.ts"],
-    },
-    {
-      type: "bundle",
-      input: ["src/vite.ts"],
+      input: [
+        "src/builder.ts",
+        "src/cli/index.ts",
+        "src/types/index.ts",
+        "src/vite.ts",
+      ],
     },
     {
       type: "transform",
@@ -82,6 +83,11 @@ export default defineBuildConfig({
       );
     },
     rolldownOutput(config) {
+      config.advancedChunks!.includeDependenciesRecursively = false;
+      config.advancedChunks!.groups?.unshift(
+        { test: /src\/build\/rollup/, name: "_build/rollup" },
+        { test: /src\/build\/rolldown/, name: "_build/rolldown" }
+      );
       config.chunkFileNames = (chunk) => {
         if (chunk.name.startsWith("_")) {
           return `[name].mjs`;
