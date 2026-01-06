@@ -132,7 +132,7 @@
     "miniflare": "^4.20251217.0",
     "mlly": "^1.8.0",
     "nypm": "^0.6.2",
-    "obuild": "^0.4.11",
+    "obuild": "^0.4.12",
     "pathe": "^2.0.3",
     "perfect-debounce": "^2.0.0",
     "pkg-types": "^2.3.0",

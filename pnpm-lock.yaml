@@ -224,8 +224,8 @@ importers:
         specifier: ^0.6.2
         version: 0.6.2
       obuild:
-        specifier: ^0.4.11
-        version: 0.4.11(magicast@0.5.1)(typescript@5.9.3)
+        specifier: ^0.4.12
+        version: 0.4.12(magicast@0.5.1)(typescript@5.9.3)
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -5483,8 +5483,8 @@ packages:
   obug@2.1.1:
     resolution: {integrity: sha512-uTqF9MuPraAQ+IsnPf366RG4cP9RtUi7MLO1N3KEc+wb0a6yKpeL0lmk2IB1jY5KHPAlTc6T/JRdC/YqxHNwkQ==}
 
-  obuild@0.4.11:
-    resolution: {integrity: sha512-bF5CO5RU5glyRdXXS335m5feMUX+r1IhLId2PoGODcF1EMNp4qapvjGA6bB7eDuvNdYd1o3LHReg/BiejohUuw==}
+  obuild@0.4.12:
+    resolution: {integrity: sha512-0asysSbu2MFkmqEMVAAoYvCYbXb2KHze49/TSKTwdwEcf+LXU4gMf+tjhgVpAAu9gJW/L9KWTIwsM3rzIAR2qg==}
     hasBin: true
 
   ofetch@1.5.1:
@@ -12162,7 +12162,7 @@ snapshots:
 
   obug@2.1.1: {}
 
-  obuild@0.4.11(magicast@0.5.1)(typescript@5.9.3):
+  obuild@0.4.12(magicast@0.5.1)(typescript@5.9.3):
     dependencies:
       c12: 3.3.3(magicast@0.5.1)
       consola: 3.4.2
