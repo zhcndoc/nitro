@@ -30,20 +30,11 @@ export default defineBuildConfig({
   entries: [
     {
       type: "bundle",
-      input: [
-        "src/builder.ts",
-        "src/vite.ts",
-        "src/cli/index.ts",
-        "src/types/index.ts",
-      ],
-      rolldown: {
-        resolve: {
-          alias: {
-            "node-fetch-native/proxy": "node-fetch-native/native",
-            "node-fetch-native": "node-fetch-native/native",
-          },
-        },
-      },
+      input: ["src/builder.ts", "src/cli/index.ts", "src/types/index.ts"],
+    },
+    {
+      type: "bundle",
+      input: ["src/vite.ts"],
     },
     {
       type: "transform",
@@ -60,6 +51,13 @@ export default defineBuildConfig({
   hooks: {
     rolldownConfig(config) {
       config.platform = "node";
+
+      config.resolve ??= {};
+      config.resolve.alias ??= {};
+      Object.assign(config.resolve.alias, {
+        "node-fetch-native/proxy": "node-fetch-native/native",
+        "node-fetch-native": "node-fetch-native/native",
+      });
 
       config.external ??= [];
       (config.external as string[]).push(

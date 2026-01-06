@@ -1,5 +1,4 @@
 import type { Nitro } from "nitro/types";
-import { nitro as nitroPlugin } from "./plugin.ts";
 import { isTest } from "std-env";
 
 export async function viteBuild(nitro: Nitro) {
@@ -11,6 +10,7 @@ export async function viteBuild(nitro: Nitro) {
   const { createBuilder } = await import(
     (nitro.options as any).__vitePkg__ || "vite"
   );
+  const { nitro: nitroPlugin } = await import("nitro/vite");
   const builder = await createBuilder({
     base: nitro.options.rootDir,
     plugins: [await nitroPlugin({ _nitro: nitro })],
