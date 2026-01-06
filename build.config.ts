@@ -83,17 +83,20 @@ export default defineBuildConfig({
       );
     },
     rolldownOutput(config) {
-      config.advancedChunks!.includeDependenciesRecursively = false;
+      // config.advancedChunks!.includeDependenciesRecursively = false;
       config.advancedChunks!.groups?.unshift(
-        { test: /src\/build\/rollup/, name: "_build/rollup" },
-        { test: /src\/build\/rolldown/, name: "_build/rolldown" }
+        {
+          test: /src\/build\/(plugins|virtual|\w+\.ts)/,
+          name: "_build/common",
+        },
+        { test: /src\/(utils)\//, name: "_chunks/utils" }
       );
       config.chunkFileNames = (chunk) => {
         if (chunk.name.startsWith("_")) {
           return `[name].mjs`;
         }
         if (chunk.name === "rolldown-runtime") {
-          return `_rolldown.mjs`;
+          return `_common.mjs`;
         }
         if (chunk.name.startsWith("libs/")) {
           return `_[name].mjs`;
@@ -130,9 +133,9 @@ export default defineBuildConfig({
         if (
           chunk.moduleIds.every((id) => /src\/(runner|dev|runtime)/.test(id))
         ) {
-          return `_dev.mjs`;
+          return `_chunks/dev.mjs`;
         }
-        return "_nitro.mjs";
+        return "_chunks/nitro.mjs";
       };
     },
     async end() {
