@@ -167,16 +167,12 @@
     "youch-core": "^0.3.3"
   },
   "peerDependencies": {
-    "nf3": ">=0.3.1",
     "rolldown": "*",
     "rollup": "^4.55.1",
     "vite": ">=7.3.0",
     "xml2js": "^0.6.2"
   },
   "peerDependenciesMeta": {
-    "nf3": {
-      "optional": true
-    },
     "rolldown": {
       "optional": true
     },
