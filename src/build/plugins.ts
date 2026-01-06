@@ -3,7 +3,6 @@ import type { Plugin } from "rollup";
 import type { BaseBuildConfig } from "./config.ts";
 
 import { virtualTemplates } from "./virtual/_all.ts";
-import unimportPlugin from "unimport/unplugin";
 import replace from "@rollup/plugin-replace";
 import { unwasm } from "unwasm/plugin";
 import { routeMeta } from "./plugins/route-meta.ts";
@@ -14,7 +13,7 @@ import { raw } from "./plugins/raw.ts";
 import { externals } from "./plugins/externals.ts";
 import { NodeNativePackages } from "nf3";
 
-export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
+export async function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
   const plugins: Plugin[] = [];
 
   // Virtual
@@ -26,7 +25,10 @@ export function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
 
   // Auto imports
   if (nitro.options.imports) {
-    plugins.push(unimportPlugin.rollup(nitro.options.imports) as Plugin);
+    const unimportPlugin = await import("unimport/unplugin");
+    plugins.push(
+      unimportPlugin.default.rollup(nitro.options.imports) as Plugin
+    );
   }
 
   // WASM loader

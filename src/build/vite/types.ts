@@ -51,7 +51,7 @@ export interface ServiceConfig {
 export interface NitroPluginContext {
   nitro?: Nitro;
   pluginConfig: NitroPluginConfig;
-  rollupConfig?: ReturnType<typeof getViteRollupConfig>;
+  rollupConfig?: Awaited<ReturnType<typeof getViteRollupConfig>>;
   devApp?: NitroDevApp;
   services: Record<string, ServiceConfig>;
 
