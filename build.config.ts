@@ -104,11 +104,11 @@ export default defineBuildConfig({
                 .map(
                   (id) =>
                     id.match(
-                      /.*\/node_modules\/(?<package>@[^/]+\/[^/]+|[^/]+)/
+                      /.*[/\\]node_modules[/\\](?<package>@[^/\\]+[/\\][^/\\]+|[^/\\]+)/
                     )?.groups?.package
                 )
                 .filter(Boolean)
-                .map((name) => name!.split("/").pop()!)
+                .map((name) => name!.split(/[/\\]/).pop()!)
                 .filter(Boolean)
             ),
           ].sort((a, b) => a.length - b.length);
