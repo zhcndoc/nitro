@@ -97,9 +97,6 @@ export default defineBuildConfig({
         if (chunk.name === "rolldown-runtime") {
           return `_common.mjs`;
         }
-        if (chunk.name.startsWith("libs/")) {
-          return `_[name].mjs`;
-        }
         if (chunk.moduleIds.every((id) => id.includes("node_modules"))) {
           const pkgNames = [
             ...new Set(
