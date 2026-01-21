@@ -70,7 +70,11 @@ export const getRolldownConfig = async (
     },
   } satisfies RolldownOptions;
 
-  config = defu(nitro.options.rollupConfig as any, config);
+  config = defu(
+    nitro.options.rolldownConfig,
+    nitro.options.rollupConfig as RolldownOptions,
+    config
+  );
 
   const outputConfig = config.output as OutputOptions;
   if (outputConfig.inlineDynamicImports || outputConfig.format === "iife") {
