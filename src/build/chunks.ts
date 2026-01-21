@@ -22,7 +22,7 @@ export function getChunkName(
   }
 
   // Library chunks
-  if (chunk.moduleIds.every((id) => id.includes("node_modules"))) {
+  if (chunk.moduleIds.every((id) => /node_modules[/\\]\w/.test(id))) {
     const pkgNames = [
       ...new Set(
         chunk.moduleIds
