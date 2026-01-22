@@ -2,8 +2,8 @@ import { promises as fsp } from "node:fs";
 import mime from "mime";
 import type { Plugin } from "rollup";
 
-const HELPER_ID = "\0nitro-raw-helpers";
-const RESOLVED_PREFIX = "\0nitro:raw:";
+const HELPER_ID = "virtual:nitro-raw-helpers";
+const RESOLVED_PREFIX = "virtual:nitro:raw:";
 const PREFIX = "raw:";
 
 export function raw(): Plugin {
