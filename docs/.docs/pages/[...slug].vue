@@ -93,7 +93,7 @@ useHead({
     <template v-if="page.body?.toc?.links?.length" #right>
       <UContentToc title="本页目录" :links="page.body?.toc?.links || []" highlight>
         <template #top>
-          <div class="wwads-cn wwads-vertical w-full mb-4 mt-0! hidden lg:block" data-id="354"></div>
+          <div class="wwads-cn wwads-vertical w-full mb-4 mt-0! hidden! lg:flex!" data-id="354"></div>
         </template>
       </UContentToc>
     </template>
