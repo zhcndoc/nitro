@@ -17,7 +17,7 @@ useSeoMeta({
 
 useHead({
   htmlAttrs: {
-    lang: appConfig.docs.lang || 'en',
+    lang: appConfig.docs.lang || 'zh_CN',
   },
   link: [
     {
