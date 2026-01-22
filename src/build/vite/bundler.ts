@@ -46,7 +46,7 @@ export const getBundlerConfig = async (
 
   if (ctx._isRolldown) {
     // Rolldown
-    const rolldownConfig = {
+    const rolldownConfig: RolldownConfig = {
       transform: {
         inject: base.env.inject as Record<string, string>,
       },
@@ -61,6 +61,14 @@ export const getBundlerConfig = async (
         },
       },
     } satisfies RolldownConfig;
+
+    const outputConfig = rolldownConfig.output;
+    if (
+      outputConfig.inlineDynamicImports ||
+      outputConfig.format === ("iife" as string)
+    ) {
+      delete outputConfig.codeSplitting;
+    }
 
     return {
       base,
@@ -95,6 +103,14 @@ export const getBundlerConfig = async (
         },
       },
     } satisfies RollupConfig;
+
+    const outputConfig = rollupConfig.output;
+    if (
+      outputConfig.inlineDynamicImports ||
+      outputConfig.format === ("iife" as string)
+    ) {
+      delete outputConfig.manualChunks;
+    }
 
     return {
       base,
