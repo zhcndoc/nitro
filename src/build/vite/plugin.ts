@@ -10,12 +10,13 @@ import type { InputOption } from "rollup";
 import type { NitroPluginConfig, NitroPluginContext } from "./types.ts";
 import { resolve, join } from "pathe";
 import { createNitro, prepare } from "../../builder.ts";
-import { getViteRollupConfig } from "./rollup.ts";
+import { getBundlerConfig } from "./bundler.ts";
 import { buildEnvironments, prodSetup } from "./prod.ts";
 import {
   getEnvRunner,
   createNitroEnvironment,
   createServiceEnvironments,
+  createServiceEnvironment,
 } from "./env.ts";
 import { configureViteDevServer } from "./dev.ts";
 import { runtimeDir } from "nitro/meta";
@@ -73,7 +74,11 @@ function nitroInit(ctx: NitroPluginContext): VitePlugin {
     applyToEnvironment(env) {
       if (env.name === "nitro" && ctx.nitro?.options.dev) {
         debug("[init] Adding rollup plugins for dev");
-        return [...((ctx.rollupConfig?.config.plugins as VitePlugin[]) || [])];
+        const plugins =
+          (ctx.bundlerConfig?.rolldownConfig?.plugins as VitePlugin[]) ||
+          (ctx.bundlerConfig?.rollupConfig?.plugins as VitePlugin[]) ||
+          [];
+        return [...(plugins || [])];
       }
     },
   };
@@ -115,6 +120,54 @@ function nitroEnv(ctx: NitroPluginContext): VitePlugin {
         );
         config.build!.emptyOutDir = false;
         config.build!.outDir = useNitro(ctx).options.output.publicDir;
+        return;
+      }
+
+      // Skip if already registered as a service
+      if (name === "nitro" || ctx.services[name]) {
+        return;
+      }
+
+      // Auto-register server consumer environments as services
+      const entry = getEntry(
+        config.build?.rolldownOptions?.input ||
+          config.build?.rollupOptions?.input
+      );
+      if (typeof entry !== "string") {
+        return;
+      }
+
+      // Resolve and register as a service
+      const resolvedEntry =
+        resolveModulePath(entry, {
+          from: [ctx.nitro!.options.rootDir, ...ctx.nitro!.options.scanDirs],
+          extensions: DEFAULT_EXTENSIONS,
+          suffixes: ["", "/index"],
+          try: true,
+        }) || entry;
+
+      ctx.services[name] = { entry: resolvedEntry };
+      debug(
+        `[env]  Auto-detected service "${name}" with entry: ${resolvedEntry}`
+      );
+
+      // Return service environment configuration to merge
+      return createServiceEnvironment(ctx, name, { entry: resolvedEntry });
+    },
+
+    configResolved() {
+      // Setup default SSR renderer after all environments are configured
+      if (
+        !ctx.nitro!.options.renderer?.handler &&
+        !ctx.nitro!.options.renderer?.template &&
+        ctx.services.ssr?.entry
+      ) {
+        ctx.nitro!.options.renderer ??= {};
+        ctx.nitro!.options.renderer.handler = resolve(
+          runtimeDir,
+          "internal/vite/ssr-renderer"
+        );
+        ctx.nitro!.routing.sync();
       }
     },
   };
@@ -128,15 +181,15 @@ function nitroMain(ctx: NitroPluginContext): VitePlugin {
 
     async config(userConfig, _configEnv) {
       debug("[main] Extending config (appType, resolve, server)");
-      if (!ctx.rollupConfig) {
-        throw new Error("Nitro rollup config is not initialized yet.");
+      if (!ctx.bundlerConfig) {
+        throw new Error("Bundler config is not initialized yet!");
       }
       return {
         appType: userConfig.appType || "custom",
         resolve: {
           // TODO: environment specific aliases not working
           // https://github.com/vitejs/vite/pull/17583 (seems not effective)
-          alias: ctx.rollupConfig.base.aliases,
+          alias: ctx.bundlerConfig.base.aliases,
         },
         builder: {
           sharedConfigBuild: true,
@@ -369,20 +422,6 @@ async function setupNitroContext(
     ctx.nitro.options.serverEntry = false;
   }
 
-  // Default SSR renderer
-  if (
-    !ctx.nitro.options.renderer?.handler &&
-    !ctx.nitro.options.renderer?.template &&
-    ctx.services.ssr?.entry
-  ) {
-    ctx.nitro.options.renderer ??= {};
-    ctx.nitro.options.renderer.handler = resolve(
-      runtimeDir,
-      "internal/vite/ssr-renderer"
-    );
-    ctx.nitro!.routing.sync();
-  }
-
   // Determine default Vite dist directory
   const publicDistDir = (ctx._publicDistDir =
     userConfig.build?.outDir ||
@@ -406,13 +445,13 @@ async function setupNitroContext(
   await ctx.nitro.hooks.callHook("build:before", ctx.nitro);
 
   // Resolve common rollup options
-  ctx.rollupConfig = await getViteRollupConfig(ctx);
+  ctx.bundlerConfig = await getBundlerConfig(ctx);
 
   // Call rollup:before hook to allow modifying rollup config
   await ctx.nitro.hooks.callHook(
     "rollup:before",
     ctx.nitro,
-    ctx.rollupConfig.config
+    ctx.bundlerConfig.rollupConfig || (ctx.bundlerConfig.rolldownConfig as any)
   );
 
   // Warm up env runner for dev

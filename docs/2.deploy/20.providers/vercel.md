@@ -34,7 +34,7 @@ Nitro 的 `/api` 目录与 Vercel 不兼容。相反，您应使用：
 
 :read-more{title="Vercel" to="https://vercel.com/docs/functions/runtimes/bun"}
 
-您可以通过在 `nitro.config` 内使用 `vercel.functions` 键指定运行时，来使用 [Bun](https://bun.com) 替代 Node.js：
+您可以通过在 `nitro.config` 内使用 `vercel.functions` 键指定运行时，来使用 [Bun](https://bun.zhcndoc.com) 替代 Node.js：
 
 ```ts [nitro.config.ts]
 export default defineNitroConfig({

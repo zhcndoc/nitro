@@ -1,14 +1,14 @@
 # Deno Deploy
 
-> 将 Nitro 应用部署到 [Deno Deploy](https://deno.com/deploy)。
+> 将 Nitro 应用部署到 [Deno Deploy](https://deno.zhcndoc.com/deploy)。
 
 **预设：** `deno_deploy`
 
-:read-more{title="Deno Deploy" to="https://deno.com/deploy"}
+:read-more{title="Deno Deploy" to="https://deno.zhcndoc.com/deploy"}
 
 ## 使用 CLI 部署
 
-您可以使用 [deployctl](https://deno.com/deploy/docs/deployctl) 来部署您的应用。
+您可以使用 [deployctl](https://deno.zhcndoc.com/deploy/docs/deployctl) 来部署您的应用。
 
 登录到 [Deno Deploy](https://dash.deno.com/account#access-tokens) 获取 `DENO_DEPLOY_TOKEN` 访问令牌，并将其设置为环境变量。
 

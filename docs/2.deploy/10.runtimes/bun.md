@@ -16,4 +16,4 @@ Nitro 输出与 Bun 运行时兼容。在使用默认的 [Node.js](/deploy/runti
 bun run ./.output/server/index.mjs
 ```
 
-:read-more{to="https://bun.sh"}
+:read-more{to="https://bun.zhcndoc.com"}
