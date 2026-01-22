@@ -46,21 +46,26 @@ export const getBundlerConfig = async (
 
   if (ctx._isRolldown) {
     // Rolldown
-    const rolldownConfig: RolldownConfig = {
-      transform: {
-        inject: base.env.inject as Record<string, string>,
-      },
-      output: {
-        codeSplitting: {
-          groups: [
-            {
-              test: NODE_MODULES_RE,
-              name: (id: string) => libChunkName(id),
-            },
-          ],
+    const rolldownConfig: RolldownConfig = defu(
+      {
+        transform: {
+          inject: base.env.inject as Record<string, string>,
         },
-      },
-    } satisfies RolldownConfig;
+        output: {
+          codeSplitting: {
+            groups: [
+              {
+                test: NODE_MODULES_RE,
+                name: (id: string) => libChunkName(id),
+              },
+            ],
+          },
+        },
+      } satisfies RolldownConfig,
+      nitro.options.rolldownConfig,
+      nitro.options.rollupConfig as RolldownConfig, // Added for backward compatibility
+      commonConfig satisfies RolldownConfig
+    );
 
     const outputConfig = rolldownConfig.output;
     if (
@@ -70,16 +75,7 @@ export const getBundlerConfig = async (
       delete outputConfig.codeSplitting;
     }
 
-    return {
-      base,
-      rollupConfig: undefined,
-      rolldownConfig: defu(
-        rolldownConfig,
-        nitro.options.rolldownConfig,
-        nitro.options.rollupConfig as RolldownConfig, // Added for backward compatibility
-        commonConfig satisfies RolldownConfig
-      ),
-    };
+    return { base, rolldownConfig };
   } else {
     // Rollup
     const inject = (
@@ -89,20 +85,25 @@ export const getBundlerConfig = async (
       (await import("@rollup/plugin-alias")) as unknown as typeof import("@rollup/plugin-alias")
     ).default;
 
-    const rollupConfig: RollupConfig = {
-      plugins: [inject(base.env.inject), alias({ entries: base.aliases })],
-      output: {
-        sourcemapExcludeSources: true,
-        generatedCode: {
-          constBindings: true,
+    const rollupConfig: RollupConfig = defu(
+      {
+        plugins: [inject(base.env.inject), alias({ entries: base.aliases })],
+        output: {
+          sourcemapExcludeSources: true,
+          generatedCode: {
+            constBindings: true,
+          },
+          manualChunks(id: string) {
+            if (NODE_MODULES_RE.test(id)) {
+              return libChunkName(id);
+            }
+          },
         },
-        manualChunks(id: string) {
-          if (NODE_MODULES_RE.test(id)) {
-            return libChunkName(id);
-          }
-        },
-      },
-    } satisfies RollupConfig;
+      } satisfies RollupConfig,
+      nitro.options.rolldownConfig as RollupConfig, // Added for backward compatibility
+      nitro.options.rollupConfig,
+      commonConfig
+    );
 
     const outputConfig = rollupConfig.output;
     if (
@@ -112,15 +113,6 @@ export const getBundlerConfig = async (
       delete outputConfig.manualChunks;
     }
 
-    return {
-      base,
-      rolldownConfig: undefined,
-      rollupConfig: defu(
-        rollupConfig,
-        nitro.options.rolldownConfig as RollupConfig, // Added for backward compatibility
-        nitro.options.rollupConfig,
-        commonConfig
-      ),
-    };
+    return { base, rollupConfig };
   }
 };
