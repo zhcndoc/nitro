@@ -86,7 +86,7 @@ function awsEventBody(event: APIGatewayProxyEvent | APIGatewayProxyEventV2): Bod
 // Outgoing (Web => AWS)
 
 export function awsResponseHeaders(response: Response) {
-  const headers = Object.create(null);
+  const headers: Record<string, string> = Object.create(null);
   for (const [key, value] of response.headers) {
     if (value) {
       headers[key] = Array.isArray(value) ? value.join(",") : String(value);
