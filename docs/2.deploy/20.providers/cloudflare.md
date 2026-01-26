@@ -305,7 +305,7 @@ defineHandler(async (event) => {
 
 ### 在本地开发中访问绑定
 
-要在开发模式下访问绑定，首先需要定义它们。你可以在 `wrangler.toml`/`wrangler.json` 文件中进行定义，或者直接在你的 Nitro 配置中的 `cloudflare.wrangler` 下定义（接受与 `wrangler.json` 相同的类型）。
+要在开发模式下访问绑定，首先需要定义它们。你可以在 `wrangler.jsonc`、`wrangler.json` 或 `wrangler.toml` 文件中进行定义。
 
 例如，在 `wrangler.toml` 中定义一个变量和一个 KV 命名空间：
 
@@ -336,31 +336,6 @@ id = "xxx"
 
 ::
 
-或在您的 Nitro 配置中：
-
-```js [nitro.config.js]
-import { defineNitroConfig } from "nitro/config";
-
-export default defineNitroConfig({
-    cloudflare: {
-      wrangler: {
-        vars: {
-          MY_VARIABLE: "my-value"
-        },
-        kv_namespaces: [
-          {
-            binding: "MY_KV",
-            id: "xxx"
-          }
-        ]
-      }
-    }
-});
-```
-
-> [!NOTE]
-> 仅默认环境中的绑定被识别。
-
 接下来我们安装所需的 `wrangler` 包（如果尚未安装）：
 
 :pm-install{name="wrangler -D"}
@@ -376,4 +351,21 @@ export default defineNuxtConfig({
 
 :pm-run{script="dev"}
 
-您将能够从请求事件访问 `MY_VARIABLE` 和 `MY_KV`，就像上面所示。
+您将能够像上面所示一样，从请求事件中访问 `MY_VARIABLE` 和 `MY_KV`。
+
+#### Wrangler 环境
+
+如果您有多个 Wrangler 环境，可以在 Cloudflare 开发仿真期间指定要使用的 Wrangler 环境：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  preset: 'cloudflare-module',
+  cloudflare: {
+    dev: {
+      environment: 'preview'
+    }
+  }
+})
+```

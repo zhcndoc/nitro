@@ -20,11 +20,11 @@ Nitro 是一个与框架和部署无关的服务器框架，基于 [H3](https://
 
 - `pnpm build --stub` — 用于开发的快速 stub 构建。
 - `pnpm lint` — 代码检查和格式化。
-- `pnpm lint:fix` — 自动修复 lint 和格式化问题。
+- `pnpm format` — 自动修复 lint 和格式化问题。
 - `pnpm test` — 执行所有测试。
 - `pnpm test:types` — 执行类型测试。
 
-**每次修改后务必运行** `pnpm lint:fix` 和 `pnpm test:types`。
+**每次修改后务必运行** `pnpm format` 和 `pnpm test:types`。
 
 ## 仓库结构
 
@@ -106,7 +106,7 @@ Nitro 是一个与框架和部署无关的服务器框架，基于 [H3](https://
 1. 在 `src/` 中修改代码。
 2. 如更改构建逻辑，运行 `pnpm build --stub`。
 3. 运行 `pnpm test` 进行测试。
-4. 运行 `pnpm lint:fix` 修复代码风格。
+4. 运行 `pnpm format` 修复代码风格。
 5. 运行 `pnpm test:types` 检查类型。
 6. 运行 `pnpm vitest run`。
 
