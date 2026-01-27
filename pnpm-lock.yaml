@@ -22,7 +22,7 @@ importers:
         specifier: ^0.3.4
         version: 0.3.4
       h3:
-        specifier: 2.0.1-rc.11
+        specifier: ^2.0.1-rc.11
         version: 2.0.1-rc.11(crossws@0.4.4(srvx@0.10.1))
       jiti:
         specifier: ^2.6.1
@@ -31,7 +31,7 @@ importers:
         specifier: ^0.3.6
         version: 0.3.6
       ofetch:
-        specifier: 2.0.0-alpha.3
+        specifier: ^2.0.0-alpha.3
         version: 2.0.0-alpha.3
       ohash:
         specifier: ^2.0.11
@@ -49,10 +49,10 @@ importers:
         specifier: ^7.18.2
         version: 7.19.1
       unenv:
-        specifier: 2.0.0-rc.24
+        specifier: ^2.0.0-rc.24
         version: 2.0.0-rc.24
       unstorage:
-        specifier: 2.0.0-alpha.5
+        specifier: ^2.0.0-alpha.5
         version: 2.0.0-alpha.5(@azure/identity@4.13.0)(chokidar@5.0.0)(db0@0.3.4)(ofetch@2.0.0-alpha.3)
     devDependencies:
       '@azure/functions':
@@ -245,7 +245,7 @@ importers:
         specifier: ^0.0.7
         version: 0.0.7
       rolldown:
-        specifier: 1.0.0-rc.1
+        specifier: ^1.0.0-rc.1
         version: 1.0.0-rc.1
       rollup:
         specifier: ^4.57.0
@@ -299,7 +299,7 @@ importers:
         specifier: ^0.5.3
         version: 0.5.3
       vite:
-        specifier: 8.0.0-beta.10
+        specifier: ^8.0.0-beta.10
         version: 8.0.0-beta.10(@types/node@25.0.10)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
       vite7:
         specifier: npm:vite@^7.3.1
