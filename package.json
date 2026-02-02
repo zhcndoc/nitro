@@ -61,10 +61,10 @@
     "nitro": "node ./src/cli/index.ts",
     "release": "pnpm test && pnpm build && changelogen --release --prerelease --push",
     "stub": "obuild --stub",
-    "test": "pnpm lint && pnpm test:types && pnpm test:rollup && pnpm test:rolldown",
+    "test": "pnpm lint && pnpm typecheck && pnpm test:rollup && pnpm test:rolldown",
     "test:rolldown": "NITRO_BUILDER=rolldown pnpm vitest",
     "test:rollup": "NITRO_BUILDER=rollup pnpm vitest",
-    "test:types": "tsc --noEmit"
+    "typecheck": "tsgo --noEmit --skipLibCheck"
   },
   "dependencies": {
     "consola": "^3.4.2",
@@ -106,6 +106,7 @@
     "@types/node-fetch": "^2.6.13",
     "@types/semver": "^7.7.1",
     "@types/xml2js": "^0.4.14",
+    "@typescript/native-preview": "7.0.0-dev.20260202.1",
     "@vitest/coverage-v8": "^4.0.18",
     "automd": "^0.4.3",
     "c12": "^3.3.3",
