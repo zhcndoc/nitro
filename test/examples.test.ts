@@ -14,11 +14,11 @@ const { createServer, createBuilder, rolldownVersion } = (await import(
 
 const isRolldown = !!rolldownVersion;
 
-const skip = new Set<string>(["websocket"]);
+const skip = new Set<string>(["websocket", ...(isRolldown ? [] : ["vite-rsc"])]);
 
 const skipDev = new Set<string>(["auto-imports", "cached-handler"]);
 
-const skipProd = new Set<string>(isRolldown ? [] : ["vite-rsc"]);
+const skipProd = new Set<string>(isRolldown ? [] : []);
 
 for (const example of await readdir(examplesDir)) {
   if (example.startsWith("_")) continue;
