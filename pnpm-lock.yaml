@@ -18,13 +18,13 @@ importers:
         version: 3.4.2
       crossws:
         specifier: ^0.4.4
-        version: 0.4.4(srvx@0.11.1)
+        version: 0.4.4(srvx@0.11.2)
       db0:
         specifier: ^0.3.4
         version: 0.3.4
       h3:
-        specifier: ^2.0.1-rc.13
-        version: 2.0.1-rc.13(crossws@0.4.4(srvx@0.11.1))
+        specifier: ^2.0.1-rc.14
+        version: 2.0.1-rc.14(crossws@0.4.4(srvx@0.11.2))
       jiti:
         specifier: ^2.6.1
         version: 2.6.1
@@ -41,8 +41,8 @@ importers:
         specifier: ^1.0.0-rc.3
         version: 1.0.0-rc.3
       srvx:
-        specifier: ^0.11.1
-        version: 0.11.1
+        specifier: ^0.11.2
+        version: 0.11.2
       undici:
         specifier: ^7.19.2
         version: 7.20.0
@@ -626,7 +626,7 @@ importers:
         version: 1.158.1(@tanstack/react-router@1.158.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@tanstack/router-core@1.158.1)(csstype@3.2.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-start':
         specifier: ^1.157.18
-        version: 1.158.1(crossws@0.4.4(srvx@0.11.1))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(solid-js@1.9.11)(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
+        version: 1.158.1(crossws@0.4.4(srvx@0.11.2))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(solid-js@1.9.11)(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
       nitro:
         specifier: link:../..
         version: link:../..
@@ -4112,8 +4112,8 @@ packages:
       crossws:
         optional: true
 
-  h3@2.0.1-rc.13:
-    resolution: {integrity: sha512-1g+GVBDFygRwLEw6CIbFME99M1QiHZfE0bCzXbqOKEDHz23L/RlMJZkIwQl/mJMAauA9G3oO9pSL4tKDpvgagQ==}
+  h3@2.0.1-rc.14:
+    resolution: {integrity: sha512-163qbGmTr/9rqQRNuqMqtgXnOUAkE4KTdauiC9y0E5iG1I65kte9NyfWvZw5RTDMt6eY+DtyoNzrQ9wA2BfvGQ==}
     engines: {node: '>=20.11.1'}
     hasBin: true
     peerDependencies:
@@ -5761,8 +5761,8 @@ packages:
     engines: {node: '>=20.16.0'}
     hasBin: true
 
-  srvx@0.11.1:
-    resolution: {integrity: sha512-hs+BDmweGNT0DHlcsgB52BOKOn32v1g+CtyCavqstcz19KUDZsAoLVLFV0y03xAOd0KiXbgsguPcCivR6Lj5PA==}
+  srvx@0.11.2:
+    resolution: {integrity: sha512-u6NbjE84IJwm1XUnJ53WqylLTQ3BdWRw03lcjBNNeMBD+EFjkl0Cnw1RVaGSqRAo38pOHOPXJH30M6cuTINUxw==}
     engines: {node: '>=20.16.0'}
     hasBin: true
 
@@ -8466,27 +8466,27 @@ snapshots:
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
 
-  '@tanstack/react-start-server@1.158.1(crossws@0.4.4(srvx@0.11.1))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+  '@tanstack/react-start-server@1.158.1(crossws@0.4.4(srvx@0.11.2))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
       '@tanstack/history': 1.154.14
       '@tanstack/react-router': 1.158.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/router-core': 1.158.1
       '@tanstack/start-client-core': 1.158.1
-      '@tanstack/start-server-core': 1.158.1(crossws@0.4.4(srvx@0.11.1))
+      '@tanstack/start-server-core': 1.158.1(crossws@0.4.4(srvx@0.11.2))
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
     transitivePeerDependencies:
       - crossws
 
-  '@tanstack/react-start@1.158.1(crossws@0.4.4(srvx@0.11.1))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(solid-js@1.9.11)(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))':
+  '@tanstack/react-start@1.158.1(crossws@0.4.4(srvx@0.11.2))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(solid-js@1.9.11)(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@tanstack/react-router': 1.158.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-start-client': 1.158.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@tanstack/react-start-server': 1.158.1(crossws@0.4.4(srvx@0.11.1))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@tanstack/react-start-server': 1.158.1(crossws@0.4.4(srvx@0.11.2))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/router-utils': 1.158.0
       '@tanstack/start-client-core': 1.158.1
-      '@tanstack/start-plugin-core': 1.158.1(@tanstack/react-router@1.158.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(crossws@0.4.4(srvx@0.11.1))(vite-plugin-solid@2.11.10(solid-js@1.9.11)(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
-      '@tanstack/start-server-core': 1.158.1(crossws@0.4.4(srvx@0.11.1))
+      '@tanstack/start-plugin-core': 1.158.1(@tanstack/react-router@1.158.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(crossws@0.4.4(srvx@0.11.2))(vite-plugin-solid@2.11.10(solid-js@1.9.11)(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
+      '@tanstack/start-server-core': 1.158.1(crossws@0.4.4(srvx@0.11.2))
       pathe: 2.0.3
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
@@ -8584,7 +8584,7 @@ snapshots:
 
   '@tanstack/start-fn-stubs@1.154.7': {}
 
-  '@tanstack/start-plugin-core@1.158.1(@tanstack/react-router@1.158.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(crossws@0.4.4(srvx@0.11.1))(vite-plugin-solid@2.11.10(solid-js@1.9.11)(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))':
+  '@tanstack/start-plugin-core@1.158.1(@tanstack/react-router@1.158.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(crossws@0.4.4(srvx@0.11.2))(vite-plugin-solid@2.11.10(solid-js@1.9.11)(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@babel/code-frame': 7.27.1
       '@babel/core': 7.29.0
@@ -8595,7 +8595,7 @@ snapshots:
       '@tanstack/router-plugin': 1.158.1(@tanstack/react-router@1.158.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(solid-js@1.9.11)(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))(vite@8.0.0-beta.13(@types/node@25.2.1)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
       '@tanstack/router-utils': 1.158.0
       '@tanstack/start-client-core': 1.158.1
-      '@tanstack/start-server-core': 1.158.1(crossws@0.4.4(srvx@0.11.1))
+      '@tanstack/start-server-core': 1.158.1(crossws@0.4.4(srvx@0.11.2))
       cheerio: 1.2.0
       exsolve: 1.0.8
       pathe: 2.0.3
@@ -8614,13 +8614,13 @@ snapshots:
       - vite-plugin-solid
       - webpack
 
-  '@tanstack/start-server-core@1.158.1(crossws@0.4.4(srvx@0.11.1))':
+  '@tanstack/start-server-core@1.158.1(crossws@0.4.4(srvx@0.11.2))':
     dependencies:
       '@tanstack/history': 1.154.14
       '@tanstack/router-core': 1.158.1
       '@tanstack/start-client-core': 1.158.1
       '@tanstack/start-storage-context': 1.158.1
-      h3-v2: h3@2.0.1-rc.11(crossws@0.4.4(srvx@0.11.1))
+      h3-v2: h3@2.0.1-rc.11(crossws@0.4.4(srvx@0.11.2))
       seroval: 1.5.0
       tiny-invariant: 1.3.3
     transitivePeerDependencies:
@@ -9554,9 +9554,9 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
-  crossws@0.4.4(srvx@0.11.1):
+  crossws@0.4.4(srvx@0.11.2):
     optionalDependencies:
-      srvx: 0.11.1
+      srvx: 0.11.2
 
   crypt@0.0.2: {}
 
@@ -10211,19 +10211,19 @@ snapshots:
     dependencies:
       duplexer: 0.1.2
 
-  h3@2.0.1-rc.11(crossws@0.4.4(srvx@0.11.1)):
+  h3@2.0.1-rc.11(crossws@0.4.4(srvx@0.11.2)):
     dependencies:
       rou3: 0.7.12
       srvx: 0.10.1
     optionalDependencies:
-      crossws: 0.4.4(srvx@0.11.1)
+      crossws: 0.4.4(srvx@0.11.2)
 
-  h3@2.0.1-rc.13(crossws@0.4.4(srvx@0.11.1)):
+  h3@2.0.1-rc.14(crossws@0.4.4(srvx@0.11.2)):
     dependencies:
       rou3: 0.7.12
-      srvx: 0.11.1
+      srvx: 0.11.2
     optionalDependencies:
-      crossws: 0.4.4(srvx@0.11.1)
+      crossws: 0.4.4(srvx@0.11.2)
 
   has-flag@4.0.0: {}
 
@@ -12175,7 +12175,7 @@ snapshots:
 
   srvx@0.10.1: {}
 
-  srvx@0.11.1: {}
+  srvx@0.11.2: {}
 
   srvx@0.9.8: {}
 
