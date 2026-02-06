@@ -45,10 +45,6 @@ coverage
 .AppleDouble
 .LSOverride
 
-# AI config 
-.agents
-.claude
-
 # Files that might appear in the root of a volume
 .DocumentRevisions-V100
 .fseventsd
