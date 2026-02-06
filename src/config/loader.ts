@@ -89,12 +89,6 @@ async function _loadUserConfig(
     dotenv: _dotenv,
     extend: { extendKey: ["extends", "preset"] },
     defaults: NitroDefaults,
-    jitiOptions: {
-      alias: {
-        nitropack: "nitro/config",
-        "nitro/config": "nitro/config",
-      },
-    },
     async overrides({ rawConfigs }) {
       // prettier-ignore
       const getConf = <K extends keyof NitroConfig>(key: K) => (configOverrides[key] ?? (rawConfigs.main as NitroConfig)?.[key] ?? (rawConfigs.rc as NitroConfig)?.[key] ?? (rawConfigs.packageJson as NitroConfig)?.[key]) as NitroConfig[K];
