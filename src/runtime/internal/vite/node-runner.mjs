@@ -1,5 +1,4 @@
 import { parentPort, threadId, workerData } from "node:worker_threads";
-import { Agent } from "undici";
 import { ModuleRunner, ESModulesEvaluator } from "vite/module-runner";
 import { getSocketAddress, isSocketSupported } from "get-port-please";
 
@@ -276,7 +275,7 @@ async function renderError(req, error) {
   });
 }
 
-// ----- Internal Utils -----
+// ----- Server -----
 
 async function listen(server) {
   const listenAddr = (await isSocketSupported())
@@ -293,57 +292,4 @@ async function listen(server) {
       reject(error);
     }
   });
-}
-
-function fetchAddress(addr, input, inputInit) {
-  let url;
-  let init;
-  if (input instanceof Request) {
-    url = new URL(input.url);
-    init = {
-      method: input.method,
-      headers: input.headers,
-      body: input.body,
-      ...inputInit,
-    };
-  } else {
-    url = new URL(input);
-    init = inputInit;
-  }
-  init = {
-    duplex: "half",
-    redirect: "manual",
-    ...init,
-  };
-  if (addr.socketPath) {
-    url.protocol = "http:";
-    return fetch(url, {
-      ...init,
-      ...fetchSocketOptions(addr.socketPath),
-    });
-  }
-  const origin = `http://${addr.host}${addr.port ? `:${addr.port}` : ""}`;
-  const outURL = new URL(url.pathname + url.search, origin);
-  return fetch(outURL, init);
-}
-
-function fetchSocketOptions(socketPath) {
-  if ("Bun" in globalThis) {
-    // https://bun.sh/guides/http/fetch-unix
-    return { unix: socketPath };
-  }
-  if ("Deno" in globalThis) {
-    // https://github.com/denoland/deno/pull/29154
-    return {
-      client: Deno.createHttpClient({
-        // @ts-expect-error Missing types?
-        transport: "unix",
-        path: socketPath,
-      }),
-    };
-  }
-  // https://github.com/nodejs/undici/issues/2970
-  return {
-    dispatcher: new Agent({ connect: { socketPath } }),
-  };
 }

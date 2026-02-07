@@ -6,9 +6,9 @@
     "start": "node .output/server/index.mjs"
   },
   "dependencies": {
-    "@tanstack/react-router": "^1.157.18",
-    "@tanstack/react-router-devtools": "^1.157.18",
-    "@tanstack/react-start": "^1.157.18",
+    "@tanstack/react-router": "^1.158.1",
+    "@tanstack/react-router-devtools": "^1.158.1",
+    "@tanstack/react-start": "^1.158.3",
     "nitro": "latest",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -18,7 +18,7 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.18",
     "@types/node": "latest",
-    "@types/react": "^19.2.10",
+    "@types/react": "^19.2.13",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.3",
     "tailwindcss": "^4.1.18",

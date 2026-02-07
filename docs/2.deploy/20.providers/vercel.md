@@ -55,6 +55,42 @@ export default defineNitroConfig({
 }
 ```
 
+## 代理路由规则
+
+Nitro 在 Vercel 上通过构建时生成 [CDN 级别的重写](https://vercel.com/docs/rewrites) 自动优化 `proxy` 路由规则。这意味着匹配的请求会在边缘节点被代理，而无需调用无服务器函数，从而减少延迟和成本。
+
+```ts [nitro.config.ts]
+export default defineNitroConfig({
+  routeRules: {
+    // CDN 级别代理 — 无函数调用
+    "/api/**": {
+      proxy: "https://api.example.com/**",
+    },
+  },
+});
+```
+
+### CDN 重写生效的条件
+
+当满足 **以下所有条件** 时，代理规则会被卸载到 Vercel CDN 重写：
+
+- 目标是一个 **外部 URL**（以 `http://` 或 `https://` 开头）。
+- 规则上没有设置高级的 `ProxyOptions`。
+
+### 回退到运行时代理
+
+当代理规则使用了以下任何一个 `ProxyOptions`，Nitro 会将其保留为由无服务器函数处理的运行时代理：
+
+- `headers` — 发送给上游请求的自定义头
+- `forwardHeaders` / `filterHeaders` — 头过滤
+- `fetchOptions` — 自定义 fetch 选项
+- `cookieDomainRewrite` / `cookiePathRewrite` — cookie 操作
+- `onResponse` — 响应回调
+
+::note
+通过路由规则 `headers` 选项定义的响应头仍然会应用于 CDN 级别重写。只有请求级别的 `ProxyOptions.headers`（发送到上游）需要运行时代理。
+::
+
 ## 自定义构建输出配置
 
 您可以通过在 `nitro.config` 中使用 `vercel.config` 键来提供额外的 [构建输出配置](https://vercel.com/docs/build-output-api/v3)，该配置将与内置自动生成的配置合并。
