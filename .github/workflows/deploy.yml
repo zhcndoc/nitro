@@ -13,16 +13,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@master
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
 
-      - env:
-          NUXT_UI_PRO_LICENSE: ${{ secrets.NUXT_UI_PRO_LICENSE }}
-        run: |
-          npm install -g bun
-          cd docs && bun install
-          bun run build
+      - run: cd docs && pnpm install && pnpm run build
 
       - uses: actions/upload-artifact@v4
         with:
