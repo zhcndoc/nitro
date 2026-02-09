@@ -21,6 +21,9 @@ importers:
       db0:
         specifier: ^0.3.4
         version: 0.3.4
+      dotenv:
+        specifier: '*'
+        version: 17.2.4
       h3:
         specifier: ^2.0.1-rc.14
         version: 2.0.1-rc.14(crossws@0.4.4(srvx@0.11.2))
