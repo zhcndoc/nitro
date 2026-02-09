@@ -132,7 +132,7 @@ importers:
         version: 0.4.3(magicast@0.5.2)
       c12:
         specifier: 4.0.0-beta.2
-        version: 4.0.0-beta.2(chokidar@5.0.0)(dotenv@17.2.4)(giget@2.0.0)(jiti@2.6.1)(magicast@0.5.2)
+        version: 4.0.0-beta.2(chokidar@5.0.0)(dotenv@17.2.4)(giget@3.1.2)(jiti@2.6.1)(magicast@0.5.2)
       changelogen:
         specifier: ^0.6.2
         version: 0.6.2(magicast@0.5.2)
@@ -187,6 +187,9 @@ importers:
       get-port-please:
         specifier: ^3.2.0
         version: 3.2.0
+      giget:
+        specifier: ^3.1.2
+        version: 3.1.2
       gzip-size:
         specifier: ^7.0.0
         version: 7.0.0
@@ -4078,6 +4081,10 @@ packages:
 
   giget@2.0.0:
     resolution: {integrity: sha512-L5bGsVkxJbJgdnwyuheIunkGatUF/zssUoxxjACCseZYAVbaqdh9Tsmmlkl8vYan09H7sbvKt4pS8GqKLBrEzA==}
+    hasBin: true
+
+  giget@3.1.2:
+    resolution: {integrity: sha512-T2qUpKBHeUTwHcIhydgnJzhL0Hj785ms+JkxaaWQH9SDM/llXeewnOkfJcFShAHjWI+26hOChwUfCoupaXLm8g==}
     hasBin: true
 
   github-from-package@0.0.0:
@@ -9409,7 +9416,7 @@ snapshots:
     optionalDependencies:
       magicast: 0.5.2
 
-  c12@4.0.0-beta.2(chokidar@5.0.0)(dotenv@17.2.4)(giget@2.0.0)(jiti@2.6.1)(magicast@0.5.2):
+  c12@4.0.0-beta.2(chokidar@5.0.0)(dotenv@17.2.4)(giget@3.1.2)(jiti@2.6.1)(magicast@0.5.2):
     dependencies:
       confbox: 0.2.4
       defu: 6.1.4
@@ -9420,7 +9427,7 @@ snapshots:
     optionalDependencies:
       chokidar: 5.0.0
       dotenv: 17.2.4
-      giget: 2.0.0
+      giget: 3.1.2
       jiti: 2.6.1
       magicast: 0.5.2
 
@@ -10240,6 +10247,8 @@ snapshots:
       node-fetch-native: 1.6.7
       nypm: 0.6.5
       pathe: 2.0.3
+
+  giget@3.1.2: {}
 
   github-from-package@0.0.0: {}
 
