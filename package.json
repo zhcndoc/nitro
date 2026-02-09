@@ -170,6 +170,7 @@
     "youch-core": "^0.3.3"
   },
   "peerDependencies": {
+    "jiti": "^2",
     "rollup": "^4.57.0",
     "vite": "^7 || ^8 || >=8.0.0-0",
     "xml2js": "^0.6.2"
@@ -182,6 +183,9 @@
       "optional": true
     },
     "xml2js": {
+      "optional": true
+    },
+    "jiti": {
       "optional": true
     }
   },
