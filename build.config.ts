@@ -131,7 +131,9 @@ export default defineBuildConfig({
         if (chunk.moduleIds.every((id) => /src[/\\]presets/.test(id))) {
           return `_presets.mjs`;
         }
-        if (chunk.moduleIds.every((id) => /src[/\\]build[/\\]|src[/\\]presets|src[/\\]utils/.test(id))) {
+        if (
+          chunk.moduleIds.every((id) => /src[/\\]build[/\\]|src[/\\]presets|src[/\\]utils/.test(id))
+        ) {
           return `_build/shared.mjs`;
         }
         if (chunk.moduleIds.every((id) => /src[/\\](runner|dev|runtime)/.test(id))) {
