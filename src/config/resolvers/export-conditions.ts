@@ -24,12 +24,6 @@ function _resolveExportConditions(
     conditions.push("node");
   }
 
-  if ("Bun" in globalThis) {
-    conditions.push("bun");
-  } else if ("Deno" in globalThis) {
-    conditions.push("deno");
-  }
-
   const negated = new Set(userConditions.filter((c) => c.startsWith("!")).map((c) => c.slice(1)));
 
   return [...new Set(conditions)].filter((c) => !negated.has(c));
