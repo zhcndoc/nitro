@@ -91,6 +91,34 @@ export default defineNitroConfig({
 通过路由规则 `headers` 选项定义的响应头仍然会应用于 CDN 级别重写。只有请求级别的 `ProxyOptions.headers`（发送到上游）需要运行时代理。
 ::
 
+## 计划任务（定时任务）
+
+:read-more{title="Vercel Cron Jobs" to="https://vercel.com/docs/cron-jobs"}
+
+Nitro 会在构建时自动将您的 [`scheduledTasks`](/docs/tasks#scheduled-tasks) 配置转换为 [Vercel 定时任务](https://vercel.com/docs/cron-jobs)。只需在 Nitro 配置中定义计划，然后部署即可，无需手动配置 `vercel.json` 中的定时任务。
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  experimental: {
+    tasks: true
+  },
+  scheduledTasks: {
+    // 每小时运行 `cms:update`
+    '0 * * * *': ['cms:update'],
+    // 每天凌晨运行 `db:cleanup`
+    '0 0 * * *': ['db:cleanup']
+  }
+})
+```
+
+### 保护定时任务端点
+
+:read-more{title="Securing cron jobs" to="https://vercel.com/docs/cron-jobs/manage-cron-jobs#securing-cron-jobs"}
+
+为了防止未经授权访问定时任务处理器，请在您的 Vercel 项目设置中设置 `CRON_SECRET` 环境变量。当设置了 `CRON_SECRET` 时，Nitro 会在每次定时任务调用时验证 `Authorization` 头。
+
 ## 自定义构建输出配置
 
 您可以通过在 `nitro.config` 中使用 `vercel.config` 键来提供额外的 [构建输出配置](https://vercel.com/docs/build-output-api/v3)，该配置将与内置自动生成的配置合并。
@@ -132,8 +160,8 @@ export default defineNitroConfig({
   - 如果是空数组，则查询参数值不会影响缓存。
   - 如果是 `undefined`，则每个不同的查询参数值会被独立缓存。
   - 对于通配符路由 `/**`，`url` 参数始终被添加。
-
 - `passQuery`：当设置为 `true`，查询字符串将包含在传递给调用函数的 `request` 参数中。`allowQuery` 过滤依然生效。
+- `exposeErrBody`：当设置为 `true` 时，响应体无论状态码如何（包括错误状态码）都会被暴露。（默认值为 `false`）
 
 ```ts
 export default defineNitroConfig({
@@ -142,6 +170,7 @@ export default defineNitroConfig({
       isr: {
         allowQuery: ["q"],
         passQuery: true,
+        exposeErrBody: true
       },
     },
   },
