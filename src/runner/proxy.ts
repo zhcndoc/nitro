@@ -1,10 +1,8 @@
-import type { IncomingMessage, RequestOptions, ServerResponse } from "node:http";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import type { TLSSocket } from "node:tls";
 import type { ProxyServerOptions, ProxyServer } from "httpxy";
 import type { H3Event } from "h3";
 
-import { request as httpRequest } from "node:http";
-import { Readable } from "node:stream";
 import { createProxyServer } from "httpxy";
 import { HTTPError, fromNodeHandler } from "h3";
 
