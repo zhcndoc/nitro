@@ -6,8 +6,8 @@ settings:
 
 overrides:
   nitro: link:.
-  vite: 8.0.0-beta.14
   rolldown: ^1.0.0-rc.5
+  vite: 8.0.0-beta.14
 
 importers:
 
