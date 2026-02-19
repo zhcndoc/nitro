@@ -1,0 +1,1 @@
+import{a as l,o as n,t as c,r as p,V as u,m as d,X as e}from"./CWSiIDVY.js";const m={base:"bg-muted"},h={__name:"ProseThead",props:{class:{type:null,required:!1}},setup(s){const a=s,t=l(),o=d(()=>e({extend:e(m),...t.ui?.prose?.thead||{}}));return(r,i)=>(n(),c("thead",{class:u(o.value({class:a.class}))},[p(r.$slots,"default")],2))}};export{h as default};

@@ -1,0 +1,1 @@
+import{o as a,c as s,w as e,k as c,r as _,_ as r,A as l}from"./CWSiIDVY.js";import{_ as f}from"./DlAUqK2U.js";const m={};function d(o,i){const t=r,n=l;return a(),s(n,null,{default:e(()=>[c(t,null,{default:e(()=>[_(o.$slots,"default")]),_:3})]),_:3})}const k=f(m,[["render",d]]);export{k as default};

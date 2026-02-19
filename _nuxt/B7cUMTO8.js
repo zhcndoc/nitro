@@ -1,0 +1,1 @@
+const e=["features","config","server side rendering","backend frameworks","integrations","vite"],i={vite:"i-logos-vitejs","backend frameworks":"i-lucide-puzzle",features:"i-lucide-sparkles",config:"i-lucide-settings",integrations:"i-lucide-plug","server side rendering":"i-lucide-server",other:"i-lucide-folder"};export{i as a,e as c};

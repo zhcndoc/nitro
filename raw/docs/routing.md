@@ -1,0 +1,354 @@
+# 服务器路由
+
+> Nitro 支持文件系统路由，自动将文件映射到 h3 路由。
+
+> Nitro 支持基于文件的 API 路由（文件会自动映射到 [h3 路由](https://h3.zhcndoc.com/guide/basics/routing)）。定义路由就像在 `server/api/` 或 `server/routes/` 目录内创建一个文件一样简单。
+
+每个文件只能定义一个处理程序，您可以 [将 HTTP 方法附加](#specific-request-method) 到文件名，以定义特定的请求方法。
+
+```text
+routes/
+  api/
+    test.ts      <-- /api/test
+  hello.get.ts   <-- /hello (仅限 GET)
+  hello.post.ts  <-- /hello (仅限 POST)
+vite.config.ts
+```
+
+您可以通过创建子目录来嵌套路由。
+
+```txt
+routes/
+  api/
+    [org]/
+      [repo]/
+        index.ts   <-- /api/:org/:repo
+        issues.ts  <-- /api/:org/:repo/issues
+      index.ts     <-- /api/:org
+package.json
+```
+
+#### 路由分组
+
+在某些情况下，您可能希望将一组路由归为一类，但又不影响基于文件的路由。为此，您可以将文件放入以括号 `(` 和 `)` 包裹的文件夹中。
+
+例如：
+
+```txt
+routes/
+  api/
+    (admin)/
+      users.ts   <-- /api/users
+      reports.ts <-- /api/reports
+    (public)/
+      index.ts   <-- /api
+package.json
+```
+
+> <span>
+> 
+> !注意
+> 
+> </span>
+> 
+>  路由分组不是路由定义的一部分，只用于组织目的。
+
+### 简单路由
+
+首先，在 `server/routes/` 或 `server/api/` 目录中创建一个文件。文件名将作为路由路径。
+
+然后，导出一个用 `defineEventHandler` 包裹的函数，该函数将在路由匹配时执行。
+
+```ts [routes/api/test.ts]
+import { defineHandler } from "nitro/h3";
+
+export default defineHandler(() => {
+  return { hello: "API" };
+});
+```
+
+### 带参数的路由
+
+#### 单个参数
+
+要定义带参数的路由，请使用 `[<param>]` 语法，其中 `<param>` 是参数的名称。该参数将在 `event.context.params` 对象中可用，或使用 [`getRouterParam`](https://h3.zhcndoc.com/utils/request#getrouterparamevent-name-opts-decode) 工具。
+
+```ts [routes/hello/[name].ts]
+import { defineHandler } from "nitro/h3";
+
+export default defineHandler((event) => {
+  const { name } = event.context.params;
+
+  return `Hello ${name}!`;
+});
+```
+
+调用带参数的路由 `/hello/nitro`，您将得到：
+
+```txt [Response]
+Hello nitro!
+```
+
+#### 多个参数
+
+您可以通过使用 `[<param1>]/[<param2>]` 语法在路由中定义多个参数，其中每个参数都是一个文件夹。您 **不能** 在单个文件名的文件夹中定义多个参数。
+
+```ts [routes/hello/[name]/[age].ts]
+import { defineHandler } from "nitro/h3";
+
+export default defineHandler((event) => {
+  const { name, age } = event.context.params;
+
+  return `Hello ${name}! You are ${age} years old.`;
+});
+```
+
+#### 捕获所有参数
+
+您可以使用 `[...<param>]` 语法捕获 URL 中剩余的所有部分。这将包括斜杠 `/` 在参数中。
+
+```ts [routes/hello/[...name].ts]
+import { defineHandler } from "nitro/h3";
+
+export default defineHandler((event) => {
+  const { name } = event.context.params;
+
+  return `Hello ${name}!`;
+});
+```
+
+调用带参数的路由 `/hello/nitro/is/hot`，您将得到：
+
+```txt [Response]
+Hello nitro/is/hot!
+```
+
+### 特定请求方法
+
+您可以将 HTTP 方法附加到文件名，以强制路由仅匹配特定的 HTTP 请求方法，例如 `hello.get.ts` 将仅匹配 `GET` 请求。您可以使用任何您想要的 HTTP 方法。
+
+<code-group>
+
+```js [GET]
+// routes/users/[id].get.ts
+import { defineHandler } from "nitro/h3";
+
+export default defineHandler(async (event) => {
+  const { id } = event.context.params;
+
+  // 对 id 执行某些操作
+
+  return `用户资料！`
+})
+```
+
+```js [POST]
+// routes/users.post.ts
+import { defineHandler, readBody } from "nitro/h3";
+
+export default defineHandler(async (event) => {
+  const body = await readBody(event);
+
+  // 对 body 执行某些操作，例如将其保存到数据库
+
+  return { updated: true };
+});
+```
+
+</code-group>
+
+### 捕获所有路由
+
+您可以创建一个特殊的路由，匹配未被任何其他路由匹配的所有路由。这对于创建默认路由非常有用。
+
+要创建捕获所有路由，请在 `server/routes/` 或 `server/api/` 目录或任何子目录中创建一个名为 `[...].ts` 的文件。
+
+```ts [routes/[...].ts]
+import { defineHandler } from "nitro/h3";
+
+export default defineHandler((event) => {
+  return `Hello ${event.url}!`;
+});
+```
+
+### 环境特定处理程序
+
+您可以指定仅在特定构建中包含的路由，通过在文件名后添加 `.dev`、`.prod` 或 `.prerender` 后缀，例如：`routes/test.get.dev.ts` 或 `routes/test.get.prod.ts`。
+
+> <span>
+> 
+> !提示
+> 
+> </span>
+> 
+> 
+> 您可以通过 `handlers[]` 配置的程序注册为环境指定多个环境或预设名称作为环境。
+
+## 中间件
+
+Nitro 路由中间件可以挂钩到请求生命周期中。
+
+<tip>
+
+中间件可以在请求处理前修改请求，而不是之后。
+
+</tip>
+
+中间件在 `server/middleware/` 目录中自动注册。
+
+```md
+middleware/
+  auth.ts
+  logger.ts
+  ...
+routes/
+  hello.ts
+```
+
+### 简单中间件
+
+中间件与路由处理程序的定义方式完全相同，唯一例外是它们不应返回任何内容。
+从中间件返回的行为类似于从请求返回 - 该值将作为响应返回，且不会执行后续代码。
+
+```ts [server/middleware/auth.ts]
+export default defineEventHandler((event) => {
+  // 扩展或修改事件
+  event.context.user = { name: 'Nitro' }
+})
+```
+
+在 `server/middleware/` 目录中的中间件会自动注册到所有路由。如果您想为特定路由注册中间件，请参见 [对象语法事件处理程序](https://h3.zhcndoc.com/guide/basics/handler#object-syntax)。
+
+<note>
+
+从中间件返回任何内容将关闭请求，应避免！从中间件返回的任何值将是响应，且后续代码将不被执行，然而 **这并不推荐这样做！**
+
+</note>
+
+### 路由元数据
+
+您可以在构建时使用 `defineRouteMeta` 宏在事件处理程序文件中定义路由处理程序的元数据。
+
+> <span>
+> 
+> !重要
+> 
+> </span>
+> 
+> 
+> 🚧 此功能当前处于实验阶段。
+
+```ts [routes/api/test.ts]
+import { defineRouteMeta } from "nitro";
+import { defineHandler } from "nitro/h3";
+
+defineRouteMeta({
+  openAPI: {
+    tags: ["test"],
+    description: "测试路由描述",
+    parameters: [{ in: "query", name: "test", required: true }],
+  },
+});
+
+export default defineHandler(() => "OK");
+```
+
+<read-more to="https://swagger.io/specification/v3/">
+
+此功能目前可用于指定 OpenAPI 元数据。有关可用的 OpenAPI 选项，请参见 swagger 规范。
+
+</read-more>
+
+### 执行顺序
+
+中间件按目录列表顺序执行。
+
+```md
+server/
+  middleware/
+    auth.ts <-- 第一个
+    logger.ts <-- 第二个
+    ... <-- 第三个
+```
+
+用数字前缀中间件以控制其执行顺序。
+
+```md
+server/
+  middleware/
+    1.logger.ts <-- 第一个
+    2.auth.ts <-- 第二个
+    3.... <-- 第三个
+```
+
+<note>
+
+请记住，文件名按字符串排序，因此例如如果您有 3 个文件 `1.filename.ts`、`2.filename.ts` 和 `10.filename.ts`，则 `10.filename.ts` 将在 `1.filename.ts` 之后出现。为避免这种情况，前缀 `1-9` 时使用 `0`，如 `01`，如果您在同一目录中有超过 10 个中间件。
+
+</note>
+
+### 请求过滤
+
+中间件在每个请求上执行。
+
+应用自定义逻辑，将其作用域限制为特定条件。
+
+例如，您可以使用 URL 将中间件应用于特定路由：
+
+```ts [server/middleware/auth.ts]
+export default defineEventHandler((event) => {
+  // 仅在 /auth 路由执行
+  if (getRequestURL(event).pathname.startsWith('/auth')) {
+    event.context.user = { name: 'Nitro' }
+  }
+});
+```
+
+## 错误处理
+
+您可以使用 [H3 中提供的工具](https://h3.zhcndoc.com/guide/basics/error) 来处理路由和中间件中的错误。
+
+错误返回给客户端的方式取决于环境。在开发环境中，对于 `Accept` 头为 `text/html` 的请求（如浏览器），将返回 HTML 错误页面。在生产环境中，错误总是以 JSON 形式发送。
+
+这种行为可以被某些请求属性（例如：`Accept` 或 `User-Agent` 头）覆盖。
+
+## 代码分割
+
+Nitro 会为每个路由处理程序创建一个单独的代码块。代码块在首次请求时按需加载，所以 `/api/users` 不会加载 `/api/posts` 的代码。
+
+有关全部打包到单个文件的配置，请参见 [`inlineDynamicImports`](/config#inlinedynamicimports)。
+
+## 路由规则
+
+Nitro 允许您在配置的顶层为每个路由添加逻辑。这可以用于重定向、代理、缓存和为路由添加头。
+
+它是从路由模式（遵循 [rou3](https://github.com/h3js/rou3)）到路由选项的映射。
+
+当 `cache` 选项设置时，匹配模式的处理程序将自动包裹在 `defineCachedEventHandler` 中。有关此功能的更多信息，请参见 [缓存指南](/guide/cache)。
+
+<note>
+
+`swr: true|number` 是 `cache: { swr: true, maxAge: number }` 的快捷方式。
+
+</note>
+
+您可以在 `nitro.config.ts` 中使用 `routeRules` 选项设置路由规则。
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineConfig({
+  routeRules: {
+    '/blog/**': { swr: true },
+    '/blog/**': { swr: 600 },
+    '/blog/**': { static: true },
+    '/blog/**': { cache: { /* 缓存选项 */ } },
+    '/assets/**': { headers: { 'cache-control': 's-maxage=0' } },
+    '/api/v1/**': { cors: true, headers: { 'access-control-allow-methods': 'GET' } },
+    '/old-page': { redirect: '/new-page' },
+    '/old-page/**': { redirect: '/new-page/**' },
+    '/proxy/example': { proxy: 'https://example.com' },
+    '/proxy/**': { proxy: '/api/**' },
+  }
+});
+```

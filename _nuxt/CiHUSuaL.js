@@ -1,0 +1,1 @@
+import{a as n,o as c,t as l,r as p,V as m,m as u,X as s}from"./CWSiIDVY.js";const i={base:""},_={__name:"ProseEm",props:{class:{type:String,required:!1}},setup(e){const a=e,t=n(),o=u(()=>s({extend:s(i),...t.ui?.prose?.em||{}}));return(r,f)=>(c(),l("em",{class:m(o.value({class:a.class}))},[p(r.$slots,"default")],2))}};export{_ as default};
