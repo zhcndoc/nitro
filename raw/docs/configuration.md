@@ -1,0 +1,148 @@
+# 配置
+
+> 自定义和扩展 Nitro 默认设置。
+
+<warning>
+
+Nitro v3 Alpha 文档仍在完善中 — 预计会有更新、不完善之处和偶尔的不准确内容。
+
+</warning>
+
+<read-more to="/config">
+
+请查看 [配置参考](/config) 以获取可用选项。
+
+</read-more>
+
+您可以通过配置文件自定义您的 Nitro 构建器。
+
+<CodeGroup>
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  // Nitro 选项
+})
+```
+
+```ts [vite.config.ts]
+import { defineConfig } from 'vite'
+import { nitro } from 'nitro/vite'
+
+export default defineConfig({
+  plugins: [
+    nitro()
+  ],
+  nitro: {
+    // Nitro 选项
+  }
+})
+```
+
+</CodeGroup>
+
+<important>
+
+如果您使用 [Nuxt](https://nuxt.zhcndoc.com)，请在您的 Nuxt 配置中使用 `nitro` 选项。
+
+</important>
+
+<tip>
+
+Nitro 使用 [c12](https://github.com/unjs/c12) 加载配置，提供更多可能性，例如在当前工作目录或用户主目录中使用 `.nitrorc` 文件。
+
+</tip>
+
+## 运行时配置
+
+Nitro 提供了一个运行时配置 API，以便在应用程序中公开配置，并能够通过设置环境变量在运行时更新配置。当您希望为不同的环境（例如开发、预发布、生产）公开不同的配置值时，这非常有用。举个例子，您可以用它来为不同的环境暴露不同的 API 端点或不同的功能标志。
+
+首先，您需要在配置文件中定义运行时配置。
+
+<CodeGroup>
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  runtimeConfig: {
+    apiToken: "dev_token", // `dev_token` 是默认值
+  }
+});
+```
+
+```ts [nuxt.config.ts]
+export default defineNuxtConfig({
+  runtimeConfig: {
+    apiToken: "dev_token", // `dev_token` 是默认值
+  }
+})
+```
+
+</CodeGroup>
+
+::
+
+您现在可以使用 `useRuntimeConfig()` 访问运行时配置。
+
+```ts [api/example.get.ts]
+import { defineHandler } from "nitro/h3";
+import { useRuntimeConfig } from "nitro/runtime-config";
+
+export default defineHandler((event) => {
+  return useRuntimeConfig().apiToken; // 返回 `dev_token`
+});
+```
+
+请在事件处理程序和工具内使用 `useRuntimeConfig(event)`，并**避免**在环境全局上下文中调用它。这可能会导致意外行为，例如在不同请求之间共享相同的运行时配置。
+
+### 本地开发
+
+最后，您可以使用环境变量更新运行时配置。您可以在开发中使用 `.env` 或 `.env.local` 文件，并在生产中使用平台变量（见下文）。
+
+在项目根目录中创建一个 `.env` 文件：
+
+```bash [.env]
+NITRO_API_TOKEN="123"
+```
+
+重新启动开发服务器，获取 `/api/example` 端点，您应该看到 `123` 作为响应，而不是 `dev_token`。
+
+别忘了，您仍然可以通过 `import.meta.env` 或 `process.env` 通用访问环境变量，但避免在环境全局上下文中使用它们，以防止意外行为。
+
+### 生产环境
+
+您可以在生产环境中定义变量以更新运行时配置。所有变量必须以 `NITRO_` 为前缀，以便应用到运行时配置。它们将覆盖您在 `nitro.config.ts` 文件中定义的运行时配置变量。
+
+<warning>
+
+所有变量必须以 `NITRO_` 为前缀才能应用于运行时配置。它们将覆盖您在 `nitro.config.ts` 文件中定义的运行时配置变量。
+
+</warning>
+
+<CodeGroup>
+
+```bash [.env]
+NITRO_API_TOKEN="123"
+```
+
+```bash [.env (nuxt)]
+NUXT_API_TOKEN="123"
+```
+
+</CodeGroup>
+
+::
+
+在运行时配置中，使用 camelCase 定义键。在环境变量中，使用 snake_case 和大写字母定义键。
+
+```ts
+{
+  helloWorld: "foo"
+}
+```
+
+```bash
+NITRO_HELLO_WORLD="foo"
+```

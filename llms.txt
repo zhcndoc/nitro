@@ -1,0 +1,89 @@
+# Nitro 中文文档
+
+> 为任何 Vite 应用程序添加服务器 API 路由，并在您最喜欢的托管平台上零配置部署。
+
+## Documentation Sets
+
+- [Nitro 中文文档](https://nitro.zhcndoc.com/llms-full.txt): 为任何 Vite 应用程序添加服务器 API 路由，并在您最喜欢的托管平台上零配置部署。
+
+## Content
+
+- [介绍](https://nitro.zhcndoc.com/raw/docs.md): Nitro 是一个全栈框架，兼容任何运行时。它扩展了你的 Vite 应用，使其具备生产环境的服务器能力。
+- [快速开始](https://nitro.zhcndoc.com/raw/docs/quick-start.md): 从一个全新的 Nitro 项目开始，或者将它集成到现有的 Vite 项目中。
+- [Nitro 渲染器](https://nitro.zhcndoc.com/raw/docs/renderer.md): 使用渲染器处理所有未匹配的路由，返回自定义 HTML 或使用模板系统。
+- [服务器路由](https://nitro.zhcndoc.com/raw/docs/routing.md): Nitro 支持文件系统路由，自动将文件映射到 h3 路由。
+- [资源](https://nitro.zhcndoc.com/raw/docs/assets.md)
+- [配置](https://nitro.zhcndoc.com/raw/docs/configuration.md): 自定义和扩展 Nitro 默认设置。
+- [数据库](https://nitro.zhcndoc.com/raw/docs/database.md)
+- [生命周期](https://nitro.zhcndoc.com/raw/docs/lifecycle.md): 了解 Nitro 如何运行并处理传入到您的应用的请求。
+- [插件](https://nitro.zhcndoc.com/raw/docs/plugins.md): 使用插件来扩展 Nitro 的运行时行为。
+- [任务](https://nitro.zhcndoc.com/raw/docs/tasks.md): Nitro 任务允许在运行时进行开关操作。
+- [Nitro 服务器入口](https://nitro.zhcndoc.com/raw/docs/server-entry.md): 使用服务器入口可创建全局中间件，该中间件会在所有路由匹配之前运行。
+- [缓存](https://nitro.zhcndoc.com/raw/docs/cache.md): Nitro 提供了一种构建在存储层之上的缓存系统。
+- [KV 存储](https://nitro.zhcndoc.com/raw/docs/storage.md): Nitro 提供了一个内置存储层，可以抽象文件系统、数据库或任何其他数据源。
+- [迁移指南](https://nitro.zhcndoc.com/raw/docs/migration.md)
+- [夜间通道](https://nitro.zhcndoc.com/raw/docs/nightly.md): Nitro 有一个夜间发布通道，对于每次对 main 分支的提交会自动发布，以尝试最新的更改。
+- [概述](https://nitro.zhcndoc.com/raw/deploy.md): 了解更多关于 Nitro 部署提供者的信息。
+- [Node.js](https://nitro.zhcndoc.com/raw/deploy/runtimes/node.md): 使用 Node.js 运行 Nitro 应用程序。
+- [Bun](https://nitro.zhcndoc.com/raw/deploy/runtimes/bun.md): 使用 Bun 运行时运行 Nitro 应用程序。
+- [Deno](https://nitro.zhcndoc.com/raw/deploy/runtimes/deno.md): 使用 Deno 运行 Nitro 应用。
+- [Alwaysdata](https://nitro.zhcndoc.com/raw/deploy/providers/alwaysdata.md): 将 Nitro 应用部署到 alwaysdata。
+- [AWS Lambda](https://nitro.zhcndoc.com/raw/deploy/providers/aws.md): 将 Nitro 应用部署到 AWS Lambda。
+- [AWS Amplify](https://nitro.zhcndoc.com/raw/deploy/providers/aws-amplify.md): 将 Nitro 应用部署到 AWS Amplify Hosting。
+- [Azure](https://nitro.zhcndoc.com/raw/deploy/providers/azure.md): 将 Nitro 应用部署到 Azure 静态 Web 应用或 Functions。
+- [Cleavr](https://nitro.zhcndoc.com/raw/deploy/providers/cleavr.md): 将 Nitro 应用部署到 Cleavr。
+- [Cloudflare](https://nitro.zhcndoc.com/raw/deploy/providers/cloudflare.md): 部署 Nitro 应用到 Cloudflare。
+- [Deno Deploy](https://nitro.zhcndoc.com/raw/deploy/providers/deno-deploy.md): 将 Nitro 应用部署到 Deno Deploy。
+- [DigitalOcean](https://nitro.zhcndoc.com/raw/deploy/providers/digitalocean.md): 将 Nitro 应用部署到 DigitalOcean。
+- [Firebase](https://nitro.zhcndoc.com/raw/deploy/providers/firebase.md): 将 Nitro 应用部署到 Firebase。
+- [Flightcontrol](https://nitro.zhcndoc.com/raw/deploy/providers/flightcontrol.md): 通过 Flightcontrol 将 Nitro 应用程序部署到 AWS。
+- [Genezio](https://nitro.zhcndoc.com/raw/deploy/providers/genezio.md): 部署 Nitro 应用到 Genezio。
+- [GitHub Pages](https://nitro.zhcndoc.com/raw/deploy/providers/github-pages.md): 将 Nitro 应用部署到 GitHub Pages。
+- [GitLab Pages](https://nitro.zhcndoc.com/raw/deploy/providers/gitlab-pages.md): 将 Nitro 应用程序部署到 GitLab Pages。
+- [Heroku](https://nitro.zhcndoc.com/raw/deploy/providers/heroku.md): 将 Nitro 应用部署到 Heroku。
+- [IIS](https://nitro.zhcndoc.com/raw/deploy/providers/iis.md): 将 Nitro 应用部署到 IIS。
+- [Koyeb](https://nitro.zhcndoc.com/raw/deploy/providers/koyeb.md): 将 Nitro 应用部署到 Koyeb。
+- [Netlify](https://nitro.zhcndoc.com/raw/deploy/providers/netlify.md): 将 Nitro 应用部署到 Netlify 函数或边缘。
+- [Platform.sh](https://nitro.zhcndoc.com/raw/deploy/providers/platform-sh.md): 将 Nitro 应用部署到 platform.sh
+- [Render.com](https://nitro.zhcndoc.com/raw/deploy/providers/render.md): 部署 Nitro 应用到 Render.com。
+- [StormKit](https://nitro.zhcndoc.com/raw/deploy/providers/stormkit.md): 部署 Nitro 应用到 StormKit。
+- [Vercel](https://nitro.zhcndoc.com/raw/deploy/providers/vercel.md): 将 Nitro 应用部署到 Vercel。
+- [Zeabur](https://nitro.zhcndoc.com/raw/deploy/providers/zeabur.md): 将 Nitro 应用部署到 Zeabur。
+- [Zerops](https://nitro.zhcndoc.com/raw/deploy/providers/zerops.md): 将 Nitro 应用部署到 Zerops。
+- [配置](https://nitro.zhcndoc.com/raw/config.md)
+- [示例](https://nitro.zhcndoc.com/raw/examples.md): 探索 Nitro 示例，学习如何构建全栈应用程序
+- [Nitro 中文文档 - 发布全栈 Vite 应用](https://nitro.zhcndoc.com/raw/index.md)
+
+## Examples
+
+- [API 路由](https://nitro.zhcndoc.com/raw/examples/api-routes/readme.md): 基于文件的 API 路由，支持 HTTP 方法和动态参数。
+- [自动导入](https://nitro.zhcndoc.com/raw/examples/auto-imports/readme.md): 实用工具和组合式函数的自动导入。
+- [缓存处理器](https://nitro.zhcndoc.com/raw/examples/cached-handler/readme.md): 使用可配置的绕过逻辑缓存路由响应。
+- [自定义错误处理器](https://nitro.zhcndoc.com/raw/examples/custom-error-handler/readme.md): 使用全局错误处理器自定义错误响应。
+- [数据库](https://nitro.zhcndoc.com/raw/examples/database/readme.md): 内置数据库支持，使用 SQL 模板字面量。
+- [Elysia](https://nitro.zhcndoc.com/raw/examples/elysia/readme.md): 使用服务端入口将 Elysia 与 Nitro 集成。
+- [Express](https://nitro.zhcndoc.com/raw/examples/express/readme.md): 使用服务器入口将 Express 集成到 Nitro 中。
+- [Fastify](https://nitro.zhcndoc.com/raw/examples/fastify/readme.md): 使用服务器入口将 Fastify 与 Nitro 集成。
+- [你好，世界](https://nitro.zhcndoc.com/raw/examples/hello-world/readme.md): 使用 Web 标准 fetch 处理程序的最简 Nitro 服务器。
+- [Hono](https://nitro.zhcndoc.com/raw/examples/hono/readme.md): 使用服务器入口将 Hono 集成到 Nitro 中。
+- [导入别名](https://nitro.zhcndoc.com/raw/examples/import-alias/readme.md): 自定义导入别名，使模块路径更简洁。
+- [中间件](https://nitro.zhcndoc.com/raw/examples/middleware/readme.md): 用于身份验证、日志记录和请求修改的请求中间件。
+- [Mono JSX](https://nitro.zhcndoc.com/raw/examples/mono-jsx/readme.md): 在 Nitro 中使用 mono-jsx 进行服务器端 JSX 渲染。
+- [Nano JSX](https://nitro.zhcndoc.com/raw/examples/nano-jsx/readme.md): 在 Nitro 中使用 nano-jsx 进行服务器端 JSX 渲染。
+- [插件（Plugins）](https://nitro.zhcndoc.com/raw/examples/plugins/readme.md): 使用自定义插件扩展 Nitro，用于钩子和生命周期事件。
+- [自定义渲染器](https://nitro.zhcndoc.com/raw/examples/renderer/readme.md): 使用 Nitro 构建一个具有服务端数据获取功能的自定义 HTML 渲染器。
+- [运行时配置](https://nitro.zhcndoc.com/raw/examples/runtime-config/readme.md): 支持运行时访问的环境感知配置。
+- [服务器请求](https://nitro.zhcndoc.com/raw/examples/server-fetch/readme.md): 内部服务器到服务器的请求，无网络开销。
+- [Shiki](https://nitro.zhcndoc.com/raw/examples/shiki/readme.md): 使用 Shiki 实现在 Nitro 中的服务器端语法高亮。
+- [虚拟路由](https://nitro.zhcndoc.com/raw/examples/virtual-routes/readme.md): 使用 Nitro 的虚拟模块系统以编程方式定义路由。
+- [Vite Nitro 插件](https://nitro.zhcndoc.com/raw/examples/vite-nitro-plugin/readme.md): 将 Nitro 用作 Vite 插件，以编程方式配置。
+- [Vite RSC](https://nitro.zhcndoc.com/raw/examples/vite-rsc/readme.md): 使用 Vite 和 Nitro 的 React 服务器组件。
+- [Vite SSR HTML](https://nitro.zhcndoc.com/raw/examples/vite-ssr-html/readme.md): 使用原生 HTML、Vite 和 Nitro 实现服务器端渲染。
+- [使用 Preact 进行 SSR](https://nitro.zhcndoc.com/raw/examples/vite-ssr-preact/readme.md): 在 Nitro 中使用 Vite 和 Preact 实现服务器端渲染。
+- [使用 React 实现 SSR](https://nitro.zhcndoc.com/raw/examples/vite-ssr-react/readme.md): 在 Nitro 中使用 Vite 进行 React 的服务端渲染。
+- [使用 SolidJS 进行 SSR](https://nitro.zhcndoc.com/raw/examples/vite-ssr-solid/readme.md): 在 Nitro 中使用 Vite 进行 SolidJS 服务端渲染。
+- [使用 TanStack Router 实现 SSR](https://nitro.zhcndoc.com/raw/examples/vite-ssr-tsr-react/readme.md): 在 Nitro 中使用 Vite 结合 TanStack Router 实现客户端路由。
+- [使用 TanStack Start 进行 SSR](https://nitro.zhcndoc.com/raw/examples/vite-ssr-tss-react/readme.md): 使用 Vite 在 Nitro 中使用 TanStack Start 实现全栈 React。
+- [使用 Vue Router 的 SSR](https://nitro.zhcndoc.com/raw/examples/vite-ssr-vue-router/readme.md): 使用 Vite 的 Nitro 中使用 Vue Router 进行服务端渲染。
+- [Vite + tRPC](https://nitro.zhcndoc.com/raw/examples/vite-trpc/readme.md): 使用 Vite 在 Nitro 中通过 tRPC 实现端到端类型安全的 API。
+- [WebSocket](https://nitro.zhcndoc.com/raw/examples/websocket/readme.md): 支持 WebSocket 的实时双向通信。

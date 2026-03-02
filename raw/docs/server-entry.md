@@ -1,0 +1,176 @@
+# Nitro 服务器入口
+
+> 使用服务器入口可创建全局中间件，该中间件会在所有路由匹配之前运行。
+
+<warning>
+
+Nitro v3 Alpha 文档仍在开发中 — 期待更新、不完善之处以及偶尔的错误。
+
+</warning>
+
+服务器入口是 Nitro 中的一个特殊处理器，作为全局中间件，为所有传入请求运行，且在路由匹配之前执行（参见 [请求生命周期](/docs/architecture#request-lifecycle)）。它通常用于跨模块关注点，如认证、日志记录、请求预处理或创建自定义路由逻辑。
+
+## 自动检测的 `server.ts`
+
+默认情况下，Nitro 会自动在项目根目录或扫描目录中查找 `server.ts`（或 `.js`、`.mjs`、`.tsx` 等）文件。
+
+如果找到，Nitro 会将其作为服务器入口，并对所有传入请求运行。
+
+<code-group>
+
+```ts [server.ts]
+export default {
+  async fetch(req: Request) {
+    const url = new URL(req.url);
+
+    // 处理特定路由
+    if (url.pathname === "/health") {
+      return new Response("OK", {
+        status: 200,
+        headers: { "content-type": "text/plain" }
+      });
+    }
+
+    // 给所有请求添加自定义头
+    // 返回空(undefined)以继续执行下一个处理器
+  }
+}
+```
+
+```ts [routes/api/hello.ts]
+import { defineHandler } from "nitro/h3";
+
+export default defineHandler((event) => {
+  return { hello: "API" };
+});
+```
+
+</code-group>
+
+<tip>
+
+检测到 `server.ts` 后，Nitro 会在终端自动打印：`Using \`server.ts` as server entry.`
+
+</tip>
+
+在此设置下：
+
+- `/health` → 由服务器入口处理
+- `/api/hello` → 服务器入口先运行，然后执行 API 路由
+- `/about` 等 → 服务器入口先运行，随后继续路由或渲染器处理
+
+## 框架兼容性
+
+服务器入口是集成其他框架（如 [Elysia](https://elysia.zhcndoc.com/)、[Hono](https://hono.dev/) 或 [H3](https://h3.zhcndoc.com/)）的绝佳方式。
+
+<tabs>
+<tabs-item icon="i-undocs-h3" label="H3">
+
+```ts [server.ts]
+import { H3 } from "h3";
+
+const app = new H3()
+
+app.get("/", () => "⚡️ Hello from H3!");
+
+export default app;
+```
+
+</tabs-item>
+
+<tabs-item icon="i-undocs-hono" label="Hono">
+
+```ts [server.ts]
+import { Hono } from "hono";
+
+const app = new Hono();
+
+app.get("/", (c) => c.text("🔥 Hello from Hono!"));
+
+export default app;
+```
+
+</tabs-item>
+
+<tabs-item icon="i-undocs-elysia" label="Elysia">
+
+```ts [server.ts]
+import { Elysia } from "elysia";
+
+const app = new Elysia();
+
+app.get("/", (c) => "🦊 Hello from Elysia!");
+
+export default app;
+```
+
+</tabs-item>
+</tabs>
+
+## 自定义服务器入口文件
+
+你可以通过 Nitro 配置中的 `serverEntry` 选项指定自定义服务器入口文件。
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from 'nitro/config'
+
+export default defineNitroConfig({
+  serverEntry: './nitro.server.ts'
+})
+```
+
+## 使用事件处理器
+
+你也可以使用 `defineHandler` 导出事件处理器，以获得更好的类型推断和访问 h3 事件对象：
+
+```ts [server.ts]
+import { defineHandler } from "nitro/h3";
+
+export default defineHandler((event) => {
+  // 添加自定义上下文
+  event.context.requestId = crypto.randomUUID();
+  event.context.timestamp = Date.now();
+
+  // 记录请求日志
+  console.log(`[${event.context.requestId}] ${event.method} ${event.path}`);
+
+  // 继续执行下一个处理器（不返回任何内容）
+});
+```
+
+<important>
+
+如果你的服务器入口返回 `undefined` 或不返回任何内容，请求将继续由路由和渲染器处理；如果返回响应，则请求生命周期在此终止。
+
+</important>
+
+## 请求生命周期
+
+服务器入口作为全局中间件栈的一部分被调用，位置在路由规则之后、路由处理器之前：
+
+```md
+1. 服务器钩子：`request`
+2. 路由规则（头信息、重定向等）
+3. 全局中间件（middleware/）
+4. 服务器入口 ← 你现在所在的位置
+5. 路由（routes/）
+6. 渲染器（renderer.ts 或 index.html）
+```
+
+可将服务器入口视为路由匹配前运行的**最后一个全局中间件**。
+
+<read-more title="架构 > 请求生命周期" to="/docs/architecture#request-lifecycle">
+
+
+
+</read-more>
+
+## 最佳实践
+
+- 使用服务器入口处理影响**所有路由**的跨模块关注点
+- 返回 `undefined` 以继续处理，返回响应则终止流程
+- 保持服务器入口逻辑精简以获得更好性能
+- 使用全局中间件处理模块化关注点，而非单一庞大服务器入口
+- 可考虑使用 [Nitro 插件](/docs/plugins) 进行初始化逻辑
+- 避免在服务器入口中进行重量级计算（它会为每个请求运行）
+- 不要在服务器入口处理特定路由逻辑（更高效的方式是使用路由处理器）

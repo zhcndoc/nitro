@@ -1,0 +1,62 @@
+# 概述
+
+> 了解更多关于 Nitro 部署提供者的信息。
+
+Nitro 可以从相同的代码库生成适合不同托管提供者的不同输出格式。通过使用内置的预设，您可以轻松配置 Nitro 以几乎不需要额外代码或配置地调整其输出格式！
+
+## 默认输出
+
+默认的生产输出预设是 [Node.js server](/deploy/node)。
+
+在开发模式下运行 Nitro 时，Nitro 总是会使用名为 `nitro-dev` 的特殊预设，该预设使用 Node.js 以 ESM 的形式在隔离的 Worker 环境中运行，尽可能接近生产环境的行为。
+
+## 零配置提供者
+
+在使用 CI/CD 部署生产环境时，Nitro 会尝试自动检测提供者环境并相应地设置正确的配置，无需任何额外配置。目前，以下提供者可以通过零配置自动检测。
+
+- [aws amplify](/deploy/providers/aws-amplify)
+- [azure](/deploy/providers/azure)
+- [cloudflare](/deploy/providers/cloudflare)
+- [firebase app hosting](/deploy/providers/firebase#firebase-app-hosting)
+- [netlify](/deploy/providers/netlify)
+- [stormkit](/deploy/providers/stormkit)
+- [vercel](/deploy/providers/vercel)
+- [zeabur](/deploy/providers/zeabur)
+
+<warning>
+
+对于 Turborepo 用户，零配置检测将受到其严格环境模式的干扰。您可能需要显式地允许变量，或使用其宽松环境模式（使用 `--env-mode=loose` 标志）。
+
+</warning>
+
+## 更改部署预设
+
+如果您需要针对特定提供者构建 Nitro，您可以通过定义名为 `NITRO_PRESET` 或 `SERVER_PRESET` 的环境变量，或者通过更新您的 Nitro [配置](/docs/configuration)，或使用 `--preset` 参数来指定目标。
+
+建议在依赖于 CI/CD 的部署中使用环境变量的方法。
+
+**示例：** 定义 `NITRO_PRESET` 环境变量
+
+```bash
+nitro build --preset cloudflare_pages
+```
+
+**示例：** 更新 `nitro.config.ts` 文件
+
+```ts
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  preset: 'cloudflare_pages'
+})
+```
+
+## 兼容性日期
+
+部署提供者定期更新他们的运行时行为。Nitro 预设会更新以支持这些新功能。
+
+为了防止破坏现有部署，Nitro 使用兼容性日期。该日期允许您在项目创建时锁定行为。您还可以选择在准备好时选择未来的更新。
+
+当您创建一个新项目时，`compatibilityDate` 被设置为当前日期。此设置会保存在您的项目配置中。
+
+您应该定期更新兼容性日期。更新后，请始终彻底测试您的部署。以下是关键日期及其影响的列表。

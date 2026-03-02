@@ -1,0 +1,213 @@
+# Nitro 渲染器
+
+> 使用渲染器处理所有未匹配的路由，返回自定义 HTML 或使用模板系统。
+
+<warning>
+
+Nitro v3 Alpha 文档仍在完善中 — 可能有更新、部分功能不完善或偶有不准确之处。
+
+</warning>
+
+渲染器是 Nitro 中的一个特殊处理器，用于捕获所有未匹配任何特定 API 或路由处理器的请求。它通常用于服务器端渲染（SSR）、提供单页应用（SPA），或创建自定义 HTML 响应。
+
+## HTML 模板
+
+### 自动检测的 `index.html`
+
+默认情况下，Nitro 会自动在项目的 src 目录中查找 `index.html` 文件。
+
+如果找到，Nitro 会将其用作渲染器模板，并为所有未匹配的路由返回该文件。
+
+<code-group>
+
+```html [index.html]
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Vite + Nitro App</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+```
+
+```ts [routes/api/hello.ts]
+import { defineHandler } from "nitro/h3";
+
+export default defineHandler((event) => {
+  return { hello: "API" };
+});
+```
+
+</code-group>
+
+<tip>
+
+当检测到 `index.html` 时，Nitro 会自动在终端输出日志：`Using index.html as renderer template.`
+
+</tip>
+
+有了上述设置：
+
+- `/api/hello` → 由你的 API 路由处理
+- `/about`、`/contact` 等 → 返回 `index.html`
+
+### 自定义 HTML 文件
+
+你可以在 Nitro 配置中使用 `renderer.template` 选项指定自定义的 HTML 模板文件。
+
+<code-group>
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  renderer: {
+    template: './app.html'
+  }
+})
+```
+
+```html [app.html]
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Custom Template</title>
+  </head>
+  <body>
+    <div id="root">Loading...</div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
+```
+
+</code-group>
+
+### 超文本预处理器（实验性）
+
+Nitro 使用 [rendu](https://github.com/h3js/rendu) 超文本预处理器，提供一种使用 JavaScript 表达式创建动态 HTML 模板的简单强大方式。
+
+你可以使用特殊的定界符注入动态内容：
+
+- `{{ content }}` 输出 HTML 转义后的内容
+- `{{{ content }}}` 或 `<?= expression ?>` 输出原始（未转义）内容
+- `<? ... ?>` 用于 JavaScript 控制流
+
+还暴露了全局变量：
+
+- `$REQUEST`：传入的 Request 对象
+- `$METHOD`：HTTP 方法（GET、POST 等）
+- `$URL`：请求的 URL 对象
+- `$HEADERS`：请求头
+- `$RESPONSE`：响应配置对象
+- `$COOKIES`：只读的请求 Cookie 对象
+
+```html [index.html]
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dynamic template</title>
+  </head>
+  <body>
+    <h1>Hello {{ $REQUEST.url }}</h1>
+  </body>
+</html>
+```
+
+<read-more title="Rendu 文档" to="https://github.com/h3js/rendu">
+
+
+
+</read-more>
+
+## 自定义渲染器处理器
+
+对于更复杂的场景，你可以创建自定义的渲染器处理器，程序化生成响应。
+
+创建一个渲染器文件，并使用 `defineRenderHandler` 定义你的自定义渲染逻辑：
+
+```ts [renderer.ts]
+import { defineRenderHandler } from "nitro/runtime";
+
+export default defineRenderHandler((event) => {
+  return {
+    body: `<!DOCTYPE html>
+      <html>
+        <head>
+          <title>Custom Renderer</title>
+        </head>
+        <body>
+          <h1>Hello from custom renderer!</h1>
+          <p>当前路径: ${event.path}</p>
+        </body>
+      </html>`,
+    headers: {
+      'content-type': 'text/html; charset=utf-8'
+    }
+  }
+})
+```
+
+然后，在 Nitro 配置中指定该渲染器入口：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  renderer: {
+    handler: './renderer.ts'
+  }
+})
+```
+
+## 渲染器优先级
+
+渲染器始终作为一个兜底路由（`/**`）存在，拥有**最低优先级**。这意味着：
+
+<steps level="4">
+
+#### 具体的 API 路由优先匹配（如 `/api/users`）
+
+#### 具体的服务器路由其次匹配（如 `/about`）
+
+#### 渲染器捕获所有其他请求
+
+</steps>
+
+```md
+api/
+  users.ts        → /api/users （优先匹配）
+routes/
+  about.ts        → /about （次优先匹配）
+renderer.ts         → /** （捕获所有其他路由）
+```
+
+<warning>
+
+如果你在路由中定义了一个 catch-all 路由（`[...].ts`），Nitro 会警告该路由将被渲染器覆盖。请使用更具体的路由或不同的 HTTP 方法以避免冲突。
+
+</warning>
+
+<read-more title="Lifecycle" to="/docs/lifecycle">
+
+
+
+</read-more>
+
+## 使用场景
+
+### 单页应用（SPA）
+
+为所有路由返回 SPA 的 `index.html`，以支持客户端路由：
+
+<tip>
+
+这也是 Nitro 和 Vite 配合使用时的默认行为。
+
+</tip>

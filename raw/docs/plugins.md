@@ -1,0 +1,93 @@
+# 插件
+
+> 使用插件来扩展 Nitro 的运行时行为。
+
+<warning>
+
+Nitro v3 Alpha 文档仍在开发中 — 预计会有更新、不完善之处以及偶尔的不准确。
+
+</warning>
+
+Nitro 插件将在服务器启动时**执行一次**，以允许扩展 Nitro 的运行时行为。<br />
+
+
+它们接收 `nitroApp` 上下文，可用于挂载 Nitro 生命周期事件。
+
+插件会从 `plugins/` 目录自动注册，并在第一次 Nitro 初始化时同步运行（按文件名顺序）。
+
+**示例：**
+
+```ts [plugins/test.ts]
+import { definePlugin } from "nitro";
+
+export default definePlugin((nitroApp) => {
+  console.log('Nitro 插件', nitroApp)
+})
+```
+
+如果你的插件在其他目录，可以使用 `plugins` 选项：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  plugins: ['my-plugins/hello.ts']
+})
+```
+
+## Nitro 运行时钩子
+
+你可以使用 Nitro 的 [hooks](https://github.com/unjs/hookable) 来通过插件注册自定义（异步或同步）函数，以扩展 Nitro 的默认运行时行为。
+
+**示例：**
+
+```ts
+import { definePlugin } from "nitro";
+
+export default definePlugin((nitro) => {
+  nitro.hooks.hook("close", async () => {
+    // 当 nitro 正在关闭时执行
+  });
+})
+```
+
+### 可用的钩子
+
+- `"close", () => {}`
+- `"request", (event) => {}`
+- `"error", (error, { event? }) => {}`
+- `"response", (res, event) => {}`
+
+## 示例
+
+### 捕获错误
+
+你可以使用插件捕获所有应用错误。
+
+```ts
+import { definePlugin } from "nitro";
+
+export default definePlugin((nitro) => {
+  nitro.hooks.hook("error", async (error, { event }) => {
+    console.error(`${event.path} 应用错误:`, error)
+  });
+})
+```
+
+### 优雅关闭
+
+服务器将优雅关闭，并等待由 event.waitUntil 发起的任何后台挂起任务完成。
+
+### 请求和响应生命周期
+
+你可以使用插件注册钩子，在请求生命周期中运行：
+
+```ts
+import { definePlugin } from "nitro";
+
+export default definePlugin((nitroApp) => {
+  nitroApp.hooks.hook("request", (req) => {
+    console.log("on request", req.url);
+  });
+});
+```
