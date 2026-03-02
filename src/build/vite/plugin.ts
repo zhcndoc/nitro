@@ -96,17 +96,50 @@ function nitroEnv(ctx: NitroPluginContext): VitePlugin {
         ...createServiceEnvironments(ctx),
         nitro: createNitroEnvironment(ctx),
       };
-      environments.client = {
-        consumer: userConfig.environments?.client?.consumer ?? "client",
-        build: {
-          rollupOptions: {
-            input:
-              userConfig.environments?.client?.build?.rollupOptions?.input ??
-              useNitro(ctx).options.renderer?.template,
-          },
-        },
-      };
-      debug("[env]  Environments:", Object.keys(environments).join(", "));
+
+      let clientEntry: string | undefined;
+      let clientEntryConfigured = !!getEntry(
+        userConfig.environments?.client?.build?.rolldownOptions?.input ||
+          userConfig.environments?.client?.build?.rollupOptions?.input
+      );
+      if (!clientEntryConfigured) {
+        const rendererTemplate = useNitro(ctx).options.renderer?.template;
+        if (rendererTemplate) {
+          // Use Nitro renderer template as client entry
+          clientEntry = rendererTemplate;
+          ctx.nitro!.logger.info(
+            `Using Nitro renderer template \`${prettyPath(rendererTemplate)}\` as vite client entry.`
+          );
+        } else {
+          // Auto-detect client entry
+          clientEntry = resolveModulePath("./entry-client", {
+            try: true,
+            extensions: DEFAULT_EXTENSIONS,
+            from: ["app", "src", ""].flatMap((d) =>
+              [ctx.nitro!.options.rootDir, ...ctx.nitro!.options.scanDirs].map(
+                (s) => join(s, d) + "/"
+              )
+            ),
+          });
+          if (clientEntry) {
+            ctx.nitro!.logger.info(`Using \`${prettyPath(clientEntry)}\` as vite client entry.`);
+          }
+        }
+      }
+      if (clientEntry) {
+        environments.client = {
+          consumer: userConfig.environments?.client?.consumer ?? "client",
+          build: clientEntryConfigured
+            ? undefined
+            : {
+                rollupOptions: {
+                  input: clientEntry ? { index: clientEntry } : undefined,
+                },
+              },
+        };
+        debug("[env]  Environments:", Object.keys(environments).join(", "));
+      }
+
       return {
         environments,
       };
@@ -238,31 +271,36 @@ function nitroMain(ctx: NitroPluginContext): VitePlugin {
       return configureViteDevServer(ctx, server);
     },
 
-    // Automatically reload the client when a server module is updated
+    // Invalidate server-only modules and optionally reload the browser
     // see: https://github.com/vitejs/vite/issues/19114
     async hotUpdate({ server, modules, timestamp }) {
+      if (ctx.pluginConfig.experimental?.vite?.serverReload === false) {
+        return;
+      }
       const env = this.environment;
-      if (
-        ctx.pluginConfig.experimental?.vite.serverReload === false ||
-        env.config.consumer === "client"
-      ) {
+      if (env.config.consumer === "client") {
         return;
       }
       const clientEnvs = Object.values(server.environments).filter(
         (env) => env.config.consumer === "client"
       );
-      let hasServerOnlyModule = false;
+      const serverOnlyModules: EnvironmentModuleNode[] = [];
+      const sharedModules: EnvironmentModuleNode[] = [];
       const invalidated = new Set<EnvironmentModuleNode>();
       for (const mod of modules) {
         if (mod.id && !clientEnvs.some((env) => env.moduleGraph.getModuleById(mod.id!))) {
-          hasServerOnlyModule = true;
+          serverOnlyModules.push(mod);
           env.moduleGraph.invalidateModule(mod, invalidated, timestamp, false);
+        } else {
+          sharedModules.push(mod);
         }
       }
-      if (hasServerOnlyModule) {
+      if (serverOnlyModules.length > 0) {
         env.hot.send({ type: "full-reload" });
-        server.ws.send({ type: "full-reload" });
-        return [];
+        if (sharedModules.length === 0 && serverOnlyModules.some((m) => m.environment !== "ssr")) {
+          server.ws.send({ type: "full-reload" });
+        }
+        return sharedModules;
       }
     },
   };
@@ -375,7 +413,10 @@ async function setupNitroContext(
         ctx.nitro!.logger.info(`Using \`${prettyPath(ssrEntry)}\` as vite ssr entry.`);
       }
     } else {
-      let ssrEntry = getEntry(userConfig.environments.ssr.build?.rollupOptions?.input);
+      let ssrEntry = getEntry(
+        userConfig.environments.ssr.build?.rolldownOptions?.input ||
+          userConfig.environments.ssr.build?.rollupOptions?.input
+      );
       if (typeof ssrEntry === "string") {
         ssrEntry =
           resolveModulePath(ssrEntry, {

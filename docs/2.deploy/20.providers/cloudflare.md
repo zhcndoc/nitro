@@ -111,6 +111,30 @@ export default defineConfig({
 })
 ```
 
+### 定时任务（Cron 触发器）
+
+当使用带有 `scheduledTasks` 的 [Nitro 任务](/docs/tasks) 时，Nitro 会在构建时自动在 wrangler 配置中生成 [Cron 触发器](https://developers.cloudflare.com/workers/configuration/cron-triggers/)。
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  preset: "cloudflare_module",
+  experimental: {
+    tasks: true,
+  },
+  scheduledTasks: {
+    "* * * * *": ["cms:update"],
+    "0 15 1 * *": ["db:cleanup"],
+  },
+  cloudflare: {
+    deployConfig: true,
+  },
+})
+```
+
+无需手动配置 Wrangler，Nitro 会为你处理。
+
 ## Cloudflare Pages
 
 **预设:** `cloudflare_pages`
