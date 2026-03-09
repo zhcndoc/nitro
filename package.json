@@ -168,7 +168,8 @@
     "wrangler": "^4.71.0",
     "xml2js": "^0.6.2",
     "youch": "^4.1.0",
-    "youch-core": "^0.3.3"
+    "youch-core": "^0.3.3",
+    "zephyr-agent": "^0.1.14"
   },
   "peerDependencies": {
     "dotenv": "*",
@@ -176,7 +177,8 @@
     "jiti": "^2.6.1",
     "rollup": "^4.59.0",
     "vite": "^7 || ^8 || >=8.0.0-0",
-    "xml2js": "^0.6.2"
+    "xml2js": "^0.6.2",
+    "zephyr-agent": "^0.1.14"
   },
   "peerDependenciesMeta": {
     "dotenv": {
@@ -195,6 +197,9 @@
       "optional": true
     },
     "jiti": {
+      "optional": true
+    },
+    "zephyr-agent": {
       "optional": true
     }
   },
