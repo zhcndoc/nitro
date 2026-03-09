@@ -34,10 +34,7 @@ const zephyr = defineNitroPreset(
       },
       compiled: async (nitro: Nitro) => {
         try {
-          if (
-            !(globalThis as any).__nitroDeploying__ &&
-            nitro.options.zephyr?.deployOnBuild === false
-          ) {
+          if (!(globalThis as any).__nitroDeploying__ && !nitro.options.zephyr?.deployOnBuild) {
             nitro.logger.info(`[${LOGGER_TAG}] Zephyr deploy skipped on build.`);
             return;
           }
