@@ -65,7 +65,10 @@ describe("zephyr preset", () => {
       };
     });
 
+    (globalThis as any).__nitroDeploying__ = true;
+
     const preset = await getZephyrPreset();
+
     const hooks = preset.hooks!;
     const nitro = {
       options: {
@@ -83,6 +86,8 @@ describe("zephyr preset", () => {
     } as any;
 
     await hooks.compiled?.(nitro);
+
+    delete (globalThis as any).__nitroDeploying__;
 
     expect(importDep).toHaveBeenCalledWith({
       id: "zephyr-agent",
