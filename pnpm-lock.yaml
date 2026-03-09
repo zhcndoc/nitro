@@ -35,8 +35,8 @@ importers:
         specifier: ^2.6.1
         version: 2.6.1
       nf3:
-        specifier: ^0.3.10
-        version: 0.3.10
+        specifier: ^0.3.11
+        version: 0.3.11
       ofetch:
         specifier: ^2.0.0-alpha.3
         version: 2.0.0-alpha.3
@@ -5163,8 +5163,8 @@ packages:
     peerDependencies:
       typescript: '5'
 
-  nf3@0.3.10:
-    resolution: {integrity: sha512-UlqmHkZiHGgSkRj17yrOXEsSu5ECvtlJ3Xm1W5WsWrTKgu9m7OjrMZh9H/ME2LcWrTlMD0/vmmNVpyBG4yRdGg==}
+  nf3@0.3.11:
+    resolution: {integrity: sha512-ObKp/SA3f1g1f/OMeDlRWaZmqGgk7A0NnDIbeO7c/MV4r/quMlpP/BsqMGuTi3lUlXbC1On8YH7ICM2u2bIAOw==}
 
   node-abi@3.87.0:
     resolution: {integrity: sha512-+CGM1L1CgmtheLcBuleyYOn7NWPVu0s0EJH2C4puxgEZb9h8QpR9G2dBfZJOAUhi7VQxuBPMd0hiISWcTyiYyQ==}
@@ -11535,7 +11535,7 @@ snapshots:
     dependencies:
       typescript: 5.9.3
 
-  nf3@0.3.10: {}
+  nf3@0.3.11: {}
 
   node-abi@3.87.0:
     dependencies:
