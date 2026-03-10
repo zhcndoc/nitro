@@ -391,6 +391,34 @@ export function testNitro(
     expect(headers).toMatchObject(expectedHeaders);
   });
 
+  describe("handles route rules - basic auth", () => {
+    it("rejects request with bad creds", async () => {
+      const { status, headers } = await callHandler({
+        url: "/rules/basic-auth",
+        headers: {
+          Authorization: "Basic " + btoa("user:wrongpass"),
+        },
+      });
+      expect(status).toBe(401);
+      expect(headers["www-authenticate"]).toBe('Basic realm="Secure Area"');
+    });
+
+    it("allows request with correct password", async () => {
+      const { status } = await callHandler({
+        url: "/rules/basic-auth/test",
+        headers: {
+          Authorization: "Basic " + btoa("admin:secret"),
+        },
+      });
+      expect(status).toBe(200);
+    });
+
+    it("disabled basic-auth for sub-rules", async () => {
+      const { status } = await callHandler({ url: "/rules/basic-auth/no-auth" });
+      expect(status).toBe(200);
+    });
+  });
+
   it("handles route rules - allowing overriding", async () => {
     const override = await callHandler({ url: "/rules/nested/override" });
     expect(override.headers.location).toBe("/other");
