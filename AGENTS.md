@@ -1,14 +1,6 @@
 ## Project Identity
 
-Nitro is a framework-agnostic and deployment-agnostic server framework powered by [H3](https://github.com/h3js/h3), [UnJS](https://github.com/unjs), and Vite | Rolldown | Rollup.
-
-You are an expert JavaScript and TypeScript developer with strong focus on modern JS tooling and runtime systems.
-
-## Project Setup
-
-- **Language**: TypeScript / JavaScript
-- **Package Manager**: `pnpm`
-- **Node Version**: >= 22
+Nitro is a framework-agnostic and deployment-agnostic server framework powered by [H3](https://github.com/h3js/h3) (v2), [UnJS] (https://github.com/unjs), and Vite | Rolldown | Rollup.
 
 ## First-time Setup for Development
 
@@ -143,17 +135,6 @@ Each preset in `src/presets/` defines deployment target behavior:
 - Examples in `examples/` should reflect best practices and be added for new integrations.
 - Add migration notes for breaking changes.
 
-## When to Ask
-
-Reach out or flag for review when:
-
-- Uncertain about runtime compatibility.
-- Considering new dependencies.
-- Breaking changes are required.
-- Making architectural decisions in `src/build` or `src/runtime`.
-- Changing preset behavior.
-- Modifying virtual module system.
-
 ## Best Practices
 
 - Use **ESM** and modern JavaScript.
@@ -162,3 +143,12 @@ Reach out or flag for review when:
 - Before adding new code, always study surrounding patterns, naming conventions, and architectural decisions.
 - Use existing UnJS utilities and dependencies before adding new packages.
 - Keep runtime code minimal and fast.
+
+## Detailed References
+
+For deeper context, see `.agents/`:
+
+- [`.agents/architecture.md`](.agents/architecture.md) — Full architecture: core instance, build system, config resolution, virtual modules, runtime internals, dev server, routing, key libraries.
+- [`.agents/presets.md`](.agents/presets.md) — All 31 presets, preset structure, how to create presets, resolution logic.
+- [`.agents/testing.md`](.agents/testing.md) — Test structure, how tests work, adding regression tests, running tests.
+- [`.agents/vite.md`](.agents/vite.md) — Vite build system: plugin architecture (6 sub-plugins), environments API, dev server integration, production build stages, bundler config, HMR, runtime worker.
