@@ -7,6 +7,7 @@ const { values: args } = parseArgs({
   allowNegative: true,
   options: {
     tests: { type: "boolean", default: true },
+    precheck: { type: "boolean", default: true },
   },
 });
 
@@ -18,16 +19,20 @@ const c = {
   gray: (s: string) => `\x1B[90m${s}\x1B[0m`,
 };
 
-function run(cmd: string, opts?: { silent?: boolean }) {
-  console.log(c.gray(`$ ${cmd}`));
-  return execSync(cmd, {
-    stdio: opts?.silent ? "pipe" : "inherit",
-    encoding: "utf8",
-  });
-}
+main().catch((error) => {
+  console.error(c.red(`\nError: ${error.message}\n`));
+  process.exit(1);
+});
 
 async function main() {
   console.log(c.bold("\n🚀 Nitro Release\n"));
+
+  // 0. Prechecks
+  if (!args.precheck) {
+    console.log(c.gray("→ Skipping prechecks (--no-precheck)\n"));
+  } else {
+    await precheck();
+  }
 
   // 1. Build and Test
   if (!args.tests) {
@@ -75,7 +80,51 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(c.red(`\nError: ${error.message}\n`));
-  process.exit(1);
-});
+function run(cmd: string, opts?: { silent?: boolean }) {
+  console.log(c.gray(`$ ${cmd}`));
+  return execSync(cmd, {
+    stdio: opts?.silent ? "pipe" : "inherit",
+    encoding: "utf8",
+  });
+}
+
+async function precheck() {
+  console.log(c.cyan("→ Running prechecks...\n"));
+
+  // Check we are on main branch
+  const branch = run("git rev-parse --abbrev-ref HEAD", { silent: true }).trim();
+  if (branch !== "main") {
+    throw new Error(`Must be on "main" branch (currently on "${branch}")`);
+  }
+
+  // Check no dirty state
+  const status = run("git status --porcelain", { silent: true }).trim();
+  if (status) {
+    throw new Error(`Working tree is dirty:\n${status}`);
+  }
+
+  // Check local HEAD matches remote main
+  run("git fetch origin main", { silent: true });
+  const localHead = run("git rev-parse HEAD", { silent: true }).trim();
+  const remoteHead = run("git rev-parse origin/main", { silent: true }).trim();
+  if (localHead !== remoteHead) {
+    throw new Error(
+      `Local HEAD (${localHead.slice(0, 8)}) does not match origin/main (${remoteHead.slice(0, 8)})`
+    );
+  }
+
+  // Check all GitHub Actions completed successfully for HEAD commit
+  const ciConclusions = run(
+    `gh run list --branch main --commit ${remoteHead} --status completed --json conclusion -q ".[].conclusion"`,
+    { silent: true }
+  ).trim();
+  if (!ciConclusions) {
+    throw new Error("No completed GitHub Actions runs found for HEAD");
+  }
+  const failed = ciConclusions.split("\n").filter((c) => c !== "success");
+  if (failed.length > 0) {
+    throw new Error(`GitHub Actions did not all pass for HEAD (failed: ${failed.join(", ")})`);
+  }
+
+  console.log(c.green("  All prechecks passed!\n"));
+}
