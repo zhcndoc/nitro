@@ -2,7 +2,7 @@
 import { execSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
-import { setTimeout as sleep } from "node:timers/promises";
+// import { setTimeout as sleep } from "node:timers/promises";
 
 const { values: args } = parseArgs({
   allowNegative: true,
