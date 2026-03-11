@@ -62,9 +62,7 @@ async function main() {
   console.log(c.green(c.bold(`\n✅ Release ${version} prepared!\n`)));
 
   // Prompt to push
-  process.stdout.write(
-    c.cyan(`  Push with ${c.bold("git push --follow-tags")}? (yes/no) `),
-  );
+  process.stdout.write(c.cyan(`  Push with ${c.bold("git push --follow-tags")}? (yes/no) `));
   const answer = await new Promise<string>((resolve) => {
     process.stdin.setEncoding("utf8");
     process.stdin.once("data", (data) => resolve(data.toString().trim()));
@@ -73,11 +71,7 @@ async function main() {
     run("git push --follow-tags");
     console.log(c.green(c.bold("\n🎉 Released!\n")));
   } else {
-    console.log(
-      c.cyan(
-        `\n  Run ${c.bold("git push --follow-tags")} manually to publish.\n`,
-      ),
-    );
+    console.log(c.cyan(`\n  Run ${c.bold("git push --follow-tags")} manually to publish.\n`));
   }
 }
 
