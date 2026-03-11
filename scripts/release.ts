@@ -62,6 +62,7 @@ async function main() {
     process.stdin.setEncoding("utf8");
     process.stdin.once("data", (data) => resolve(data.toString().trim()));
   });
+  process.stdin.destroy();
   if (answer === "yes") {
     run("git push --follow-tags");
     console.log(c.green(c.bold("\n🎉 Released!\n")));
