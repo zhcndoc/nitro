@@ -2,11 +2,11 @@
 import { execSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
+import { setTimeout as sleep } from "node:timers/promises";
 
 const { values: args } = parseArgs({
   allowNegative: true,
   options: {
-    tests: { type: "boolean", default: true },
     precheck: { type: "boolean", default: true },
   },
 });
@@ -27,21 +27,11 @@ main().catch((error) => {
 async function main() {
   console.log(c.bold("\n🚀 Nitro Release\n"));
 
-  // 0. Prechecks
+  // 1. Prechecks
   if (!args.precheck) {
     console.log(c.gray("→ Skipping prechecks (--no-precheck)\n"));
   } else {
     await precheck();
-  }
-
-  // 1. Build and Test
-  if (!args.tests) {
-    console.log(c.gray("→ Skipping build/tests (--no-tests)\n"));
-  } else {
-    console.log(c.cyan("\n→ Building...\n"));
-    run("pnpm build");
-    console.log(c.cyan("→ Running tests...\n"));
-    run("pnpm test");
   }
 
   // 2. Bump version
@@ -80,8 +70,10 @@ async function main() {
   }
 }
 
-function run(cmd: string, opts?: { silent?: boolean }) {
-  console.log(c.gray(`$ ${cmd}`));
+function run(cmd: string, opts?: { silent?: boolean; quiet?: boolean }) {
+  if (!opts?.quiet) {
+    console.log(c.gray(`$ ${cmd}`));
+  }
   return execSync(cmd, {
     stdio: opts?.silent ? "pipe" : "inherit",
     encoding: "utf8",
@@ -114,16 +106,45 @@ async function precheck() {
   }
 
   // Check all GitHub Actions completed successfully for HEAD commit
-  const ciConclusions = run(
-    `gh run list --branch main --commit ${remoteHead} --status completed --json conclusion -q ".[].conclusion"`,
-    { silent: true }
-  ).trim();
-  if (!ciConclusions) {
-    throw new Error("No completed GitHub Actions runs found for HEAD");
+  type CIRun = { status: string; conclusion: string; name: string; databaseId: number };
+  type CIJob = { status: string; conclusion: string; name: string };
+  const pollInterval = 15_000;
+  let ciRuns: CIRun[] = [];
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    ciRuns = JSON.parse(
+      run(
+        `gh run list --branch main --commit ${remoteHead} --json status,conclusion,name,databaseId`,
+        { silent: true, quiet: true }
+      )
+    ) as CIRun[];
+    if (ciRuns.length === 0) {
+      throw new Error("No GitHub Actions runs found for HEAD");
+    }
+    const pending = ciRuns.filter((r) => r.status !== "completed");
+    if (pending.length === 0) break;
+    console.log(c.gray(`  Waiting for ${pending.map((r) => r.name).join(", ")}...`));
+    await sleep(pollInterval);
   }
-  const failed = ciConclusions.split("\n").filter((c) => c !== "success");
-  if (failed.length > 0) {
-    throw new Error(`GitHub Actions did not all pass for HEAD (failed: ${failed.join(", ")})`);
+
+  // Fetch jobs for each run and print summary
+  const allFailed: string[] = [];
+  for (const r of ciRuns) {
+    const jobs = JSON.parse(
+      run(`gh run view ${r.databaseId} --json jobs -q ".jobs"`, { silent: true, quiet: true })
+    ) as CIJob[];
+    const runIcon = r.conclusion === "success" ? c.green("✓") : c.red("✗");
+    console.log(`  ${runIcon} ${c.bold(r.name)}`);
+    for (const job of jobs) {
+      const jobIcon = job.conclusion === "success" ? c.green("✓") : c.red("✗");
+      console.log(`    ${jobIcon} ${job.name}`);
+      if (job.conclusion !== "success") {
+        allFailed.push(`${r.name} > ${job.name} (${job.conclusion})`);
+      }
+    }
+  }
+  if (allFailed.length > 0) {
+    throw new Error(`GitHub Actions failed:\n  ${allFailed.join("\n  ")}`);
   }
 
   console.log(c.green("  All prechecks passed!\n"));
