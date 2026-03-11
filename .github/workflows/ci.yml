@@ -90,7 +90,7 @@ jobs:
   publish-nitro-nightly:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment: deploy-nightly
+    environment: npm-publish-nightly
     permissions: { id-token: write, contents: read }
     needs: [tests-checks, tests-rollup, tests-rolldown]
     if: contains('refs/heads/main', github.ref) && github.event_name == 'push'

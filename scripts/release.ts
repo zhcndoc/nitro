@@ -1,5 +1,6 @@
 #!/bin/env node
 import { execSync } from "node:child_process";
+import { readFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
 
 const { values: args } = parseArgs({
@@ -28,29 +29,56 @@ function run(cmd: string, opts?: { silent?: boolean }) {
 async function main() {
   console.log(c.bold("\n🚀 Nitro Release\n"));
 
-  // 1. Test
+  // 1. Build and Test
   if (!args.tests) {
-    console.log(c.gray("→ Skipping tests (--no-tests)\n"));
+    console.log(c.gray("→ Skipping build/tests (--no-tests)\n"));
   } else {
+    console.log(c.cyan("\n→ Building...\n"));
+    run("pnpm build");
     console.log(c.cyan("→ Running tests...\n"));
     run("pnpm test");
   }
 
-  // 2. Build
-  console.log(c.cyan("\n→ Building...\n"));
-  run("pnpm build");
-
-  // 3. Bump version
+  // 2. Bump version
   console.log(c.cyan("\n→ Bumping version...\n"));
   run("node scripts/bump-version.ts");
 
+  // 3. Read new version
+  const pkg = JSON.parse(await readFile("package.json", "utf8"));
+  const version = `v${pkg.version}`;
+  console.log(c.cyan(`\n→ Version: ${c.bold(version)}\n`));
+
   // 4. Generate release notes
-  console.log(c.cyan("\n→ Generating release notes...\n"));
+  console.log(c.cyan("→ Generating release notes...\n"));
   run("pnpx changelogen --output CHANGELOG.md");
   console.log(c.green("  Written to CHANGELOG.md"));
-  execSync("code CHANGELOG.md", { stdio: "ignore" });
 
-  console.log(c.green(c.bold("\n✅ Release prepared!\n")));
+  // 5. Commit and tag
+  console.log(c.cyan("\n→ Creating release commit and tag...\n"));
+  run("git add package.json CHANGELOG.md");
+  run(`git commit -m "${version}"`);
+  run(`git tag -a ${version} -m "${version}"`);
+
+  console.log(c.green(c.bold(`\n✅ Release ${version} prepared!\n`)));
+
+  // Prompt to push
+  process.stdout.write(
+    c.cyan(`  Push with ${c.bold("git push --follow-tags")}? (yes/no) `),
+  );
+  const answer = await new Promise<string>((resolve) => {
+    process.stdin.setEncoding("utf8");
+    process.stdin.once("data", (data) => resolve(data.toString().trim()));
+  });
+  if (answer === "yes") {
+    run("git push --follow-tags");
+    console.log(c.green(c.bold("\n🎉 Released!\n")));
+  } else {
+    console.log(
+      c.cyan(
+        `\n  Run ${c.bold("git push --follow-tags")} manually to publish.\n`,
+      ),
+    );
+  }
 }
 
 main().catch((error) => {
