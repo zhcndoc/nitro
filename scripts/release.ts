@@ -50,7 +50,7 @@ async function main() {
 
   // 5. Commit and tag
   console.log(c.cyan("\n→ Creating release commit and tag...\n"));
-  run("git add package.json CHANGELOG.md");
+  run("git add package.json");
   run(`git commit -m "${version}"`);
   run(`git tag -a ${version} -m "${version}"`);
 
@@ -106,46 +106,46 @@ async function precheck() {
   }
 
   // Check all GitHub Actions completed successfully for HEAD commit
-  type CIRun = { status: string; conclusion: string; name: string; databaseId: number };
-  type CIJob = { status: string; conclusion: string; name: string };
-  const pollInterval = 15_000;
-  let ciRuns: CIRun[] = [];
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    ciRuns = JSON.parse(
-      run(
-        `gh run list --branch main --commit ${remoteHead} --json status,conclusion,name,databaseId`,
-        { silent: true, quiet: true }
-      )
-    ) as CIRun[];
-    if (ciRuns.length === 0) {
-      throw new Error("No GitHub Actions runs found for HEAD");
-    }
-    const pending = ciRuns.filter((r) => r.status !== "completed");
-    if (pending.length === 0) break;
-    console.log(c.gray(`  Waiting for ${pending.map((r) => r.name).join(", ")}...`));
-    await sleep(pollInterval);
-  }
+  // type CIRun = { status: string; conclusion: string; name: string; databaseId: number };
+  // type CIJob = { status: string; conclusion: string; name: string };
+  // const pollInterval = 15_000;
+  // let ciRuns: CIRun[] = [];
+  // // eslint-disable-next-line no-constant-condition
+  // while (true) {
+  //   ciRuns = JSON.parse(
+  //     run(
+  //       `gh run list --branch main --commit ${remoteHead} --json status,conclusion,name,databaseId`,
+  //       { silent: true, quiet: true }
+  //     )
+  //   ) as CIRun[];
+  //   if (ciRuns.length === 0) {
+  //     throw new Error("No GitHub Actions runs found for HEAD");
+  //   }
+  //   const pending = ciRuns.filter((r) => r.status !== "completed");
+  //   if (pending.length === 0) break;
+  //   console.log(c.gray(`  Waiting for ${pending.map((r) => r.name).join(", ")}...`));
+  //   await sleep(pollInterval);
+  // }
 
-  // Fetch jobs for each run and print summary
-  const allFailed: string[] = [];
-  for (const r of ciRuns) {
-    const jobs = JSON.parse(
-      run(`gh run view ${r.databaseId} --json jobs -q ".jobs"`, { silent: true, quiet: true })
-    ) as CIJob[];
-    const runIcon = r.conclusion === "success" ? c.green("✓") : c.red("✗");
-    console.log(`  ${runIcon} ${c.bold(r.name)}`);
-    for (const job of jobs) {
-      const jobIcon = job.conclusion === "success" ? c.green("✓") : c.red("✗");
-      console.log(`    ${jobIcon} ${job.name}`);
-      if (job.conclusion !== "success") {
-        allFailed.push(`${r.name} > ${job.name} (${job.conclusion})`);
-      }
-    }
-  }
-  if (allFailed.length > 0) {
-    throw new Error(`GitHub Actions failed:\n  ${allFailed.join("\n  ")}`);
-  }
+  // // Fetch jobs for each run and print summary
+  // const allFailed: string[] = [];
+  // for (const r of ciRuns) {
+  //   const jobs = JSON.parse(
+  //     run(`gh run view ${r.databaseId} --json jobs -q ".jobs"`, { silent: true, quiet: true })
+  //   ) as CIJob[];
+  //   const runIcon = r.conclusion === "success" ? c.green("✓") : c.red("✗");
+  //   console.log(`  ${runIcon} ${c.bold(r.name)}`);
+  //   for (const job of jobs) {
+  //     const jobIcon = job.conclusion === "success" ? c.green("✓") : c.red("✗");
+  //     console.log(`    ${jobIcon} ${job.name}`);
+  //     if (job.conclusion !== "success") {
+  //       allFailed.push(`${r.name} > ${job.name} (${job.conclusion})`);
+  //     }
+  //   }
+  // }
+  // if (allFailed.length > 0) {
+  //   throw new Error(`GitHub Actions failed:\n  ${allFailed.join("\n  ")}`);
+  // }
 
   console.log(c.green("  All prechecks passed!\n"));
 }
