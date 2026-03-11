@@ -33,7 +33,9 @@ jobs:
 
       - run: pnpm install
       - run: pnpm build
-      - run: pnpm test
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test:rolldown
 
       - name: Publish to npm with provenance
         # Uses OIDC trusted publishing — no NPM_TOKEN needed.
