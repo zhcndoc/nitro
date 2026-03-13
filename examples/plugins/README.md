@@ -1,75 +1,4 @@
----
-category: features
-icon: i-lucide-plug
----
-
-# 插件（Plugins）
-
-> 使用自定义插件扩展 Nitro，用于钩子和生命周期事件。
-
-<!-- automd:ui-code-tree src="." default="server/plugins/test.ts" ignore="README.md,GUIDE.md" expandAll -->
-
-::code-tree{defaultValue="server/plugins/test.ts" expandAll}
-
-```ts [nitro.config.ts]
-import { defineConfig } from "nitro";
-
-export default defineConfig({
-  serverDir: true,
-});
-```
-
-```json [package.json]
-{
-  "type": "module",
-  "scripts": {
-    "dev": "nitro dev",
-    "build": "nitro build"
-  },
-  "devDependencies": {
-    "nitro": "latest"
-  }
-}
-```
-
-```ts [server.ts]
-import { eventHandler } from "h3";
-
-export default eventHandler(() => "<h1>Hello Nitro!</h1>");
-```
-
-```json [tsconfig.json]
-{
-  "extends": "nitro/tsconfig"
-}
-```
-
-```ts [vite.config.ts]
-import { defineConfig } from "vite";
-import { nitro } from "nitro/vite";
-
-export default defineConfig({ plugins: [nitro()] });
-```
-
-```ts [server/plugins/test.ts]
-import { definePlugin } from "nitro";
-import { useNitroHooks } from "nitro/app";
-
-export default definePlugin((nitroApp) => {
-  const hooks = useNitroHooks();
-  hooks.hook("response", (event) => {
-    event.headers.set("content-type", "html; charset=utf-8");
-  });
-});
-```
-
-::
-
-<!-- /automd -->
-
-<!-- automd:file src="GUIDE.md" -->
-
-插件让你能够钩入 Nitro 的运行时生命周期。此示例展示了一个修改每个响应的 `Content-Type` 头的插件。在 `server/plugins/` 目录中创建文件，启动时它们会自动加载。
+Plugins let you hook into Nitro's runtime lifecycle. This example shows a plugin that modifies the `Content-Type` header on every response. Create files in `server/plugins/` and they're automatically loaded at startup.
 
 ## 定义插件
 
@@ -95,11 +24,4 @@ import { eventHandler } from "h3";
 export default eventHandler(() => "<h1>Hello Nitro!</h1>");
 ```
 
-该处理器返回 HTML 内容但没有设置内容类型。插件会自动为响应添加正确的 `Content-Type: html; charset=utf-8` 头。
-
-<!-- /automd -->
-
-## 了解更多
-
-- [插件](/docs/plugins)
-- [生命周期](/docs/lifecycle)
+The handler returns HTML without setting a content type. The plugin automatically adds the correct `Content-Type: html; charset=utf-8` header to the response.

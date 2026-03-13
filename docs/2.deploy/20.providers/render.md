@@ -8,11 +8,11 @@
 
 ## 设置应用
 
-1. [创建一个新的 Web 服务](https://dashboard.render.com/select-repo?type=web)并选择包含您代码的存储库。
-2. 确保选择了 'Node' 环境。
-3. 将启动命令更新为 `node .output/server/index.mjs`
-4. 点击 '高级' 并添加一个环境变量，`NITRO_PRESET` 设置为 `render_com`。您可能还需要添加一个 `NODE_VERSION` 环境变量，设置为 `18` 以确保构建成功（[文档](https://render.com/docs/node-version)）。
-5. 点击 '创建 Web 服务'。
+1. [创建一个新的 Web 服务](https://dashboard.render.com/select-repo?type=web)并选择包含您代码的存储库。  
+2. 确保选择了 'Node' 环境。  
+3. 将启动命令更新为 `node .output/server/index.mjs`  
+4. 点击 '高级' 并添加一个环境变量，`NITRO_PRESET` 设置为 `render_com`。您可能还需要添加一个 `NODE_VERSION` 环境变量，设置为 `20` 以确保构建成功（[文档](https://render.com/docs/node-version)）。  
+5. 点击 '创建 Web 服务'。  
 
 ## 基础设施即代码 (IaC)
 

@@ -26,7 +26,7 @@
 3. 在您的管理面板上，为您的应用 [创建一个新站点](https://admin.alwaysdata.com/site/add/) ，并设置以下特性:
    - *地址*: `[account_name].alwaysdata.net`
    - *类型*: Node.js
-   - *命令*: `node ./output/server/index.mjs`
+   - *命令*: `node .output/server/index.mjs`
    - *工作目录*: `www/my-app` （请根据您的部署路径进行调整）
    - *环境*:
 

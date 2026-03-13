@@ -1,65 +1,4 @@
----
-category: vite
-icon: i-logos-vitejs
----
-
-# Vite Nitro 插件
-
-> 将 Nitro 用作 Vite 插件，以编程方式配置。
-
-<!-- automd:ui-code-tree src="." default="vite.config.mjs" ignore="README.md,GUIDE.md" expandAll -->
-
-::code-tree{defaultValue="vite.config.mjs" expandAll}
-
-```json [package.json]
-{
-  "type": "module",
-  "scripts": {
-    "build": "vite build",
-    "preview": "vite preview",
-    "dev": "vite dev"
-  },
-  "devDependencies": {
-    "nitro": "latest",
-    "vite": "beta"
-  }
-}
-```
-
-```json [tsconfig.json]
-{
-  "extends": "nitro/tsconfig"
-}
-```
-
-```js [vite.config.mjs]
-import { defineConfig } from "vite";
-import { nitro } from "nitro/vite";
-
-export default defineConfig({
-  plugins: [
-    nitro(),
-    {
-      name: "my-nitro-plugin",
-      nitro: {
-        setup: (nitro) => {
-          nitro.options.routes["/"] = "#virtual-by-plugin";
-          nitro.options.virtual["#virtual-by-plugin"] =
-            `export default () => new Response("Hello from virtual entry!")`;
-        },
-      },
-    },
-  ],
-});
-```
-
-::
-
-<!-- /automd -->
-
-<!-- automd:file src="GUIDE.md" -->
-
-你可以不用单独的 `nitro.config.ts` 文件，直接在 Vite 配置中配置 Nitro。这样你可以访问 Nitro 的 setup 钩子，在那里以编程方式注册路由和虚拟模块。
+Instead of using a separate `nitro.config.ts`, you can configure Nitro directly in your Vite config. This gives you access to Nitro's setup hook where you can register routes and virtual modules programmatically.
 
 ## Vite 配置
 
@@ -84,10 +23,4 @@ export default defineConfig({
 });
 ```
 
-该配置添加了两个插件：`nitro()` 插件和一个使用 `nitro.setup` 钩子的自定义插件。在 setup 函数中，你可以访问 Nitro 的 options 对象。这个示例在 `/` 注册了一个虚拟路由，映射到虚拟模块 `#virtual-by-plugin`，并且内联定义了该模块。
-
-<!-- /automd -->
-
-## 了解更多
-
-- [配置](/docs/configuration)
+The config adds two plugins: the `nitro()` plugin and a custom plugin that uses the `nitro.setup` hook. Inside the setup function, you have access to Nitro's options object. This example registers a virtual route at `/` that maps to a virtual module `#virtual-by-plugin`, then defines that module inline.

@@ -106,6 +106,10 @@ export default defineConfig({
     "/rules/_/cached/**": { swr: true },
     "/api/proxy/**": { proxy: "/api/echo" },
     "/cdn/**": { proxy: "https://cdn.jsdelivr.net/**" },
+    "/rules/basic-auth/**": {
+      basicAuth: { username: "admin", password: "secret", realm: "Secure Area" },
+    },
+    "/rules/basic-auth/no-auth/**": { basicAuth: false },
     "**": { headers: { "x-test": "test" } },
   },
   prerender: {

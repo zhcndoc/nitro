@@ -1,78 +1,4 @@
----
-category: features
-icon: i-lucide-alert-circle
----
-
-# 自定义错误处理器
-
-> 使用全局错误处理器自定义错误响应。
-
-<!-- automd:ui-code-tree src="." default="error.ts" ignore="README.md,GUIDE.md" expandAll -->
-
-::code-tree{defaultValue="error.ts" expandAll}
-
-```ts [error.ts]
-import { defineErrorHandler } from "nitro";
-
-export default defineErrorHandler((error, _event) => {
-  return new Response(`自定义错误处理器: ${error.message}`, {
-    status: 500,
-    headers: { "Content-Type": "text/plain" },
-  });
-});
-```
-
-```ts [nitro.config.ts]
-import { defineConfig } from "nitro";
-// import errorHandler from "./error";
-
-export default defineConfig({
-  errorHandler: "./error.ts",
-  // devErrorHandler: errorHandler,
-});
-```
-
-```json [package.json]
-{
-  "type": "module",
-  "scripts": {
-    "dev": "nitro dev",
-    "build": "nitro build"
-  },
-  "devDependencies": {
-    "nitro": "latest"
-  }
-}
-```
-
-```ts [server.ts]
-import { defineHandler, HTTPError } from "nitro/h3";
-
-export default defineHandler(() => {
-  throw new HTTPError("示例错误！", { status: 500 });
-});
-```
-
-```json [tsconfig.json]
-{
-  "extends": "nitro/tsconfig"
-}
-```
-
-```ts [vite.config.ts]
-import { defineConfig } from "vite";
-import { nitro } from "nitro/vite";
-
-export default defineConfig({ plugins: [nitro()] });
-```
-
-::
-
-<!-- /automd -->
-
-<!-- automd:file src="GUIDE.md" -->
-
-此示例展示了如何拦截所有错误并返回自定义响应格式。当任何路由抛出错误时，Nitro 会调用你的错误处理器，而不是返回默认错误页面。
+This example shows how to intercept all errors and return a custom response format. When any route throws an error, Nitro calls your error handler instead of returning the default error page.
 
 ## 错误处理器
 
@@ -96,17 +22,11 @@ export default defineErrorHandler((error, _event) => {
 主处理器抛出一个错误，用以演示自定义错误处理器的作用：
 
 ```ts [server.ts]
-import { defineHandler, HTTPError } from "nitro/h3";
+import { defineHandler, HTTPError } from "nitro";
 
 export default defineHandler(() => {
   throw new HTTPError("示例错误！", { status: 500 });
 });
 ```
 
-当你访问页面时，不会看到默认的通用错误页面，而是会看到 “自定义错误处理器: 示例错误！”——这是因为错误处理器拦截了抛出的错误。
-
-<!-- /automd -->
-
-## 了解更多
-
-- [服务器入口](/docs/server-entry)
+When you visit the page, instead of seeing a generic error page, you'll see "Custom Error Handler: Example Error!" because the error handler intercepts the thrown error.

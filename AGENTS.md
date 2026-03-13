@@ -1,14 +1,6 @@
 ## 项目标识
 
-Nitro 是一个与框架和部署无关的服务器框架，基于 [H3](https://github.com/h3js/h3)、[UnJS](https://github.com/unjs) 以及 Vite | Rolldown | Rollup 提供支持。
-
-你是一位专注于现代 JS 工具链和运行时系统的 JavaScript 和 TypeScript 高级开发者。
-
-## 项目环境搭建
-
-- **语言**：TypeScript / JavaScript
-- **包管理器**：`pnpm`
-- **Node 版本**：>= 22
+Nitro is a framework-agnostic and deployment-agnostic server framework powered by [H3](https://github.com/h3js/h3) (v2), [UnJS] (https://github.com/unjs), and Vite | Rolldown | Rollup.
 
 ## 第一次开发环境搭建
 
@@ -121,43 +113,55 @@ Nitro 是一个与框架和部署无关的服务器框架，基于 [H3](https://
 
 ## 常见陷阱
 
-- **`src/runtime/` 中禁止使用 Node.js 特定 API** — 代码运行在多种运行环境（Node、Worker、Edge）。
-- **虚拟模块必须在 `src/build/virtual.ts` 中注册**。
-- **CLI 命令** 在 `src/cli/commands/`，每个文件导出一个命令定义。
-- **运行时大小重要** — 使用 `pnpm build` 检查打包体积影响。
-- **使用 `pathe` 替代 `node:path`** — 保证跨平台兼容。
+- **Don't use Node.js-specific APIs in `src/runtime/`** — Code runs in multiple runtimes (Node, workers, edge).
+- **Virtual modules must be registered** in `src/build/virtual.ts`.
+- **CLI commands** are in `src/cli/commands/` — Each file exports a command definition.
+- **Runtime size matters** — Check bundle impact with `pnpm build`.
+- **Use `pathe` not `node:path`** — Ensures cross-platform compatibility.
 
-## 错误与日志指南
+## Error & Logging Guidelines
 
-- 优先抛出明确错误，避免静默失败。
-- 构建/开发代码使用 `nitro.logger`，备选 `consola`。
-- `src/runtime/` 代码仅使用 `console`。
-- 可恢复情况使用警告，错误状态抛出异常。
-- 错误信息中加入操作性上下文。
+- Prefer explicit errors over silent failures.
+- Use `nitro.logger` in build/dev code, `consola` as fallback.
+- Use `console` only in `src/runtime/` code.
+- Use warnings for recoverable situations; throw for invalid states.
+- Include actionable context in error messages.
 
-## 文档要求
+## Documentation Requirements
 
-- 面向用户的变更需同步更新 `docs/`。
-- API 变更更新类型声明和 JSDoc 注释。
-- `examples/` 中示例须体现最佳实践，新集成需添加示例。
-- 破坏性变更需添加迁移说明。
+- Update `docs/` for user-facing changes.
+- Update types and JSDoc for API changes.
+- Examples in `examples/` should reflect best practices and be added for new integrations.
+- Add migration notes for breaking changes.
 
-## 何时咨询
+## Code Conventions
 
-遇到以下情况请联系或提交审查：
+- Use **ESM** and modern JavaScript; use explicit extensions (`.ts`, `.mjs`) in imports.
+- For `.json` imports, use `with { "type": "json" }`.
+- Avoid barrel files (`index.ts` re-exports); import directly from specific modules.
+- Place non-exported/internal helpers at the end of the file.
+- For multi-arg functions, use an options object as the second parameter.
+- Split logic across files; avoid long single-file modules (>200 LoC). Use `_*` prefix for internal files.
+- Prefer **Web APIs** over Node.js APIs where possible.
+- Do not add comments explaining what the line does unless prompted.
+- Before adding new code, study surrounding patterns, naming conventions, and architectural decisions.
+- Use existing UnJS utilities and dependencies before adding new packages.
+- Keep runtime code minimal and fast.
 
-- 不确定运行时兼容性。
-- 考虑引入新依赖。
-- 需进行破坏性变更。
-- 对 `src/build` 或 `src/runtime` 做架构决策。
-- 修改预设行为。
-- 修改虚拟模块系统。
+## Commit Conventions
 
-## 最佳实践
+- Use **semantic commit messages**, lower-case (e.g., `fix(cli): resolve path issue`).
+- Prefer to include scope (e.g., `feat(runtime):`, `fix(build):`).
+- Add a short description on the second line when helpful.
 
-- 使用 **ESM** 和现代 JavaScript。
-- 尽可能优先使用 **Web API** 替代 Node.js API。
-- 不要添加逐行注释说明代码，除非特别要求。
-- 添加新代码前，请先研究周边模式、命名规范和架构决策。
-- 先使用现有 UnJS 工具和依赖，避免随意添加新包。
-- 保持运行时代码精简高效。
+## Detailed References
+
+For deeper context, see `.agents/`:
+
+- [`.agents/architecture.md`](.agents/architecture.md) — Full architecture: core instance, build system, config resolution, virtual modules, runtime internals, dev server, routing, key libraries.
+- [`.agents/presets.md`](.agents/presets.md) — All 31 presets, preset structure, how to create presets, resolution logic.
+- [`.agents/testing.md`](.agents/testing.md) — Test structure, how tests work, adding regression tests, running tests.
+- [`.agents/vite.md`](.agents/vite.md) — Vite build system: plugin architecture (6 sub-plugins), environments API, dev server integration, production build stages, bundler config, HMR, runtime worker.
+- [`.agents/docs.md`](.agents/docs.md) — Documentation conventions: structure, preset naming (underscore), H3 v2 API patterns, import paths, common mistakes.
+
+- **Important:** H3 v2 updated docs is at `node_modules/h3/skills/h3/docs/TOC.md`
