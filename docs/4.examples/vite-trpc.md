@@ -110,8 +110,8 @@ icon: i-simple-icons-trpc
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@trpc/client": "^11.9.0",
-    "@trpc/server": "^11.9.0",
+    "@trpc/client": "^11.13.4",
+    "@trpc/server": "^11.13.4",
     "nitro": "latest",
     "vite": "latest",
     "zod": "^4.3.6"

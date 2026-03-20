@@ -20,9 +20,9 @@ icon: i-logos-react
     "dev": "vite dev"
   },
   "devDependencies": {
-    "@types/react": "^19.2.13",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.3",
+    "@vitejs/plugin-react": "^5.2.0",
     "nitro": "latest",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

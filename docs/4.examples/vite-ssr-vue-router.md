@@ -20,12 +20,12 @@ icon: i-logos-vue
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^6.0.4",
+    "@vitejs/plugin-vue": "^6.0.5",
     "nitro": "latest",
-    "unhead": "^2.1.3",
+    "unhead": "^2.1.12",
     "vite": "latest",
     "vite-plugin-devtools-json": "^1.0.0",
-    "vue": "^3.5.27",
+    "vue": "^3.5.30",
     "vue-router": "^4.6.4"
   }
 }
