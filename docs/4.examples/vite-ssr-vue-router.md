@@ -23,7 +23,7 @@ icon: i-logos-vue
     "@vitejs/plugin-vue": "^6.0.4",
     "nitro": "latest",
     "unhead": "^2.1.3",
-    "vite": "beta",
+    "vite": "latest",
     "vite-plugin-devtools-json": "^1.0.0",
     "vue": "^3.5.27",
     "vue-router": "^4.6.4"

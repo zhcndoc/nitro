@@ -113,7 +113,7 @@ icon: i-simple-icons-trpc
     "@trpc/client": "^11.9.0",
     "@trpc/server": "^11.9.0",
     "nitro": "latest",
-    "vite": "beta",
+    "vite": "latest",
     "zod": "^4.3.6"
   }
 }

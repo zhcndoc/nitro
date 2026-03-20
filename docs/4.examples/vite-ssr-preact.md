@@ -26,7 +26,7 @@ icon: i-logos-preact
     "preact": "^10.28.3",
     "preact-render-to-string": "^6.6.5",
     "tailwindcss": "^4.1.18",
-    "vite": "beta"
+    "vite": "latest"
   }
 }
 ```

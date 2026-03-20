@@ -27,7 +27,7 @@ icon: i-logos-react
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-refresh": "^0.18.0",
-    "vite": "beta"
+    "vite": "latest"
   }
 }
 ```

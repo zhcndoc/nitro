@@ -45,7 +45,7 @@ icon: i-simple-icons-tanstack
     "nitro": "latest",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "vite": "beta"
+    "vite": "latest"
   }
 }
 ```

@@ -37,7 +37,7 @@ icon: i-simple-icons-tanstack
     "@vitejs/plugin-react": "^5.1.3",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
-    "vite": "beta",
+    "vite": "latest",
     "vite-tsconfig-paths": "^6.0.5"
   }
 }

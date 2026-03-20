@@ -34,7 +34,7 @@ icon: i-logos-react
     "@vitejs/plugin-rsc": "^0.5.19",
     "nitro": "latest",
     "rsc-html-stream": "^0.0.7",
-    "vite": "beta"
+    "vite": "latest"
   }
 }
 ```

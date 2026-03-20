@@ -121,7 +121,7 @@ icon: i-logos-html-5
     "@tailwindcss/vite": "^4.1.18",
     "nitro": "latest",
     "tailwindcss": "^4.1.18",
-    "vite": "beta"
+    "vite": "latest"
   }
 }
 ```
