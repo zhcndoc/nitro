@@ -30,7 +30,7 @@ icon: i-logos-react
   "devDependencies": {
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
     "@vitejs/plugin-rsc": "^0.5.21",
     "nitro": "latest",
     "rsc-html-stream": "^0.0.7",

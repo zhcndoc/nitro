@@ -26,7 +26,7 @@ icon: i-logos-vue
     "vite": "latest",
     "vite-plugin-devtools-json": "^1.0.0",
     "vue": "^3.5.30",
-    "vue-router": "^4.6.4"
+    "vue-router": "^5.0.4"
   }
 }
 ```

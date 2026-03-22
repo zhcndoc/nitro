@@ -34,7 +34,7 @@ icon: i-simple-icons-tanstack
     "@types/node": "latest",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3",
     "vite": "latest",

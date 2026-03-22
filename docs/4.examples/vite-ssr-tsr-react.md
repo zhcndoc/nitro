@@ -41,7 +41,7 @@ icon: i-simple-icons-tanstack
     "@tanstack/router-plugin": "^1.167.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
     "nitro": "latest",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
