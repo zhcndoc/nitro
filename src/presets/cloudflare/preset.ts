@@ -43,7 +43,7 @@ const cloudflarePages = defineNitroPreset(
   {
     extends: "base-worker",
     entry: "./cloudflare/runtime/cloudflare-pages",
-    exportConditions: ["workerd"],
+    exportConditions: ["workerd", "worker"],
     minify: false,
     commands: {
       preview: "npx wrangler --cwd ./ pages dev",
@@ -137,7 +137,7 @@ const cloudflareModule = defineNitroPreset(
     output: {
       publicDir: "{{ output.dir }}/public/{{ baseURL }}",
     },
-    exportConditions: ["workerd"],
+    exportConditions: ["workerd", "worker"],
     minify: false,
     commands: {
       preview: "npx wrangler --cwd ./ dev",
