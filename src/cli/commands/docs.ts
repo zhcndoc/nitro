@@ -1,5 +1,6 @@
 import { execSync } from "node:child_process";
 import { defineCommand } from "citty";
+import { docsDir } from "nitro/meta";
 
 export default defineCommand({
   meta: {
@@ -23,9 +24,9 @@ export default defineCommand({
       } catch {}
     }) || ["npm", "x"];
     const runnerCmd = runner.join(" ");
-    const docsDir = new URL("../../../skills/nitro/docs", import.meta.url).pathname;
     const args = rawArgs?.join(" ") || "";
-    execSync(`${runnerCmd} mdzilla ${docsDir}${args ? ` ${args}` : ""}`, {
+    console.log({ docsDir });
+    execSync(`${runnerCmd} mdzilla ${docsDir!}${args ? ` ${args}` : ""}`, {
       stdio: "inherit",
     });
   },

@@ -151,9 +151,8 @@ export default defineBuildConfig({
       const { DocsManager, DocsSourceFS, exportDocsToFS } = await import("mdzilla");
       const man = new DocsManager(new DocsSourceFS("./docs"));
       await man.load();
-      await rmdir("./skills/nitro/docs").catch(() => {});
-      await mkdir("./skills/nitro/docs", { recursive: true });
-      await exportDocsToFS(man, "./skills/nitro/docs", {
+      await mkdir("./dist/docs", { recursive: true });
+      await exportDocsToFS(man, "./dist/docs", {
         title: "Nitro Documentation",
         tocFile: "TOC.md",
         filter: (e: { entry: { path: string } }) => !e.entry.path.startsWith("/blog"),
