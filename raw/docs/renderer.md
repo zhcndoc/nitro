@@ -1,0 +1,574 @@
+# Nitro Renderer
+
+> 使用渲染器处理所有未匹配的路由，并返回自定义 HTML 或使用模板系统。
+
+渲染器是 Nitro 中的一个特殊处理程序，用于捕获所有未与任何特定 API 或路由处理程序匹配的路由。它通常用于服务端渲染（SSR）、提供单页应用（SPA）或创建自定义 HTML 响应。
+
+## 配置
+
+渲染器通过 Nitro 配置中的 `renderer` 选项进行配置：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  renderer: {
+    template: './index.html',  // HTML 模板文件路径
+    handler: './renderer.ts',  // 自定义渲染器处理程序路径
+    static: false,             // 将模板视为静态 HTML（不进行 rendu 处理）
+  }
+})
+```
+
+<table>
+<thead>
+  <tr>
+    <th>
+      选项
+    </th>
+    
+    <th>
+      类型
+    </th>
+    
+    <th>
+      描述
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        template
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string
+      </code>
+    </td>
+    
+    <td>
+      用作渲染器模板的 HTML 文件路径。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        handler
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string
+      </code>
+    </td>
+    
+    <td>
+      自定义渲染器处理程序模块的路径。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        static
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        boolean
+      </code>
+    </td>
+    
+    <td>
+      当设为 <code>
+        true
+      </code>
+      
+       时，跳过 rendu 模板处理并按原样提供 HTML。如未设置，将根据模板语法自动检测。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+在配置中设置 `renderer: false` 以完全禁用渲染器（包括自动检测 `index.html`）。
+
+## HTML 模板
+
+### 自动检测 `index.html`
+
+默认情况下，Nitro 会自动在项目 src 目录中查找 `index.html` 文件。
+
+如果找到，Nitro 会将其用作渲染器模板，并为所有未匹配的路由提供服务。
+
+<code-group>
+
+```html [index.html]
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我的 Vite + Nitro 应用</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+```
+
+```ts [routes/api/hello.ts]
+import { defineHandler } from "nitro";
+
+export default defineHandler((event) => {
+  return { hello: "API" };
+});
+```
+
+</code-group>
+
+<tip>
+
+当检测到 `index.html` 时，Nitro 会自动在终端中记录：`Using index.html as renderer template.`
+
+</tip>
+
+在此配置下：
+
+- `/api/hello` → 由您的 API 路由处理
+- `/about`、`/contact` 等 → 通过 `index.html` 提供服务
+
+### 自定义 HTML 文件
+
+您可以使用 Nitro 配置中的 `renderer.template` 选项来指定自定义 HTML 模板文件。
+
+<code-group>
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  renderer: {
+    template: './app.html'
+  }
+})
+```
+
+```html [app.html]
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>自定义模板</title>
+  </head>
+  <body>
+    <div id="root">加载中...</div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
+```
+
+</code-group>
+
+### 静态模板
+
+默认情况下，Nitro 会自动检测您的 HTML 模板是否包含 [rendu](#%E8%B6%85%E6%96%87%E6%9C%AC%E9%A2%84%E5%A4%84%E7%90%86%E5%99%A8%E5%AE%9E%E9%AA%8C%E6%80%A7) 语法。如果包含，则会在每次请求时动态处理模板；如果不包含，则作为静态 HTML 提供。
+
+您可以使用 `static` 选项覆盖此行为：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  renderer: {
+    template: './index.html',
+    static: true // 强制静态提供，跳过模板处理
+  }
+})
+```
+
+在生产环境中，静态模板会被内联到服务器包中并直接提供，以获得最佳性能。
+
+### 超文本预处理器（实验性）
+
+Nitro 使用 [rendu](https://github.com/h3js/rendu) 超文本预处理器，它提供了一种简单而强大的方式，使用 JavaScript 表达式创建动态 HTML 模板。
+
+#### 输出表达式
+
+- `{{ expression }}` — 经 HTML 转义的输出
+- `{{{ expression }}}` 或 `<?= expression ?>` — 原始（未转义）输出
+
+```html
+<h1>你好 {{ $URL.pathname }}</h1>
+<div>{{{ '<strong>原始 html</strong>' }}}</div>
+```
+
+#### 控制流
+
+使用 `<? ... ?>` 进行 JavaScript 控制流：
+
+```html
+<? if ($METHOD === 'POST') { ?>
+  <p>表单已提交！</p>
+<? } else { ?>
+  <form method="POST">
+    <button type="submit">提交</button>
+  </form>
+<? } ?>
+
+<ul>
+<? for (const item of ['a', 'b', 'c']) { ?>
+  <li>{{ item }}</li>
+<? } ?>
+</ul>
+```
+
+#### 服务端脚本
+
+使用 `<script server>` 在服务端执行 JavaScript：
+
+```html
+<script server>
+  const data = await fetch('https://api.example.com/data').then(r => r.json());
+</script>
+<pre>{{ JSON.stringify(data) }}</pre>
+```
+
+#### 流式内容
+
+使用 `echo()` 函数进行内容流式传输。它接受字符串、函数、Promise、Response 对象或 ReadableStream：
+
+```html
+<script server>
+  echo("加载中...");
+  echo(async () => fetch("https://api.example.com/data"));
+</script>
+```
+
+#### 全局变量
+
+在模板中访问请求上下文：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      变量
+    </th>
+    
+    <th>
+      描述
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        $REQUEST
+      </code>
+    </td>
+    
+    <td>
+      传入的 <code>
+        Request
+      </code>
+      
+       对象
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        $METHOD
+      </code>
+    </td>
+    
+    <td>
+      HTTP 方法（<code>
+        GET
+      </code>
+      
+      、<code>
+        POST
+      </code>
+      
+       等）
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        $URL
+      </code>
+    </td>
+    
+    <td>
+      请求 <code>
+        URL
+      </code>
+      
+       对象
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        $HEADERS
+      </code>
+    </td>
+    
+    <td>
+      请求头
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        $RESPONSE
+      </code>
+    </td>
+    
+    <td>
+      响应配置对象
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        $COOKIES
+      </code>
+    </td>
+    
+    <td>
+      包含请求 Cookie 的只读对象
+    </td>
+  </tr>
+</tbody>
+</table>
+
+#### 内置函数
+
+<table>
+<thead>
+  <tr>
+    <th>
+      函数
+    </th>
+    
+    <th>
+      描述
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        htmlspecialchars(str)
+      </code>
+    </td>
+    
+    <td>
+      转义 HTML 字符（在 <code>
+        {{ }}
+      </code>
+      
+       语法中自动应用）
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        setCookie(name, value, options?)
+      </code>
+    </td>
+    
+    <td>
+      在响应中设置 Cookie
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        redirect(url)
+      </code>
+    </td>
+    
+    <td>
+      将用户重定向到另一个 URL
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        echo(content)
+      </code>
+    </td>
+    
+    <td>
+      将内容流式传输到响应
+    </td>
+  </tr>
+</tbody>
+</table>
+
+```html [index.html]
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>动态模板</title>
+  </head>
+  <body>
+    <h1>你好 {{ $REQUEST.url }}</h1>
+    <p>欢迎，<?= $COOKIES["user"] || "访客" ?>！</p>
+    <script server>
+      setCookie("visited", "true", { maxAge: 3600 });
+    </script>
+  </body>
+</html>
+```
+
+<read-more title="Rendu 文档" to="https://github.com/h3js/rendu">
+
+
+
+</read-more>
+
+## 自定义渲染器处理程序
+
+对于更复杂的场景，您可以创建以编程方式生成响应的自定义渲染器处理程序。
+
+该处理程序是一个默认导出的函数，接收一个 H3 事件对象。您可以通过 `event.req` 访问传入的 `Request`：
+
+```ts [renderer.ts]
+export default function renderer({ req }: { req: Request }) {
+  const url = new URL(req.url);
+  return new Response(
+    /* html */ `<!DOCTYPE html>
+    <html>
+    <head>
+      <title>自定义渲染器</title>
+    </head>
+    <body>
+      <h1>来自自定义渲染器的问候！</h1>
+      <p>当前路径：${url.pathname}</p>
+    </body>
+    </html>`,
+    { headers: { "content-type": "text/html; charset=utf-8" } }
+  );
+}
+```
+
+然后，在 Nitro 配置中指定渲染器入口：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  renderer: {
+    handler: './renderer.ts'
+  }
+})
+```
+
+<note>
+
+当设置了 `renderer.handler` 时，它将完全控制渲染。`renderer.template` 选项将被忽略。
+
+</note>
+
+## 渲染器优先级
+
+渲染器始终充当捕获所有路由的通配符路由（`/**`），并具有**最低优先级**。这意味着：
+
+<steps level="4">
+
+#### 特定的 API 路由首先匹配（例如 `/api/users`）
+
+#### 特定的服务器路由随后匹配（例如 `/about`）
+
+#### 渲染器捕获其他所有内容
+
+</steps>
+
+```md
+api/
+  users.ts        → /api/users（首先匹配）
+routes/
+  about.ts        → /about（其次匹配）
+renderer.ts         → /**（捕获所有其他路由）
+```
+
+<warning>
+
+如果您在路由中定义了通配符路由（`[...].ts`），Nitro 会警告您渲染器将覆盖它。使用更具体的路由或不同的 HTTP 方法来避免冲突。
+
+</warning>
+
+<read-more title="生命周期" to="/docs/lifecycle">
+
+
+
+</read-more>
+
+## Vite 集成
+
+将 Nitro 与 Vite 一起使用时，渲染器会与 Vite 的构建管道和开发服务器集成。
+
+### 开发模式
+
+在开发过程中，每次请求都会从磁盘读取渲染器模板，因此对 `index.html` 的更改会立即生效，无需重启服务器。Vite 的 `transformIndexHtml` 钩子会被应用，以注入 HMR 客户端脚本和其他开发时转换。
+
+### 使用 `<!--ssr-outlet-->` 的 SSR
+
+在使用带有 `ssr` 服务的 Vite 环境时，您可以在 `index.html` 中添加 `<!--ssr-outlet-->` 注释。Nitro 会在渲染期间将其替换为您的 SSR 入口的输出：
+
+```html [index.html]
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SSR 应用</title>
+  </head>
+  <body>
+    <div id="app"><!--ssr-outlet--></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+```
+
+### 生产构建
+
+在生产构建期间，Vite 会通过其构建管道处理 `index.html`（解析脚本、CSS 和其他资源），然后 Nitro 将转换后的 HTML 内联到服务器包中。
+
+## 使用场景
+
+### 单页应用（SPA）
+
+为所有路由提供 SPA 的 `index.html` 以启用客户端路由：
+
+<tip>
+
+这是 Nitro 与 Vite 一起使用时的默认行为。
+
+</tip>

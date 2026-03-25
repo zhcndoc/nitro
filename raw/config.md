@@ -1,0 +1,1196 @@
+# 配置
+
+> 
+
+<read-more to="/guide/configuration">
+
+
+
+</read-more>
+
+## 通用配置
+
+### `preset`
+
+使用 `preset` 选项或 `NITRO_PRESET` 环境变量来设置自定义的**生产环境**预设。
+
+开发模式的预设始终是 `nitro_dev`，而生产环境构建独立 Node.js 服务器的默认预设是 `node_server`。
+
+当未设置 `preset` 选项且在已知环境中运行时，预设将被自动检测。
+
+```ts
+export default defineNitroConfig({
+  preset: "cloudflare_pages", // 部署到 Cloudflare Pages
+});
+```
+
+### `debug`
+
+- 默认值：`false`（当设置了 `DEBUG` 环境变量时为 `true`）
+
+启用调试模式以输出详细日志和额外的开发信息。
+
+```ts
+export default defineNitroConfig({
+  debug: true,
+});
+```
+
+### `logLevel`
+
+- 默认值：`3`（检测到测试环境时为 `1`）
+
+日志详细程度级别。更多信息请参见 [consola](https://github.com/unjs/consola?tab=readme-ov-file#log-level)。
+
+```ts
+export default defineNitroConfig({
+  logLevel: 4, // 详细日志记录
+});
+```
+
+### `runtimeConfig`
+
+- 默认值：`{ nitro: { ... }, ...yourOptions }`
+
+服务器运行时配置。
+
+**注意：** `nitro` 命名空间是保留的。
+
+```ts
+export default defineNitroConfig({
+  runtimeConfig: {
+    apiSecret: "default-secret", // 使用 NITRO_API_SECRET 覆盖
+  },
+});
+```
+
+### `compatibilityDate`
+
+部署提供商引入了 Nitro 预设可以利用的新功能，但其中一些需要显式选择加入。
+
+将其设置为 `YYYY-MM-DD` 格式的最新测试日期，以利用最新的预设功能。
+
+如果未提供此配置，Nitro 将默认使用 `"latest"` 行为。
+
+```ts
+export default defineNitroConfig({
+  compatibilityDate: "2025-01-01",
+});
+```
+
+### `static`
+
+- 默认值：`false`
+
+启用静态站点生成模式。
+
+```ts
+export default defineNitroConfig({
+  static: true, // 预渲染所有路由
+});
+```
+
+## 功能特性
+
+### `features`
+
+- 默认值：`{}`
+
+启用内置功能。
+
+#### `runtimeHooks`
+
+- 默认值：自动检测（如果至少有一个 nitro 插件则启用）
+
+启用请求和响应的运行时钩子。
+
+#### `websocket`
+
+- 默认值：`false`
+
+启用 WebSocket 支持。
+
+```ts
+export default defineNitroConfig({
+  features: {
+    runtimeHooks: true,
+    websocket: true, // 启用 WebSocket 支持
+  },
+});
+```
+
+### `experimental`
+
+- 默认值：`{}`
+
+启用实验性功能。
+
+#### `openAPI`
+
+- 默认值：`false`
+
+启用 `/_scalar`、`/_swagger` 和 `/_openapi.json` 端点。
+
+<note>
+
+建议优先使用顶级的 [`openAPI`](#openapi) 选项进行配置。
+
+</note>
+
+#### `typescriptBundlerResolution`
+
+启用 TypeScript 打包器模块解析。参见 [TypeScript#51669](https://github.com/microsoft/TypeScript/pull/51669)。
+
+#### `asyncContext`
+
+为 `useRequest()` 启用原生异步上下文支持。
+
+#### `sourcemapMinify`
+
+设置为 `false` 以禁用实验性的 sourcemap 压缩。
+
+#### `envExpansion`
+
+允许在运行时配置中进行环境变量扩展。参见 [#2043](https://github.com/nitrojs/nitro/pull/2043)。
+
+#### `database`
+
+启用实验性数据库支持。参见 [数据库](/docs/database)。
+
+#### `tasks`
+
+启用实验性任务支持。参见 [任务](/docs/tasks)。
+
+```ts
+export default defineNitroConfig({
+  experimental: {
+    typescriptBundlerResolution: true,
+    asyncContext: true,
+    envExpansion: true,
+    database: true,
+    tasks: true,
+  },
+});
+```
+
+### `openAPI`
+
+顶级 OpenAPI 配置。
+
+你可以传递一个对象来修改你的 OpenAPI 规范：
+
+```js
+openAPI: {
+  meta: {
+    title: 'My Awesome Project',
+    description: 'This might become the next big thing.',
+    version: '1.0'
+  }
+}
+```
+
+默认情况下，这些路由在生产环境中是禁用的。要启用它们，请使用 `production` 键。
+`"runtime"` 允许中间件使用，而 `"prerender"` 是最有效的，因为 JSON 响应是恒定的。
+
+```js
+openAPI: {
+    // 重要：如有必要，确保保护 OpenAPI 路由！
+    production: "runtime", // 或 "prerender"
+}
+```
+
+如果你想自定义 Scalar 集成，可以像这样[传递一个配置对象](https://github.com/scalar/scalar)：
+
+```js
+openAPI: {
+  ui: {
+    scalar: {
+      theme: 'purple'
+    }
+  }
+}
+```
+
+或者如果你想自定义端点：
+
+```js
+openAPI: {
+  route: "/_docs/openapi.json",
+  ui: {
+    scalar: {
+      route: "/_docs/scalar"
+    },
+    swagger: {
+      route: "/_docs/swagger"
+    }
+  }
+}
+```
+
+### `future`
+
+- 默认值：`{}`
+
+等待在主要版本中发布的新功能，以避免破坏性变更。
+
+#### `nativeSWR`
+
+对 Netlify 和 Vercel 预设使用内置的 SWR 功能（使用缓存层和存储），而不是回退到 ISR 行为。
+
+```ts
+export default defineNitroConfig({
+  future: {
+    nativeSWR: true,
+  },
+});
+```
+
+### `storage`
+
+- 默认值：`{}`
+
+存储配置，更多信息请参见[存储层](/docs/storage)章节。
+
+```ts
+export default defineNitroConfig({
+  storage: {
+    redis: {
+      driver: "redis",
+      url: "redis://localhost:6379",
+    },
+  },
+});
+```
+
+### `devStorage`
+
+- 默认值：`{}`
+
+开发模式的存储配置覆盖。
+
+```ts
+export default defineNitroConfig({
+  devStorage: {
+    redis: {
+      driver: "fs",
+      base: "./data/redis", // 在开发中使用文件系统
+    },
+  },
+});
+```
+
+### `database`
+
+数据库连接配置。需要 `experimental.database: true`。
+
+```ts
+database: {
+  default: {
+    connector: "sqlite",
+    options: { name: "db" }
+  }
+}
+```
+
+### `devDatabase`
+
+开发模式的数据库连接配置覆盖。
+
+```ts
+export default defineNitroConfig({
+  devDatabase: {
+    default: {
+      connector: "sqlite",
+      options: { name: "db-dev" }, // 独立的开发数据库
+    },
+  },
+});
+```
+
+### `renderer`
+
+- 类型：`false` | `{ handler?: string, static?: boolean, template?: string }`
+
+指向主渲染入口（文件应将事件处理器作为默认导出）。
+
+```ts
+export default defineNitroConfig({
+  renderer: {
+    handler: "~/renderer", // 渲染处理器的路径
+  },
+});
+```
+
+### `serveStatic`
+
+- 类型：`boolean` | `'node'` | `'deno'` | `'inline'`
+- 默认值：取决于使用的部署预设。
+
+在生产环境中提供 `public/` 资源服务。
+
+**注意：** 强烈建议让你的边缘 CDN（Nginx、Apache、Cloud）直接提供 `.output/public/` 目录服务，以启用压缩和更高级别的缓存。
+
+```ts
+export default defineNitroConfig({
+  serveStatic: "node", // 使用 Node.js 提供静态资源服务
+});
+```
+
+### `noPublicDir`
+
+- 默认值：`false`
+
+如果启用，将禁用 `.output/public` 目录的创建。跳过复制 `public/` 目录，同时禁用预渲染。
+
+```ts
+export default defineNitroConfig({
+  noPublicDir: true, // 跳过公共目录输出
+});
+```
+
+### `publicAssets`
+
+在开发中提供、在生产中打包的公共资源目录。
+
+如果检测到 `public/` 目录，它将被默认添加，但你也可以自己添加更多！
+
+你可以使用 `maxAge` 选项为资源设置 Cache-Control 响应头：
+
+```ts
+publicAssets: [
+    {
+      baseURL: "images",
+      dir: "public/images",
+      maxAge: 60 * 60 * 24 * 7, // 7 天
+    },
+  ],
+```
+
+上述配置会在 `public/images/` 文件夹下的资源中生成以下响应头：
+
+`cache-control: public, max-age=604800, immutable`
+
+`dir` 选项是你的文件在文件系统中的位置；`baseURL` 选项是它们在提供服务/打包时可访问的文件夹路径。
+
+### `compressPublicAssets`
+
+- 默认值：`{ gzip: false, brotli: false, zstd: false }`
+
+如果启用，Nitro 将为大于 1024 字节的公共资源和预渲染路由生成预压缩版本（gzip、brotli 和/或 zstd）到公共目录中。使用默认压缩级别。使用此选项，你可以在不使用 CDN 的情况下支持零开销资源压缩。
+
+```ts
+export default defineNitroConfig({
+  compressPublicAssets: {
+    gzip: true,
+    brotli: true, // 启用 gzip 和 brotli 预压缩
+  },
+});
+```
+
+### `serverAssets`
+
+资源可以在服务器逻辑中访问，并在生产环境中打包。[了解更多](/docs/assets#server-assets)。
+
+```ts
+export default defineNitroConfig({
+  serverAssets: [
+    {
+      baseName: "templates",
+      dir: "./templates", // 将 templates/ 作为服务器资源打包
+    },
+  ],
+});
+```
+
+### `modules`
+
+- 默认值：`[]`
+
+Nitro 模块数组。模块可以是字符串（路径）、带有 `setup` 函数的模块对象，或函数。
+
+```ts
+export default defineNitroConfig({
+  modules: [
+    "./modules/my-module.ts",
+    (nitro) => {
+      nitro.hooks.hook("compiled", () => { /* ... */ });
+    },
+  ],
+});
+```
+
+### `plugins`
+
+- 默认值：`[]`
+
+Nitro 插件路径数组。它们将在第一次初始化时按顺序执行。
+
+注意，Nitro 会自动注册 `plugins/` 目录中的插件，[了解更多](/docs/plugins)。
+
+```ts
+export default defineNitroConfig({
+  plugins: [
+    "~/plugins/my-plugin.ts",
+  ],
+});
+```
+
+### `tasks`
+
+- 默认值：`{}`
+
+任务定义。每个键是一个任务名称，包含 `handler` 路径和可选的 `description`。
+
+```ts
+tasks: {
+  'db:migrate': {
+    handler: './tasks/db-migrate',
+    description: 'Run database migrations'
+  }
+}
+```
+
+### `scheduledTasks`
+
+- 默认值：`{}`
+
+cron 表达式到任务名称的映射。
+
+```ts
+scheduledTasks: {
+  '0 * * * *': 'cleanup:temp',
+  '*/5 * * * *': ['health:check', 'metrics:collect']
+}
+```
+
+### `imports`
+
+- 默认值：`false`
+
+自动导入选项。设置为对象以启用。更多信息请参见 [unimport](https://github.com/unjs/unimport)。
+
+```ts
+export default defineNitroConfig({
+  imports: {
+    dirs: ["./utils"], // 从 utils/ 目录自动导入
+  },
+});
+```
+
+### `virtual`
+
+- 默认值：`{}`
+
+从动态虚拟导入名称到其内容或返回内容的（异步）函数的映射。
+
+```ts
+export default defineNitroConfig({
+  virtual: {
+    "#config": `export default { version: "1.0.0" }`,
+  },
+});
+```
+
+### `ignore`
+
+- 默认值：`[]`
+
+扫描目录时要忽略的全局模式数组。
+
+```ts
+export default defineNitroConfig({
+  ignore: [
+    "routes/_legacy/**", // 跳过旧版路由处理器
+  ],
+});
+```
+
+### `wasm`
+
+- 默认值：`{}`
+- 类型：`false` | `UnwasmPluginOptions`
+
+WASM 支持配置。有关选项请参见 [unwasm](https://github.com/unjs/unwasm)。
+
+```ts
+export default defineNitroConfig({
+  wasm: {}, // 启用 WASM 导入支持
+});
+```
+
+## 开发
+
+### `devServer`
+
+- 默认值: `{ watch: [] }`
+
+开发服务器选项。你可以使用 `watch` 来让开发服务器在指定路径中的任何文件发生变化时重新加载。
+
+支持 `port`、`hostname`、`watch` 和 `runner` 选项。
+
+```ts
+export default defineNitroConfig({
+  devServer: {
+    port: 3001,
+    watch: ["./server/plugins"],
+  },
+});
+```
+
+### `watchOptions`
+
+开发模式的监听选项。更多信息请查看 [chokidar](https://github.com/paulmillr/chokidar)。
+
+```ts
+export default defineNitroConfig({
+  watchOptions: {
+    ignored: ["**/node_modules/**", "**/dist/**"],
+  },
+});
+```
+
+### `devProxy`
+
+开发服务器的代理配置。
+
+你可以使用此选项来覆盖开发服务器路由并代理转发请求。
+
+```js
+{
+  devProxy: {
+    '/proxy/test': 'http://localhost:3001',
+    '/proxy/example': { target: 'https://example.com', changeOrigin: true }
+  }
+}
+```
+
+查看 [httpxy](https://github.com/unjs/httpxy) 了解所有可用的目标选项。
+
+## 日志
+
+### `logging`
+
+- 默认值: `{ compressedSizes: true, buildSuccess: true }`
+
+控制构建日志行为。将 `compressedSizes` 设置为 `false` 可跳过报告压缩后的包大小。将 `buildSuccess` 设置为 `false` 可隐藏构建成功消息。
+
+```ts
+export default defineNitroConfig({
+  logging: {
+    compressedSizes: false, // 跳过压缩大小报告
+    buildSuccess: false,
+  },
+});
+```
+
+## 路由
+
+### `baseURL`
+
+默认值: `/`（或如果提供了 `NITRO_APP_BASE_URL` 环境变量则使用该值）
+
+服务器的主基础 URL。
+
+```ts
+export default defineNitroConfig({
+  baseURL: "/app/", // 在 /app/ 前缀下提供应用服务
+});
+```
+
+### `apiBaseURL`
+
+- 默认值: `/api`
+
+更改默认的 API 基础 URL 前缀。
+
+```ts
+export default defineNitroConfig({
+  apiBaseURL: "/server/api", // /server/api/ 下的 API 路由
+});
+```
+
+### `handlers`
+
+服务器处理程序和路由。
+
+如果服务器目录内存在 `routes/`、`api/` 或 `middleware/` 目录，它们将自动添加到 handlers 数组中。
+
+```ts
+export default defineNitroConfig({
+  handlers: [
+    { route: "/health", handler: "./handlers/health.ts" },
+    { route: "/admin/**", handler: "./handlers/admin.ts", method: "get" },
+  ],
+});
+```
+
+### `devHandlers`
+
+常规处理程序指的是要由打包工具导入和转换的处理程序的路径。
+
+在某些情况下，我们希望直接通过编程方式提供处理程序实例。
+
+我们可以使用 `devHandlers`，但请注意它们**仅在开发模式下可用**，**不会在生产构建中可用**。
+
+```ts
+export default defineNitroConfig({
+  devHandlers: [
+    { route: "/__dev", handler: eventHandler(() => "dev-only route") },
+  ],
+});
+```
+
+### `routes`
+
+- 默认值: `{}`
+
+内联路由定义。从路由模式到处理程序路径或处理程序选项的映射。
+
+```ts
+export default defineNitroConfig({
+  routes: {
+    "/hello": "./routes/hello.ts",
+    "/greet": { handler: "./routes/greet.ts", method: "post" },
+  },
+});
+```
+
+### `errorHandler`
+
+- 类型: `string` | `string[]`
+
+自定义运行时错误处理程序的路径。替换 nitro 内置的错误页面。
+
+**示例:**
+
+<CodeGroup>
+
+```js [nitro.config]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  errorHandler: "~/error",
+});
+```
+
+```js [error.ts]
+export default defineNitroErrorHandler((error, event) => {
+  return new Response('[custom error handler] ' + error.stack, {
+    headers: { 'Content-Type': 'text/plain' }
+  });
+});
+```
+
+</CodeGroup>
+
+### `routeRules`
+
+**🧪 实验性功能！**
+
+路由选项。它是从路由模式（遵循 [rou3](https://github.com/h3js/rou3)）到路由选项的映射。
+
+当设置了 `cache` 选项时，匹配模式的处理程序将自动使用 `defineCachedEventHandler` 包装。
+
+查看 [缓存 API](/docs/cache) 了解所有可用的缓存选项。
+
+<note>
+
+`swr: true|number` 是 `cache: { swr: true, maxAge: number }` 的快捷方式
+
+</note>
+
+**示例:**
+
+```js
+routeRules: {
+  '/blog/**': { swr: true },
+  '/blog/**': { swr: 600 },
+  '/blog/**': { static: true },
+  '/blog/**': { cache: { /* cache options*/ } },
+  '/assets/**': { headers: { 'cache-control': 's-maxage=0' } },
+  '/api/v1/**': { cors: true, headers: { 'access-control-allow-methods': 'GET' } },
+  '/old-page': { redirect: '/new-page' }, // 使用状态码 307（临时重定向）
+  '/old-page2': { redirect: { to:'/new-page2', statusCode: 301 } },
+  '/old-page/**': { redirect: '/new-page/**' },
+  '/proxy/example': { proxy: 'https://example.com' },
+  '/proxy/**': { proxy: '/api/**' },
+  '/admin/**': { basicAuth: { username: 'admin', password: 'secret' } },
+}
+```
+
+### `prerender`
+
+默认值:
+
+```ts
+{
+  autoSubfolderIndex: true,
+  concurrency: 1,
+  interval: 0,
+  failOnError: false,
+  crawlLinks: false,
+  ignore: [],
+  routes: [],
+  retry: 3,
+  retryDelay: 500
+}
+```
+
+预渲染选项。指定的任何路由都将在构建过程中获取，并作为静态资源复制到 `.output/public` 目录。
+
+以 `ignore` 中列出的前缀开头或匹配正则表达式或函数的任何路由（字符串）都将被忽略。
+
+如果 `crawlLinks` 选项设置为 `true`，nitro 默认从 `/` 开始（或 `routes` 数组中的所有路由），对于 HTML 页面会提取 `<a>` 标签并进行预渲染。
+
+你可以将 `failOnError` 选项设置为 `true`，以便在 Nitro 无法预渲染路由时停止 CI。
+
+`interval` 和 `concurrency` 选项可让你控制预渲染的速度，在调用外部 API 时避免触发速率限制可能会很有用。
+
+设置 `autoSubfolderIndex` 可让你控制如何在 `.output/public` 目录中生成文件：
+
+```bash
+# autoSubfolderIndex: true（默认）
+/about -> .output/public/about/index.html
+# autoSubfolderIndex: false
+/about -> .output/public/about.html
+```
+
+当你的托管提供商无法提供关于尾部斜杠的选项时，此选项很有用。
+
+预渲染器将尝试以 500ms 的延迟渲染页面 3 次。使用 `retry` 和 `retryDelay` 来更改此行为。
+
+## 目录
+
+### `workspaceDir`
+
+项目工作空间根目录。
+
+当未设置 `workspaceDir` 选项时，会自动检测工作空间（例如 pnpm 工作空间）目录。
+
+```ts
+export default defineNitroConfig({
+  workspaceDir: "../", // monorepo 根目录
+});
+```
+
+### `rootDir`
+
+项目主目录。
+
+```ts
+export default defineNitroConfig({
+  rootDir: "./src/server",
+});
+```
+
+### `serverDir`
+
+- 默认值: `false`
+- 类型: `boolean` | `"./"` | `"./server"` | `string`
+
+用于扫描 `api/`、`routes/`、`plugins/`、`utils/`、`middleware/`、`assets/` 和 `tasks/` 文件夹的服务器目录。
+
+设置为 `false` 时，禁用自动目录扫描。设置为 `"./"` 以使用根目录，或设置为 `"./server"` 以使用 `server/` 子目录。
+
+```ts
+export default defineNitroConfig({
+  serverDir: "./server", // 扫描 server/ 子目录
+});
+```
+
+### `scanDirs`
+
+- 默认值:（空数组时的源目录）
+
+要扫描并自动注册文件的目录列表，例如 API 路由。
+
+```ts
+export default defineNitroConfig({
+  scanDirs: ["./modules/auth/api", "./modules/billing/api"],
+});
+```
+
+### `apiDir`
+
+- 默认值: `api`
+
+定义用于扫描 API 路由处理程序的不同目录。
+
+```ts
+export default defineNitroConfig({
+  apiDir: "endpoints", // 扫描 endpoints/ 而不是 api/
+});
+```
+
+### `routesDir`
+
+- 默认值: `routes`
+
+定义用于扫描路由处理程序的不同目录。
+
+```ts
+export default defineNitroConfig({
+  routesDir: "pages", // 扫描 pages/ 而不是 routes/
+});
+```
+
+### `buildDir`
+
+- 默认值: `node_modules/.nitro`
+
+Nitro 用于生成构建相关文件的临时工作目录。
+
+```ts
+export default defineNitroConfig({
+  buildDir: ".nitro", // 在项目根目录使用 .nitro/
+});
+```
+
+### `output`
+
+- 默认值: `{ dir: '.output', serverDir: '.output/server', publicDir: '.output/public' }`
+
+生产包的输出目录。
+
+```ts
+export default defineNitroConfig({
+  output: {
+    dir: "dist",
+    serverDir: "dist/server",
+    publicDir: "dist/public",
+  },
+});
+```
+
+## 构建
+
+### `builder`
+
+- 类型: `"rollup"` | `"rolldown"` | `"vite"`
+- 默认值: `undefined`（自动检测）
+
+指定用于构建的打包工具。
+
+```ts
+export default defineNitroConfig({
+  builder: "vite",
+});
+```
+
+### `rollupConfig`
+
+额外的 rollup 配置。
+
+```ts
+export default defineNitroConfig({
+  rollupConfig: {
+    output: { manualChunks: { vendor: ["lodash-es"] } },
+  },
+});
+```
+
+### `rolldownConfig`
+
+额外的 rolldown 配置。
+
+```ts
+export default defineNitroConfig({
+  rolldownConfig: {
+    output: { banner: "/* 使用 nitro 构建 */" },
+  },
+});
+```
+
+### `entry`
+
+打包工具的入口点。
+
+```ts
+export default defineNitroConfig({
+  entry: "./server/entry.ts", // 自定义入口文件
+});
+```
+
+### `unenv`
+
+用于环境兼容性的 [unenv](https://github.com/unjs/unenv/) 预设。
+
+```ts
+export default defineNitroConfig({
+  unenv: {
+    alias: { "my-module": "my-module/web" },
+  },
+});
+```
+
+### `alias`
+
+模块解析的路径别名。
+
+```ts
+export default defineNitroConfig({
+  alias: {
+    "~utils": "./src/utils",
+    "#shared": "./shared",
+  },
+});
+```
+
+### `minify`
+
+- 默认值: `false`
+
+压缩打包文件。
+
+```ts
+export default defineNitroConfig({
+  minify: true, // 压缩生产包
+});
+```
+
+### `inlineDynamicImports`
+
+- 默认值: `false`
+
+将所有代码打包到单个文件中，而不是为每个路由创建单独的块。
+
+当为 `false` 时，每个路由处理程序都成为一个按需加载的独立块。当为 `true` 时，所有内容都打包在一起。某些预设默认启用此选项。
+
+```ts
+export default defineNitroConfig({
+  inlineDynamicImports: true, // 单个输出文件
+});
+```
+
+### `sourcemap`
+
+- 默认值: `false`
+
+启用 source map 生成。查看[选项](https://rollupjs.org/configuration-options/#output-sourcemap)。
+
+```ts
+export default defineNitroConfig({
+  sourcemap: true, // 生成 .map 文件
+});
+```
+
+### `node`
+
+- 默认值: `true`
+
+指定构建是否用于 Node.js。如果设置为 `false`，nitro 会尝试使用 [unenv](https://github.com/unjs/unenv) 模拟 Node.js 依赖并调整其行为。
+
+```ts
+export default defineNitroConfig({
+  node: false, // 针对非 Node.js 运行时
+});
+```
+
+### `moduleSideEffects`
+
+默认值: `['unenv/polyfill/']`
+
+指定具有副作用的模块导入。
+
+```ts
+export default defineNitroConfig({
+  moduleSideEffects: ["unenv/polyfill/", "reflect-metadata"],
+});
+```
+
+### `replace`
+
+构建时的字符串替换。
+
+```ts
+export default defineNitroConfig({
+  replace: {
+    "process.env.APP_VERSION": JSON.stringify("1.0.0"),
+  },
+});
+```
+
+### `commonJS`
+
+指定 rollup CommonJS 插件的额外配置。
+
+```ts
+export default defineNitroConfig({
+  commonJS: {
+    requireReturnsDefault: "auto",
+  },
+});
+```
+
+### `exportConditions`
+
+模块解析的自定义导出条件。
+
+```ts
+export default defineNitroConfig({
+  exportConditions: ["worker", "production"],
+});
+```
+
+### `noExternals`
+
+- 默认值: `false`
+
+阻止特定包被外部化。设置为 `true` 以打包所有依赖项，或传递包名称/模式数组。
+
+```ts
+export default defineNitroConfig({
+  noExternals: true, // 打包所有依赖项
+});
+```
+
+### `traceDeps`
+
+- 默认值: `[]`
+
+要跟踪并包含在构建输出中的额外依赖项。
+
+```ts
+export default defineNitroConfig({
+  traceDeps: ["sharp", "better-sqlite3"],
+});
+```
+
+### `oxc`
+
+rolldown 构建的 OXC 选项。包含 `minify` 和 `transform` 子选项。
+
+```ts
+export default defineNitroConfig({
+  oxc: {
+    minify: { compress: true, mangle: true },
+  },
+});
+
+## 高级配置
+
+### `dev`
+
+- 默认值：开发环境为 `true`，生产环境为 `false`。
+
+**⚠️ 注意！这是一个高级配置。如果配置不当，可能会导致问题。**
+
+```ts
+export default defineNitroConfig({
+  dev: true, // 强制使用开发模式行为
+});
+```
+
+### `typescript`
+
+默认值：`{ strict: true, generateRuntimeConfigTypes: false, generateTsConfig: false }`
+
+TypeScript 配置选项，包括 `strict`、`generateRuntimeConfigTypes`、`generateTsConfig`、`tsConfig`、`generatedTypesDir` 和 `tsconfigPath`。
+
+```ts
+export default defineNitroConfig({
+  typescript: {
+    strict: true,
+    generateTsConfig: true,
+  },
+});
+```
+
+### `hooks`
+
+**⚠️ 注意！这是一个高级配置。如果配置不当，可能会导致问题。**
+
+Nitro 钩子。更多信息请参见 [hookable](https://github.com/unjs/hookable)。
+
+```ts
+export default defineNitroConfig({
+  hooks: {
+    compiled(nitro) {
+      console.log("Build compiled successfully!"); // 构建编译成功！
+    },
+  },
+});
+```
+
+### `commands`
+
+**⚠️ 注意！这是一个高级配置。如果配置不当，可能会导致问题。**
+
+预览和部署命令提示通常由部署预设填充。
+
+```ts
+export default defineNitroConfig({
+  commands: {
+    preview: "node ./server/index.mjs",
+  },
+});
+```
+
+### `devErrorHandler`
+
+**⚠️ 注意！这是一个高级配置。如果配置不当，可能会导致问题。**
+
+用于处理开发错误的自定义错误处理函数。
+
+```ts
+export default defineNitroConfig({
+  devErrorHandler: (error, event) => {
+    return new Response(`Dev error: ${error.message}`, { status: 500 });
+  },
+});
+```
+
+### `framework`
+
+- 默认值：`{ name: "nitro", version: "<current>" }`
+
+框架信息。由预设和构建信息使用。通常由更高级的框架设置（例如 Nuxt）。
+
+```ts
+export default defineNitroConfig({
+  framework: { name: "my-framework", version: "2.0.0" },
+});
+```
+
+## 预设选项
+
+### `firebase`
+
+Firebase Functions 预设的选项。参见 [预设文档](/deploy/providers/firebase#options)
+
+```ts
+export default defineNitroConfig({
+  firebase: {
+    gen: 2, // 使用 Cloud Functions 第二代
+    region: "us-central1",
+  },
+});
+```
+
+### `vercel`
+
+Vercel 预设的选项。参见 [预设文档](/deploy/providers/vercel)
+
+```ts
+export default defineNitroConfig({
+  vercel: {
+    config: { runtime: "nodejs20.x" },
+  },
+});
+```
+
+### `cloudflare`
+
+Cloudflare 预设的选项。参见 [预设文档](/deploy/providers/cloudflare)
+
+```ts
+export default defineNitroConfig({
+  cloudflare: {
+    wrangler: { compatibility_date: "2025-01-01" },
+  },
+});
+```
+
+### `zephyr`
+
+Zephyr 预设的选项。参见 [预设文档](/deploy/providers/zephyr#options)

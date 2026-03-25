@@ -1,0 +1,504 @@
+# KV 存储
+
+> Nitro 提供了一个内置的存储层，可以抽象文件系统、数据库或任何其他数据源。
+
+Nitro 内置了与 [unstorage](https://unstorage.unjs.io) 的集成，以提供一个运行时无关的持久化层。
+
+## 用法
+
+要使用存储层，你可以使用 `useStorage()` 工具函数来访问存储实例。
+
+```ts
+import { useStorage } from "nitro/storage";
+
+// 默认存储（内存中）
+await useStorage().setItem("test:foo", { hello: "world" });
+const value = await useStorage().getItem("test:foo");
+
+// 你可以使用 useStorage(base) 指定基础前缀
+const testStorage = useStorage("test");
+await testStorage.setItem("foo", { hello: "world" });
+await testStorage.getItem("foo"); // { hello: "world" }
+
+// 你可以使用泛型来指定返回值类型
+await useStorage<{ hello: string }>("test").getItem("foo");
+await useStorage("test").getItem<{ hello: string }>("foo");
+```
+
+<read-more to="https://unstorage.unjs.io">
+
+
+
+</read-more>
+
+### 可用方法
+
+`useStorage()` 返回的存储实例提供以下方法：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      方法
+    </th>
+    
+    <th>
+      描述
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        getItem(key)
+      </code>
+    </td>
+    
+    <td>
+      获取键的值。如果键不存在则返回 <code>
+        null
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        getItems(items)
+      </code>
+    </td>
+    
+    <td>
+      一次获取多个项目。接受键数组或 <code>
+        { key, options }
+      </code>
+      
+       对象。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        getItemRaw(key)
+      </code>
+    </td>
+    
+    <td>
+      获取键的原始值，不进行解析。适用于二进制数据。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        setItem(key, value)
+      </code>
+    </td>
+    
+    <td>
+      设置键的值。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        setItems(items)
+      </code>
+    </td>
+    
+    <td>
+      一次设置多个项目。接受 <code>
+        { key, value }
+      </code>
+      
+       对象数组。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        setItemRaw(key, value)
+      </code>
+    </td>
+    
+    <td>
+      设置键的原始值，不进行序列化。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        hasItem(key)
+      </code>
+    </td>
+    
+    <td>
+      检查键是否存在。返回布尔值。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        removeItem(key)
+      </code>
+    </td>
+    
+    <td>
+      从存储中移除键。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        getKeys(base?)
+      </code>
+    </td>
+    
+    <td>
+      获取所有键，可选按基础前缀过滤。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        clear(base?)
+      </code>
+    </td>
+    
+    <td>
+      清除所有键，可选按基础前缀过滤。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        getMeta(key)
+      </code>
+    </td>
+    
+    <td>
+      获取键的元数据（例如 <code>
+        mtime
+      </code>
+      
+      、<code>
+        atime
+      </code>
+      
+      、<code>
+        ttl
+      </code>
+      
+      ）。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        setMeta(key, meta)
+      </code>
+    </td>
+    
+    <td>
+      设置键的元数据。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        removeMeta(key)
+      </code>
+    </td>
+    
+    <td>
+      移除键的元数据。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        mount(base, driver)
+      </code>
+    </td>
+    
+    <td>
+      在基础路径动态挂载存储驱动。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        unmount(base)
+      </code>
+    </td>
+    
+    <td>
+      从基础路径卸载存储驱动。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        watch(callback)
+      </code>
+    </td>
+    
+    <td>
+      监视变更。回调接收 <code>
+        (event, key)
+      </code>
+      
+      ，其中 event 为 <code>
+        "update"
+      </code>
+      
+       或 <code>
+        "remove"
+      </code>
+      
+      。
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        unwatch()
+      </code>
+    </td>
+    
+    <td>
+      停止监视变更。
+    </td>
+  </tr>
+</tbody>
+</table>
+
+还提供了简写别名：`get`、`set`、`has`、`del`、`remove`、`keys`。
+
+```ts
+import { useStorage } from "nitro/storage";
+
+// 获取前缀下的所有键
+const keys = await useStorage("test").getKeys();
+
+// 检查键是否存在
+const exists = await useStorage().hasItem("test:foo");
+
+// 移除键
+await useStorage().removeItem("test:foo");
+
+// 获取原始二进制数据
+const raw = await useStorage().getItemRaw("assets/server:image.png");
+
+// 获取元数据（类型、etag、mtime 等）
+const meta = await useStorage("assets/server").getMeta("file.txt");
+```
+
+## 配置
+
+你可以使用 `storage` 选项挂载一个或多个自定义存储驱动。
+
+键是挂载点名称，值是驱动名称和配置。
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  storage: {
+    redis: {
+      driver: "redis",
+      /* redis 连接器选项 */
+    }
+  }
+})
+```
+
+然后，你可以使用 `useStorage("redis")` 函数来使用 redis 存储。
+
+<read-more to="https://unstorage.unjs.io/">
+
+你可以在 [unstorage 文档](https://unstorage.unjs.io/) 上找到驱动列表及其配置。
+
+</read-more>
+
+### 开发存储
+
+你可以使用 `devStorage` 选项在开发和预渲染期间覆盖存储配置。
+
+当你的生产驱动在开发环境中不可用时（例如托管的 Redis 实例），这很有用。
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  storage: {
+    db: {
+      driver: "redis",
+      host: "prod.example.com",
+    }
+  },
+  devStorage: {
+    db: {
+      driver: "fs",
+      base: "./.data/db"
+    }
+  }
+})
+```
+
+在开发模式下运行时，`devStorage` 挂载会合并到 `storage` 挂载之上，允许你在开发时使用本地文件系统驱动或内存驱动。
+
+## 内置挂载点
+
+Nitro 自动挂载以下存储路径：
+
+### `/assets`
+
+服务器资源挂载在 `/assets` 基础路径。此挂载点提供对打包服务器资源的只读访问（参见[服务器资源](#%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%B5%84%E6%BA%90)）。
+
+```ts
+import { useStorage } from "nitro/storage";
+
+// 通过 /assets 挂载点访问服务器资源
+const content = await useStorage("assets/server").getItem("my-file.txt");
+```
+
+### 默认（内存中）
+
+根存储（无基础路径）默认使用内存驱动。此处存储的数据在重启后不会持久化。
+
+```ts
+import { useStorage } from "nitro/storage";
+
+// 默认为内存存储，不会持久化
+await useStorage().setItem("counter", 1);
+```
+
+要持久化数据，请使用 `storage` 配置选项挂载具有持久后端的驱动（例如 `fs`、`redis` 等）。
+
+## 服务器资源
+
+Nitro 允许你从项目根目录的 `assets/` 目录打包文件。这些文件可以在运行时通过 `assets/server` 存储挂载点访问。
+
+```text
+my-project/
+  assets/
+    data.json
+    templates/
+      welcome.html
+  server/
+    routes/
+      index.ts
+```
+
+```ts [server/routes/index.ts]
+import { useStorage } from "nitro/storage";
+
+export default defineHandler(async () => {
+  const serverAssets = useStorage("assets/server");
+
+  const keys = await serverAssets.getKeys();
+  const data = await serverAssets.getItem("data.json");
+  const template = await serverAssets.getItem("templates/welcome.html");
+
+  return { keys, data, template };
+});
+```
+
+### 自定义资源目录
+
+你可以使用 `serverAssets` 配置选项注册额外的资源目录：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  serverAssets: [
+    {
+      baseName: "templates",
+      dir: "./templates",
+    }
+  ]
+})
+```
+
+自定义资源目录可通过 `assets/<baseName>` 访问：
+
+```ts
+import { useStorage } from "nitro/storage";
+
+const templates = useStorage("assets/templates");
+const keys = await templates.getKeys();
+const html = await templates.getItem("email.html");
+```
+
+### 资源元数据
+
+服务器资源包含元数据，例如内容类型、ETag 和修改时间：
+
+```ts
+import { useStorage } from "nitro/storage";
+
+const serverAssets = useStorage("assets/server");
+
+const meta = await serverAssets.getMeta("image.png");
+// { type: "image/png", etag: "\"...\"", mtime: "2024-01-01T00:00:00.000Z" }
+
+// 适用于设置响应头
+const raw = await serverAssets.getItemRaw("image.png");
+```
+
+<note>
+
+在开发环境中，服务器资源直接从文件系统读取。在生产环境中，它们会被打包并内联到构建输出中。
+
+</note>
+
+## 运行时配置
+
+在挂载点配置直到运行时才知道的场景中，Nitro 可以使用[插件](/docs/plugins)在启动期间动态添加挂载点。
+
+```ts [plugins/storage.ts]
+import { useStorage } from "nitro/storage";
+import { definePlugin } from "nitro";
+import redisDriver from "unstorage/drivers/redis";
+
+export default definePlugin(() => {
+  const storage = useStorage()
+
+  // 从运行时配置或其他来源动态传入凭据
+  const driver = redisDriver({
+    base: "redis",
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+    /* 其他 redis 连接器选项 */
+  })
+
+  // 挂载驱动
+  storage.mount("redis", driver)
+})
+```
+
+<warning>
+
+这是一个临时解决方案，更好的解决方案将在未来推出！请持续关注 GitHub 上的[此议题](https://github.com/nitrojs/nitro/issues/1161#issuecomment-1511444675)。
+
+</warning>

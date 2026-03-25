@@ -1,0 +1,235 @@
+# Nitro v3 测试版已发布！
+
+> Nitro v3 现已作为公开测试版发布——这是一个从根本上重新设计的服务器框架演进版本，围绕 Web 标准、Rolldown、Vite v8 构建，并延续了"随处部署"的承诺。
+
+## 发展历程
+
+Nitro 最初是作为 [Nuxt 3](https://nuxt.com) 的服务器引擎而诞生的，旨在解决一个特定问题：与部署环境无关的服务器。随着时间推移，Nitro 逐渐超越了 Nuxt 的范畴，成为许多元框架的基础，以及构建独立服务器的工具集。
+
+在 Nitro v3 中，我们借此机会重新思考了基础架构：更精简的 API、Web 标准、一流的 [Rolldown](https://rolldown.rs/) 和 [Vite v8](https://vite.dev/) 集成，以及为开发者和 AI 助手提供的更好体验（稍后会详细介绍！）
+
+自从我们在首届 [Vite Conf](https://viteconf.amsterdam/) 上悄悄发布 v3 [alpha.0](https://github.com/nitrojs/nitro/releases/tag/v3.0.1-alpha.0)（2025 年 10 月 11 日）以来，Nitro v3 已被众多用户采用（每周下载量约 [28 万](https://npmtrends.com/nitro-vs-nitro-nightly)！），并通过出色的贡献和反馈不断完善。包括 [Tanstack Start](https://tanstack.com/start/latest/docs/framework/react/guide/hosting#nitro)、[Vercel Workflows](https://useworkflow.dev/docs/getting-started)，以及 [T3Chat](https://t3.chat/) 等生产环境应用。
+
+衷心感谢 VoidZero（Vite 和 Rolldown）、Nuxt（[v5 即将发布！](#nuxt-v5)）和 TanStack Start 团队，以及每一位帮助 Nitro v3 达到这一里程碑的贡献者。❤️
+
+## 为什么要构建服务器？
+
+我们不会将原始源文件直接发送到浏览器。我们使用构建工具是因为它们能解决实际问题：**HMR** 提供即时反馈，**代码分割**确保只加载路由所需的代码，**Tree Shaking** 消除死代码，**压缩**减小体积。Webpack 和后来的 [Vite](https://vite.dev/) 等工具将前端开发从痛苦变得高效。
+
+但前端应用并非孤立存在，它们需要 API、数据库、认证、实时数据。它们需要服务器。
+
+随着无服务器和边缘计算的兴起，服务器端现在面临着前端多年前解决的相同约束。**冷启动**意味着每一毫秒的启动时间都至关重要。**内存限制**严格——臃肿的依赖可能让你超限。**包体积**直接影响部署速度和启动时间。而且你的代码需要处处运行：Node.js、Deno、Bun、Cloudflare Workers、Vercel 等。然而大多数服务器框架仍然发布未经优化、未打包的代码，假设一个长期运行的进程，而忽视了这一切。
+
+Nitro 将构建工具的理念带到后端。你期望从前端工具获得的一流开发体验：用于快速迭代的 HMR，以及由 Rolldown 驱动的优化构建，带有 Tree Shaking 的生产输出，性能尽可能接近裸机。**一套代码，任何运行时，任何平台。**
+
+## ⚡ 一流的 Vite 集成
+
+Nitro 现在拥有原生的 [Vite](https://vite.dev) 插件，用于构建全栈应用。
+
+```ts [vite.config.ts]
+import { defineConfig } from "vite";
+import { nitro } from "nitro/vite";
+
+export default defineConfig({
+  plugins: [nitro()],
+});
+```
+
+在你的 Vite 应用中添加 `nitro()` 即可获得：
+
+- 通过文件系统路由实现的 **API 路由**
+- 与你的前端构建集成的 **服务端渲染**
+- **生产环境服务器**——单次 `vite build` 即可生成优化的 `.output/` 文件夹，包含前后端，随时可部署
+
+这意味着你可以为任何 Vite 项目添加完整的后端——查看 [React](/examples/vite-ssr-react)、[Vue](/examples/vite-ssr-vue-router) 和 [Solid.js](/examples/vite-ssr-solid) 的[示例](/examples)。
+
+## 🚀 默认高性能，零膨胀
+
+Nitro 在构建时编译你的路由。没有运行时路由器——每个路由按需加载。只有处理特定请求所需的代码才会被加载和执行。
+
+使用 `standard` 预设构建的极简服务器包小于 `10kB`，可以使用 [srvx](https://srvx.h3.dev/) 以接近原生的速度提供服务，并包含 [H3](https://h3.dev/) 的所有优秀特性。
+
+我们还显著减少了依赖数量，从 [321 个依赖](https://npmgraph.js.org/?q=nitropack) 减少到 [不足 20 个](https://npmgraph.js.org/?q=nitro-nightly)。
+
+## 🖌️ 新身份：`nitro`
+
+Nitro v3 使用新的 NPM 包发布：[`nitro`](https://npmx.dev/package/nitro)，替代了旧版的 `nitropack`。
+
+所有导入现在使用简洁的 `nitro/*` 子路径：
+
+```ts
+import { defineNitroConfig } from "nitro/config";
+import { defineHandler } from "nitro";
+import { useStorage } from "nitro/storage";
+import { useDatabase } from "nitro/database";
+```
+
+不再有深层的 `nitropack/runtime/*` 路径，此外，你可以在构建器外部导入 nitro 子路径，这对单元测试很有用。
+
+## 🔧 自带框架
+
+Nitro v3 对你的 HTTP 层没有硬性规定。你可以使用内置的文件系统路由，或者通过 `server.ts` 入口文件完全掌控，并携带你喜欢的任何框架：
+
+```ts [server.ts]
+import { Hono } from "hono";
+
+const app = new Hono();
+app.get("/", (c) => c.text("Hello from Hono!"));
+
+export default app;
+```
+
+## 🌐 H3 (v2) 与 Web 标准
+
+Nitro v3 升级到 [H3 v2](https://h3.dev)，它已完全围绕 Web 标准原语重写——[`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request)、[`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response)、[`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers) 和 [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)。
+
+结果是更简洁、更可移植的服务器代码：
+
+```ts [routes/hello.ts]
+import { defineHandler } from "nitro";
+
+export default defineHandler((event) => {
+  const ua = event.req.headers.get("user-agent");
+  return { message: "Hello Nitro v3!", ua };
+});
+```
+
+读取请求体使用原生 API：
+
+```ts [routes/submit.ts]
+import { defineHandler } from "nitro";
+
+export default defineHandler(async (event) => {
+  const body = await event.req.json();
+  return { received: body };
+});
+```
+
+没有包装器，没有为平台已提供的内容添加抽象。如果你懂 Web API，你就懂 H3 v2。
+
+[Elysia](https://elysiajs.com/)、[h3](https://h3.dev)、[Hono](https://hono.dev)——任何遵循 Web 标准的框架都能与 Nitro 配合使用。
+
+## 🗄️ 内置原语
+
+Nitro 提供强大但小巧且**完全可选**的通用服务器原语，可在每个运行时中工作。
+
+<note>
+
+当不使用时，不会向服务器包添加任何额外内容。你仍然可以 alongside Nitro 的内置原语使用原生平台原语。
+我们还在为开发环境提供平台特定原语的一流模拟，详情请参见 [env-runner](https://github.com/unjs/env-runner) 和 [nitrojs/nitro#4088](https://github.com/nitrojs/nitro/pull/4088)。
+
+</note>
+
+### 存储
+
+运行时无关的键值层，带有 20 多个驱动——文件系统、Redis、S3、Cloudflare KV、Vercel Blob 等[更多](https://unstorage.unjs.io/drivers)。将驱动附加到命名空间，无需更改应用代码即可更换它们。
+
+```ts
+import { useStorage } from "nitro/storage";
+
+const storage = useStorage();
+await storage.setItem("user:1", { name: "Nitro" });
+```
+
+<read-more to="/docs/storage">
+
+
+
+</read-more>
+
+### 缓存
+
+缓存服务器路由和函数，由存储层提供支持。开箱即支持 stale-while-revalidate、TTL 和自定义缓存键。
+
+```ts
+import { defineCachedHandler } from "nitro/cache";
+
+export default defineCachedHandler((event) => {
+  return "I am cached for an hour";
+}, { maxAge: 60 * 60 });
+```
+
+<read-more to="/docs/cache">
+
+
+
+</read-more>
+
+### 数据库
+
+内置 SQL 数据库，开发环境默认使用 SQLite，可以使用相同的 API 连接到 Postgres、MySQL 等[更多](https://db0.unjs.io/connectors)。
+
+```ts
+import { useDatabase } from "nitro/database";
+
+const db = useDatabase();
+const users = await db.sql`SELECT * FROM users`;
+```
+
+<read-more to="/docs/database">
+
+
+
+</read-more>
+
+## 🌍 随处部署
+
+将你的服务器构建到优化的 `.output/` 文件夹，兼容：
+
+- **运行时**：Node.js、Bun、Deno
+- **平台**：Cloudflare Workers、Netlify、Vercel、AWS Lambda、Azure、Firebase、Deno Deploy 等
+
+无需配置——Nitro 自动检测你的部署目标。利用 ISR、SWR 和边缘渲染等平台特性，无需更改一行代码。
+
+## 🎨 服务端渲染
+
+使用你喜欢的模板引擎渲染 HTML，或直接在服务器上使用 React、Vue 或 Svelte 等组件库。通过客户端注水实现完全同构渲染。
+
+Nitro 提供基础和渐进式方案——从 API 路由开始，需要时添加渲染，并按自己的节奏扩展到完全 SSR。
+
+<read-more to="/docs/renderer">
+
+
+
+</read-more>
+
+## 🟢 Nuxt v5
+
+Nitro v3 将为 [Nuxt](https://nuxt.com) 的下一个主要版本提供动力。
+
+[Nuxt v5](https://nuxt.com/blog/roadmap-v4) 将搭载 Nitro v3 和 H3 v2 作为核心，将 Web 标准请求处理、Rolldown 驱动的构建和 Vite 环境 API 带到 Nuxt 生态系统。
+
+如果你是 Nuxt 用户，你可以通过熟悉 Nitro v3 的新 API 来提前准备，这些 API 将直接延续到 Nuxt 5，你可以[关注进展](https://github.com/nuxt/nuxt/discussions/34504)了解 Nuxt 中采用 Nitro v3 的情况。
+
+## 🏁 开始使用
+
+### 创建新项目
+
+<pm-x command="create-nitro-app">
+
+
+
+</pm-x>
+
+查看[快速入门指南](/docs/quick-start)获取完整的分步教程。
+
+## 🔄 从 v2 迁移
+
+Nitro v3 引入了有意的破坏性变更，以建立更简洁的基础。以下是关键变更：
+
+- `nitropack` → `nitro`（包重命名）
+- `nitropack/runtime/*` → `nitro/*`（简洁的子路径导入）
+- `eventHandler` → `defineHandler`（H3 v2）
+- `createError` → `HTTPError`（H3 v2）
+- Web 标准的 `event.req` 请求头和请求体 API
+- Node.js 最低版本：**20**
+- 预设重命名和整合（例如，`cloudflare` → `cloudflare_module`）
+
+完整列表请参见[迁移指南](/docs/migration)。
+
+---
+
+感谢多年来为 Nitro 做出贡献的每一个人。我们迫不及待想看到你用新版 Nitro 构建的作品！❤️
+
+- [GitHub](https://github.com/nitrojs/nitro) — 问题与讨论
+- [Discord](https://discord.nitro.build) — 与社区交流

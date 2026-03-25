@@ -1,0 +1,1481 @@
+# 路由
+
+> Nitro 支持文件系统路由，自动将文件映射到路由。通过将代码分割与编译后的路由相结合，它消除了对运行时路由器的需要，仅保留最少的编译逻辑。
+
+## 请求处理器
+
+Nitro 请求处理器是一个接受 `event` 对象的函数，该对象是 [H3Event](https://h3.dev/guide/api/h3event#h3event-properties) 对象。
+
+<code-group>
+
+```ts [单个函数]
+import type { H3Event } from "nitro";
+
+export default (event: H3Event) => {
+  return "world";
+}
+```
+
+```ts [defineHandler]
+import { defineHandler } from "nitro";
+
+// 为了更好的类型推断
+export default defineHandler((event) => {
+  return "world";
+});
+```
+
+</code-group>
+
+## 文件系统路由
+
+Nitro 支持基于文件的路由来定义你的 API 路由（文件会自动映射到 [h3 路由](https://h3.dev/guide/basics/routing)）。定义路由非常简单，只需在 `api/` 或 `routes/` 目录中创建一个文件即可。
+
+你只能为每个文件定义一个处理器，并且可以在文件名后[追加 HTTP 方法](#specific-request-method)来定义特定的请求方法。
+
+```text
+routes/
+  api/
+    test.ts      <-- /api/test
+  hello.get.ts   <-- /hello (仅 GET)
+  hello.post.ts  <-- /hello (仅 POST)
+vite.config.ts
+```
+
+你可以通过创建子目录来嵌套路由。
+
+```txt
+routes/
+  api/
+    [org]/
+      [repo]/
+        index.ts   <-- /api/:org/:repo
+        issues.ts  <-- /api/:org/:repo/issues
+      index.ts     <-- /api/:org
+package.json
+```
+
+#### 路由组
+
+在某些情况下，你可能希望将一组路由组合在一起，而不影响基于文件的路由。为此，你可以将文件放在用括号 `(` 和 `)` 包裹的文件夹中。
+
+例如：
+
+```txt
+routes/
+  api/
+    (admin)/
+      users.ts   <-- /api/users
+      reports.ts <-- /api/reports
+    (public)/
+      index.ts   <-- /api
+package.json
+```
+
+<note>
+
+路由组不是路由定义的一部分，仅用于组织目的。
+
+</note>
+
+### 静态路由
+
+首先，在 `routes/` 或 `routes/api/` 目录中创建一个文件。文件名将成为路由路径。
+
+然后，导出一个兼容 fetch 的函数：
+
+```ts [routes/api/test.ts]
+import { defineHandler } from "nitro";
+
+export default defineHandler(() => {
+  return { hello: "API" };
+});
+```
+
+### 动态路由
+
+#### 单参数
+
+要定义带参数的路由，请使用 `[<param>]` 语法，其中 `<param>` 是参数的名称。该参数将在 `event.context.params` 对象中可用，或者使用 [`getRouterParam`](https://h3.dev/utils/request#getrouterparamevent-name-opts-decode) 工具函数。
+
+```ts [routes/hello/[name].ts]
+import { defineHandler } from "nitro";
+
+export default defineHandler((event) => {
+  const { name } = event.context.params;
+
+  return `Hello ${name}!`;
+});
+```
+
+使用参数 `/hello/nitro` 调用该路由，你将得到：
+
+```txt [响应]
+Hello nitro!
+```
+
+#### 多参数
+
+你可以使用 `[<param1>]/[<param2>]` 语法在路由中定义多个参数，其中每个参数都是一个文件夹。你**不能**在单个文件名或文件夹中定义多个参数。
+
+```ts [routes/hello/[name]/[age].ts]
+import { defineHandler } from "nitro";
+
+export default defineHandler((event) => {
+  const { name, age } = event.context.params;
+
+  return `Hello ${name}! You are ${age} years old.`;
+});
+```
+
+#### 捕获所有参数
+
+你可以使用 `[...<param>]` 语法捕获 URL 的所有剩余部分。这将把 `/` 包含在参数中。
+
+```ts [routes/hello/[...name].ts]
+import { defineHandler } from "nitro";
+
+export default defineHandler((event) => {
+  const { name } = event.context.params;
+
+  return `Hello ${name}!`;
+});
+```
+
+使用参数 `/hello/nitro/is/hot` 调用该路由，你将得到：
+
+```txt [响应]
+Hello nitro/is/hot!
+```
+
+### 特定请求方法
+
+你可以在文件名后追加 HTTP 方法来强制路由仅匹配特定的 HTTP 请求方法，例如 `hello.get.ts` 将只匹配 `GET` 请求。你可以使用任何你想要的 HTTP 方法。
+
+支持的方法：`get`、`post`、`put`、`delete`、`patch`、`head`、`options`、`connect`、`trace`。
+
+<code-group>
+
+```js [GET]
+// routes/users/[id].get.ts
+import { defineHandler } from "nitro";
+
+export default defineHandler(async (event) => {
+  const { id } = event.context.params;
+
+  // 对 id 进行一些操作
+
+  return `User profile!`;
+});
+```
+
+```js [POST]
+// routes/users.post.ts
+import { defineHandler } from "nitro";
+
+export default defineHandler(async (event) => {
+  const body = await event.req.json();
+
+  // 对 body 进行一些操作，比如保存到数据库
+
+  return { updated: true };
+});
+```
+
+</code-group>
+
+### 捕获所有路由
+
+你可以创建一个特殊的路由，它将匹配所有未被其他任何路由匹配的路由。这对于创建默认路由很有用。
+
+要创建捕获所有路由，请创建一个名为 `[...].ts` 的文件。
+
+```ts [routes/[...].ts]
+import { defineHandler } from "nitro";
+
+export default defineHandler((event) => {
+  return `Hello ${event.url}!`;
+});
+```
+
+### 环境特定处理器
+
+你可以通过在文件名后添加 `.dev`、`.prod` 或 `.prerender` 后缀来指定仅包含在特定构建中的路由，例如：`routes/test.get.dev.ts` 或 `routes/test.get.prod.ts`。
+
+该后缀放在方法后缀之后（如果有的话）：
+
+```txt
+routes/
+  env/
+    index.dev.ts       <-- /env (仅开发环境)
+    index.get.prod.ts  <-- /env (GET, 仅生产环境)
+```
+
+<tip>
+
+你可以通过 [`routes`](#routes-config) 配置使用程序化路由注册来指定多个环境或将预设名称指定为环境。
+
+</tip>
+
+### 忽略文件
+
+你可以使用 `ignore` 配置选项来排除文件不被路由扫描。它接受相对于服务器目录的 glob 模式数组。
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  ignore: [
+    "routes/api/**/_*",   // 忽略 api/ 中以 _ 开头的文件
+    "middleware/_*.ts",    // 忽略以 _ 开头的中间件
+    "routes/_*.ts",       // 忽略根路由中以 _ 开头的文件
+  ],
+});
+```
+
+## 程序化路由处理器
+
+除了文件系统路由外，你还可以使用 `routes` 配置选项以程序化方式注册路由处理器。
+
+### `routes` 配置
+
+`routes` 选项允许你将路由模式映射到处理器：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  routes: {
+    "/api/hello": "./server/routes/api/hello.ts",
+    "/api/custom": {
+      handler: "./server/routes/api/hello.ts",
+      method: "POST",
+      lazy: true,
+    },
+    "/virtual": {
+      handler: "#virtual-route",
+    },
+  },
+});
+```
+
+每个路由条目可以是一个简单的字符串（处理器路径）或一个具有以下选项的对象：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      选项
+    </th>
+    
+    <th>
+      类型
+    </th>
+    
+    <th>
+      描述
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        handler
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string
+      </code>
+    </td>
+    
+    <td>
+      事件处理器文件或虚拟模块 ID 的路径
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        method
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string
+      </code>
+    </td>
+    
+    <td>
+      要匹配的 HTTP 方法（<code>
+        get
+      </code>
+      
+      、<code>
+        post
+      </code>
+      
+       等）
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        lazy
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        boolean
+      </code>
+    </td>
+    
+    <td>
+      使用懒加载导入处理器
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        format
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        "web" | "node"
+      </code>
+    </td>
+    
+    <td>
+      处理器类型。<code>
+        "node"
+      </code>
+      
+       处理器会被转换为兼容 web 的格式
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        env
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string | string[]
+      </code>
+    </td>
+    
+    <td>
+      包含此处理器的环境（<code>
+        "dev"
+      </code>
+      
+      、<code>
+        "prod"
+      </code>
+      
+      、<code>
+        "prerender"
+      </code>
+      
+       或预设名称）
+    </td>
+  </tr>
+</tbody>
+</table>
+
+### `handlers` 配置
+
+`handlers` 数组适用于注册具有路由匹配控制权的中间件：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  handlers: [
+    {
+      route: "/api/**",
+      handler: "./server/middleware/api-auth.ts",
+      middleware: true,
+    },
+  ],
+});
+```
+
+每个处理器条目支持以下选项：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      选项
+    </th>
+    
+    <th>
+      类型
+    </th>
+    
+    <th>
+      描述
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        route
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string
+      </code>
+    </td>
+    
+    <td>
+      HTTP 路径名模式（例如 <code>
+        /test
+      </code>
+      
+      、<code>
+        /api/:id
+      </code>
+      
+      、<code>
+        /blog/**
+      </code>
+      
+      ）
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        handler
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string
+      </code>
+    </td>
+    
+    <td>
+      事件处理器文件或虚拟模块 ID 的路径
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        method
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string
+      </code>
+    </td>
+    
+    <td>
+      要匹配的 HTTP 方法（<code>
+        get
+      </code>
+      
+      、<code>
+        post
+      </code>
+      
+       等）
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        middleware
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        boolean
+      </code>
+    </td>
+    
+    <td>
+      在路由处理器之前作为中间件运行处理器
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        lazy
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        boolean
+      </code>
+    </td>
+    
+    <td>
+      使用懒加载导入处理器
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        format
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        "web" | "node"
+      </code>
+    </td>
+    
+    <td>
+      处理器类型。<code>
+        "node"
+      </code>
+      
+       处理器会被转换为兼容 web 的格式
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        env
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string | string[]
+      </code>
+    </td>
+    
+    <td>
+      包含此处理器的环境（<code>
+        "dev"
+      </code>
+      
+      、<code>
+        "prod"
+      </code>
+      
+      、<code>
+        "prerender"
+      </code>
+      
+       或预设名称）
+    </td>
+  </tr>
+</tbody>
+</table>
+
+## 中间件
+
+Nitro 路由中间件可以介入请求生命周期。
+
+<tip>
+
+中间件可以在请求被处理之前修改请求，但不能在处理之后修改。
+
+</tip>
+
+在 `middleware/` 目录中的中间件会自动注册。
+
+```md
+middleware/
+  auth.ts
+  logger.ts
+  ...
+routes/
+  hello.ts
+```
+
+### 简单中间件
+
+中间件的定义与路由处理器完全相同，唯一的区别是它们不应该返回任何内容。
+从中间件返回的行为类似于从请求返回——该值将作为响应返回，后续代码将不会运行。
+
+```ts [middleware/auth.ts]
+import { defineHandler } from "nitro";
+
+export default defineHandler((event) => {
+  // 扩展或修改事件
+  event.context.user = { name: "Nitro" };
+});
+```
+
+`middleware/` 目录中的中间件会自动注册到所有路由。如果你想为特定路由注册中间件，请参阅 [对象语法事件处理器](https://h3.dev/guide/basics/handler#object-syntax)。
+
+<note>
+
+从中间件返回任何内容都会关闭请求，应该避免这样做！中间件的任何返回值都将成为响应，后续代码将不会执行，然而**不推荐这样做！**
+
+</note>
+
+### 路由元数据
+
+你可以在事件处理器文件中使用 `defineRouteMeta` 宏在构建时定义路由处理器元数据。
+
+<important>
+
+此功能目前处于实验阶段。
+
+</important>
+
+```ts [routes/api/test.ts]
+import { defineRouteMeta } from "nitro";
+import { defineHandler } from "nitro";
+
+defineRouteMeta({
+  openAPI: {
+    tags: ["test"],
+    description: "测试路由描述",
+    parameters: [{ in: "query", name: "test", required: true }],
+  },
+});
+
+export default defineHandler(() => "OK");
+```
+
+<read-more to="https://swagger.io/specification/v3/">
+
+此功能目前可用于指定 OpenAPI 元数据。请参阅 swagger 规范以了解可用的 OpenAPI 选项。
+
+</read-more>
+
+### 执行顺序
+
+中间件按目录列表顺序执行。
+
+```md
+middleware/
+  auth.ts <-- 第一个
+  logger.ts <-- 第二个
+  ... <-- 第三个
+```
+
+在中间件文件名前添加数字以控制它们的执行顺序。
+
+```md
+middleware/
+  1.logger.ts <-- 第一个
+  2.auth.ts <-- 第二个
+  3.... <-- 第三个
+```
+
+<note>
+
+请记住，文件名是按字符串排序的，因此例如如果你有 3 个文件 `1.filename.ts`、`2.filename.ts` 和 `10.filename.ts`，`10.filename.ts` 会排在 `1.filename.ts` 之后。为了避免这种情况，如果在同一目录中有超过 10 个中间件，请在 `1-9` 前添加 `0`，如 `01`。
+
+</note>
+
+### 请求过滤
+
+中间件在每个请求上都会执行。
+
+应用自定义逻辑将它们限定在特定条件下。
+
+例如，你可以使用 URL 将中间件应用于特定路由：
+
+```ts [middleware/auth.ts]
+import { defineHandler } from "nitro";
+
+export default defineHandler((event) => {
+  // 仅对 /auth 路由执行
+  if (event.url.pathname.startsWith('/auth')) {
+    event.context.user = { name: "Nitro" };
+  }
+});
+```
+
+### 路由作用域中间件
+
+你可以使用 [`handlers`](#handlers-config) 配置并设置 `middleware` 选项和特定的 `route` 来为特定路由模式注册中间件：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  handlers: [
+    {
+      route: "/api/**",
+      handler: "./server/middleware/api-auth.ts",
+      middleware: true,
+    },
+  ],
+});
+```
+
+与全局中间件（在 `middleware/` 目录中注册，匹配 `/**`）不同，路由作用域中间件仅对匹配指定模式的请求运行。
+
+## 错误处理
+
+你可以在路由和中间件中使用 [H3 提供的工具](https://h3.dev/guide/basics/error) 来处理错误。
+
+错误返回给客户端的方式取决于环境。在开发环境中，带有 `Accept` 请求头为 `text/html`（如浏览器）的请求将收到 HTML 错误页面。在生产环境中，错误始终以 JSON 格式发送。
+
+此行为可以通过某些请求属性（例如：`Accept` 或 `User-Agent` 请求头）来覆盖。
+
+## 代码分割
+
+Nitro 为每个路由处理程序创建单独的代码块。代码块在首次请求时按需加载，因此 `/api/users` 不会加载 `/api/posts` 的代码。
+
+查看 [`inlineDynamicImports`](/config#inlinedynamicimports) 以将所有内容打包到单个文件中。
+
+## 路由规则
+
+Nitro 允许你在配置中为每个路由添加顶层逻辑。可用于重定向、代理、缓存、认证以及为路由添加请求头。
+
+这是一个从路由模式（遵循 [rou3](https://github.com/h3js/rou3)）到路由选项的映射。
+
+当设置了 `cache` 选项时，匹配模式的处理程序将自动使用 `defineCachedEventHandler` 包裹。查看 [缓存指南](/docs/cache) 以了解有关此函数的更多信息。
+
+<note>
+
+`swr: true|number` 是 `cache: { swr: true, maxAge: number }` 的简写
+
+</note>
+
+你可以在 `nitro.routeRules` 选项中设置路由规则。
+
+```ts [nitro.config.ts]
+import { defineConfig } from "nitro";
+
+export default defineNitroConfig({
+  routeRules: {
+    '/blog/**': { swr: true },
+    '/blog2/**': { swr: 600 },
+    '/blog3/**': { static: true },
+    '/blog4/**': { cache: { /* 缓存选项 */ } },
+    '/assets/**': { headers: { 'cache-control': 's-maxage=0' } },
+    '/api/v1/**': { cors: true, headers: { 'access-control-allow-methods': 'GET' } },
+    '/old-page': { redirect: '/new-page' },
+    '/old-page/**': { redirect: '/new-page/**' },
+    '/proxy/example': { proxy: 'https://example.com' },
+    '/proxy/**': { proxy: '/api/**' },
+    '/admin/**': { basicAuth: { username: 'admin', password: 'supersecret' } },
+  }
+});
+```
+
+### 规则合并与覆盖
+
+路由规则按照从最不具体到最具体的顺序匹配。当多个规则匹配一个请求时，它们的选项会合并，更具体的规则优先。
+
+你可以使用 `false` 来禁用由更通用模式设置的规则：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  routeRules: {
+    '/api/cached/**': { swr: true },
+    '/api/cached/no-cache': { cache: false, swr: false },
+    '/admin/**': { basicAuth: { username: 'admin', password: 'secret' } },
+    '/admin/public/**': { basicAuth: false },
+  }
+});
+```
+
+### 请求头
+
+为匹配的路由设置自定义响应头：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  routeRules: {
+    '/api/**': { headers: { 'cache-control': 's-maxage=60' } },
+    '**': { headers: { 'x-powered-by': 'Nitro' } },
+  }
+});
+```
+
+### 跨域资源共享 (CORS)
+
+使用 `cors: true` 快捷方式启用 CORS 请求头。这将设置 `access-control-allow-origin: *`、`access-control-allow-methods: *`、`access-control-allow-headers: *` 和 `access-control-max-age: 0`。
+
+你可以使用 `headers` 覆盖单个 CORS 请求头：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  routeRules: {
+    '/api/v1/**': {
+      cors: true,
+      headers: { 'access-control-allow-methods': 'GET' },
+    },
+  }
+});
+```
+
+### 重定向
+
+将匹配的路由重定向到另一个 URL。使用字符串进行简单重定向（默认为 `307` 状态码），或使用对象进行更精细的控制：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  routeRules: {
+    // 简单重定向（307 状态码）
+    '/old-page': { redirect: '/new-page' },
+    // 自定义状态码的重定向
+    '/legacy': { redirect: { to: 'https://example.com/', status: 308 } },
+    // 通配符重定向 — 保留模式后的路径
+    '/old-blog/**': { redirect: 'https://blog.example.com/**' },
+  }
+});
+```
+
+### 代理
+
+将请求代理到另一个 URL。支持内部和外部目标：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  routeRules: {
+    // 代理到确切 URL
+    '/api/proxy/example': { proxy: 'https://example.com' },
+    // 代理到内部路由
+    '/api/proxy/**': { proxy: '/api/echo' },
+    // 通配符代理 — 保留模式后的路径
+    '/cdn/**': { proxy: 'https://cdn.jsdelivr.net/**' },
+    // 带选项的代理
+    '/external/**': {
+      proxy: {
+        to: 'https://api.example.com/**',
+        // 其他 H3 代理选项...
+      },
+    },
+  }
+});
+```
+
+### 基础认证
+
+使用 HTTP 基础认证保护路由：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  routeRules: {
+    '/admin/**': {
+      basicAuth: {
+        username: 'admin',
+        password: 'supersecret',
+        realm: '管理区域',  // 可选，显示在浏览器提示框中
+      },
+    },
+    // 为子路径禁用基础认证
+    '/admin/public/**': { basicAuth: false },
+  }
+});
+```
+
+### 缓存（SWR / 静态）
+
+使用 `cache`、`swr` 或 `static` 选项控制缓存行为：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  routeRules: {
+    // 启用 stale-while-revalidate 缓存
+    '/blog/**': { swr: true },
+    // 带 maxAge（秒）的 SWR
+    '/blog/posts/**': { swr: 600 },
+    // 完整缓存选项
+    '/api/data/**': {
+      cache: {
+        maxAge: 60,
+        swr: true,
+        // ...其他缓存选项
+      },
+    },
+    // 禁用缓存
+    '/api/realtime/**': { cache: false },
+  }
+});
+```
+
+<tip>
+
+`swr: true` 是 `cache: { swr: true }` 的简写，`swr: <number>` 是 `cache: { swr: true, maxAge: <number> }` 的简写。
+
+</tip>
+
+### 预渲染
+
+标记路由以在构建时进行预渲染：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  routeRules: {
+    '/about': { prerender: true },
+    '/dynamic/**': { prerender: false },
+  }
+});
+```
+
+### ISR (Vercel)
+
+为 Vercel 部署配置增量静态再生：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  routeRules: {
+    '/isr/**': { isr: true },
+    '/isr-ttl/**': { isr: 60 },
+    '/isr-custom/**': {
+      isr: {
+        expiration: 60,
+        allowQuery: ['q'],
+        group: 1,
+      },
+    },
+  }
+});
+```
+
+### 路由规则参考
+
+<table>
+<thead>
+  <tr>
+    <th>
+      选项
+    </th>
+    
+    <th>
+      类型
+    </th>
+    
+    <th>
+      描述
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        headers
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        Record<string, string>
+      </code>
+    </td>
+    
+    <td>
+      自定义响应头
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        redirect
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string | { to: string, status?: number }
+      </code>
+    </td>
+    
+    <td>
+      重定向到另一个 URL（默认状态码：<code>
+        307
+      </code>
+      
+      ）
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        proxy
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string | { to: string, ...proxyOptions }
+      </code>
+    </td>
+    
+    <td>
+      将请求代理到另一个 URL
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        cors
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        boolean
+      </code>
+    </td>
+    
+    <td>
+      启用宽松的 CORS 请求头
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        cache
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        object | false
+      </code>
+    </td>
+    
+    <td>
+      缓存选项（参见 <a href="/docs/cache">
+        缓存指南
+      </a>
+      
+      ）
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        swr
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        boolean | number
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        cache: { swr: true, maxAge: number }
+      </code>
+      
+       的简写
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        static
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        boolean | number
+      </code>
+    </td>
+    
+    <td>
+      静态缓存的简写
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        basicAuth
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        { username, password, realm? } | false
+      </code>
+    </td>
+    
+    <td>
+      HTTP 基础认证
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        prerender
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        boolean
+      </code>
+    </td>
+    
+    <td>
+      启用/禁用预渲染
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        isr
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        boolean | number | object
+      </code>
+    </td>
+    
+    <td>
+      增量静态再生（Vercel）
+    </td>
+  </tr>
+</tbody>
+</table>
+
+### 运行时路由规则
+
+路由规则可以通过 `runtimeConfig` 提供，允许通过环境变量覆盖而无需重新构建：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  runtimeConfig: {
+    nitro: {
+      routeRules: {
+        '/api/**': { headers: { 'x-env': 'production' } },
+      },
+    },
+  },
+});
+```
+
+## 配置参考
+
+这些配置选项控制路由行为：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      选项
+    </th>
+    
+    <th>
+      类型
+    </th>
+    
+    <th>
+      默认值
+    </th>
+    
+    <th>
+      描述
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        baseURL
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        "/"
+      </code>
+    </td>
+    
+    <td>
+      所有路由的基础 URL
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        apiBaseURL
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        "/api"
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        api/
+      </code>
+      
+       目录中路由的基础 URL
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        apiDir
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        "api"
+      </code>
+    </td>
+    
+    <td>
+      API 路由的目录名称
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        routesDir
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        "routes"
+      </code>
+    </td>
+    
+    <td>
+      基于文件的路由的目录名称
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        serverDir
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string | false
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        false
+      </code>
+    </td>
+    
+    <td>
+      用于扫描路由、中间件、插件等的服务器目录
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        scanDirs
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string[]
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        []
+      </code>
+    </td>
+    
+    <td>
+      扫描路由的额外目录
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        routes
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        Record<string, string | handler>
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        {}
+      </code>
+    </td>
+    
+    <td>
+      路由到处理程序的映射
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        handlers
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        NitroEventHandler[]
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        []
+      </code>
+    </td>
+    
+    <td>
+      程序化处理程序注册（主要用于中间件）
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        routeRules
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        Record<string, NitroRouteConfig>
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        {}
+      </code>
+    </td>
+    
+    <td>
+      匹配模式的路由规则
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        ignore
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        string[]
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        []
+      </code>
+    </td>
+    
+    <td>
+      文件扫描期间忽略的 glob 模式
+    </td>
+  </tr>
+</tbody>
+</table>

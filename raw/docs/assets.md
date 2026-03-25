@@ -1,0 +1,179 @@
+# 资源
+
+> 
+
+Nitro 支持两种类型的资源：直接提供给客户端的**公共资源**和打包到服务器中以供程序化访问的**服务器资源**。
+
+## 公共资源
+
+Nitro 通过 `public/` 目录处理资源。
+
+`public/` 目录中的所有资源将被自动提供。这意味着您可以直接从浏览器访问它们，无需任何特殊配置。
+
+```md
+public/
+  image.png     <-- /image.png
+  video.mp4     <-- /video.mp4
+  robots.txt    <-- /robots.txt
+```
+
+### 缓存和请求头
+
+公共资源会自动携带 `ETag` 和 `Last-Modified` 响应头，以支持条件请求。当客户端发送 `If-None-Match` 或 `If-Modified-Since` 请求头时，Nitro 会返回 `304 Not Modified` 响应。
+
+对于从非根目录 `baseURL`（如 `/build/`）提供的资源，Nitro 会阻止请求穿透到应用处理器。如果请求匹配了公共资源基础路径但文件未找到，将立即返回 `404`。
+
+### 生产环境公共资源
+
+构建 Nitro 应用时，`public/` 目录将被复制到 `.output/public/`，同时会创建一个包含元数据的清单文件并嵌入到服务器包中。
+
+```json
+{
+  "/image.png": {
+    "type": "image/png",
+    "etag": "\"4a0c-6utWq0Kbk5OqDmksYCa9XV8irnM\"",
+    "mtime": "2023-03-04T21:39:45.086Z",
+    "size": 18956
+  },
+  "/robots.txt": {
+    "type": "text/plain; charset=utf-8",
+    "etag": "\"8-hMqyDrA8fJ0R904zgEPs3L55Jls\"",
+    "mtime": "2023-03-04T21:39:45.086Z",
+    "size": 8
+  },
+  "/video.mp4": {
+    "type": "video/mp4",
+    "etag": "\"9b943-4UwfQXKUjPCesGPr6J5j7GzNYGU\"",
+    "mtime": "2023-03-04T21:39:45.085Z",
+    "size": 637251
+  }
+}
+```
+
+这使得 Nitro 无需扫描目录即可了解公共资源，配合缓存响应头提供高性能。
+
+### 自定义公共资源目录
+
+您可以使用 `publicAssets` 配置选项配置额外的公共资源目录。每个条目支持以下属性：
+
+- `dir` -- 目录路径（相对于 `rootDir` 解析）。
+- `baseURL` -- 提供资源的 URL 前缀（默认：`"/"`）。
+- `maxAge` -- 缓存 `max-age` 时间，单位为秒。设置后，会通过路由规则应用 `Cache-Control: public, max-age=<value>, immutable` 响应头。
+- `fallthrough` -- 当资源未找到时，请求是否应穿透到应用处理器。顶层（`baseURL: "/"`）目录默认为 `true`；非根目录默认为 `false`。
+- `ignore` -- 传入 `false` 以禁用忽略模式，或传入 glob 模式数组以覆盖全局的 `ignore` 选项。
+
+```js [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  publicAssets: [
+    {
+      baseURL: "build",
+      dir: "public/build",
+      maxAge: 3600,
+    },
+  ],
+});
+```
+
+在此示例中，`public/build/` 目录下的文件在 `/build/` 路径下提供，具有一小时缓存且不会穿透到应用处理器。
+
+### 压缩公共资源
+
+Nitro 可以在构建期间生成公共资源的预压缩版本。当客户端发送 `Accept-Encoding` 请求头时，服务器将提供压缩版本（如果可用）。支持的压缩编码包括 gzip (`.gz`)、brotli (`.br`) 和 zstd (`.zst`）。
+
+设置 `compressPublicAssets: true` 以启用所有编码：
+
+```js [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  compressPublicAssets: true,
+});
+```
+
+或选择特定编码：
+
+```js [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  compressPublicAssets: {
+    gzip: true,
+    brotli: true,
+    zstd: false,
+  },
+});
+```
+
+<note>
+
+仅对可压缩的 MIME 类型（文本、JavaScript、JSON、XML、WASM、字体、SVG 等）且文件大小至少为 1 KB 的文件进行压缩。源映射文件（`.map`）被排除在外。
+
+</note>
+
+## 服务器资源
+
+`assets/` 目录中的所有资源将被添加到服务器包中。构建应用后，您可以在 `.output/server/chunks/raw/` 目录中找到它们。请注意资源的大小，因为它们将随服务器包一起打包。
+
+<tip>
+
+除非使用 `useStorage()`，否则资源不会被包含在服务器包中。
+
+</tip>
+
+它们可以通过 `assets:server` 挂载点使用[存储层](/docs/storage)来访问。
+
+例如，您可以将 json 文件存储在 `assets/data.json` 中，并在处理器中检索它：
+
+```js
+import { defineHandler } from "nitro";
+
+export default defineHandler(async () => {
+  const data = await useStorage("assets:server").get("data.json");
+
+  return data;
+});
+```
+
+### 自定义服务器资源
+
+为了从自定义目录添加资源，您需要在 nitro 配置中定义路径。这允许您从 `assets/` 目录之外的目录添加资源。
+
+`serverAssets` 中的每个条目支持以下属性：
+
+- `baseName` -- 用作存储挂载点的名称（通过 `assets:<baseName>` 访问）。
+- `dir` -- 目录路径（相对于 `rootDir` 解析）。
+- `pattern` -- 文件包含的 glob 模式（默认：`"**/*"`）。
+- `ignore` -- 用于排除文件的 glob 模式数组。
+
+```js [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  serverAssets: [
+    {
+      baseName: "templates",
+      dir: "./templates",
+    },
+  ],
+});
+```
+
+然后您可以使用 `assets:templates` 基础路径来检索您的资源。
+
+```ts [handlers/success.ts]
+import { defineHandler } from "nitro";
+
+export default defineHandler(async (event) => {
+  const html = await useStorage("assets:templates").get("success.html");
+
+  return html;
+});
+```
+
+<tip>
+
+在开发期间，服务器资源使用 `fs` unstorage 驱动程序直接从文件系统读取。在生产环境中，它们作为懒加载导入与预计算的元数据（MIME 类型、ETag、修改时间）一起打包到服务器中。
+
+</tip>

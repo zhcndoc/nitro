@@ -1,0 +1,545 @@
+# 缓存
+
+> Nitro 提供了一个基于存储层构建的缓存系统，由 ocache 提供支持。
+
+## 缓存处理器
+
+要缓存事件处理器，你只需使用 `defineCachedHandler` 方法。
+
+它的工作方式类似于 `defineHandler`，但有第二个参数用于 [缓存选项](#options)。
+
+```ts [routes/cached.ts]
+import { defineCachedHandler } from "nitro/cache";
+
+export default defineCachedHandler((event) => {
+  return "I am cached for an hour";
+}, { maxAge: 60 * 60 });
+```
+
+在此示例中，响应将被缓存 1 小时，并在后台更新缓存的同时向客户端发送旧值。如果你想立即返回更新后的响应，请设置 `swr: false`。
+
+有关可用选项的更多详情，请参阅 [选项](#options) 部分。
+
+<important>
+
+处理缓存响应时**请求头会被丢弃**。使用 [`varies` 选项](#options) 在缓存和提供响应时考虑特定的请求头。
+
+</important>
+
+### 自动 HTTP 头
+
+使用 `defineCachedHandler` 时，Nitro 会自动管理缓存响应上的 HTTP 缓存头：
+
+- **etag** -- 如果处理器未设置，则根据响应体哈希生成弱 ETag（`W/"..."`）。
+- **last-modified** -- 如果未设置，则在首次缓存响应时设置为当前时间。
+- **cache-control** -- 根据 `swr`、`maxAge` 和 `staleMaxAge` 选项自动设置：
+
+  - 当 `swr: true` 时：`s-maxage=<maxAge>, stale-while-revalidate=<staleMaxAge>`
+  - 当 `swr: false` 时：`max-age=<maxAge>`
+
+### 条件请求（304 Not Modified）
+
+缓存处理器自动支持条件请求。当客户端发送的 `if-none-match` 或 `if-modified-since` 请求头与缓存响应匹配时，Nitro 会返回不带主体的 `304 Not Modified` 响应。
+
+### 请求方法过滤
+
+只有 `GET` 和 `HEAD` 请求会被缓存。所有其他 HTTP 方法（`POST`、`PUT`、`DELETE` 等）会自动绕过缓存并直接调用处理器。
+
+### 请求去重
+
+当缓存正在解析时，如果有多个并发请求命中相同的缓存键，只会运行一次处理器调用。所有并发请求都会等待并共享相同的结果。
+
+## 缓存函数
+
+你还可以使用 `defineCachedFunction` 函数来缓存函数。这对于缓存不是事件处理器但属于处理器一部分的函数结果，并在多个处理器中重用该结果非常有用。
+
+例如，你可能想将 API 调用的结果缓存一小时：
+
+```ts [routes/api/stars/[...repo].ts]
+import { defineCachedFunction } from "nitro/cache";
+import { defineHandler, type H3Event } from "nitro";
+
+export default defineHandler(async (event) => {
+  const { repo } = event.context.params;
+  const stars = await cachedGHStars(repo).catch(() => 0)
+
+  return { repo, stars }
+});
+
+const cachedGHStars = defineCachedFunction(async (repo: string) => {
+  const data = await fetch(`https://api.github.com/repos/${repo}`).then(res => res.json());
+
+  return data.stargazers_count;
+}, {
+  maxAge: 60 * 60,
+  name: "ghStars",
+  getKey: (repo: string) => repo
+});
+```
+
+在开发环境中，star 数量将缓存在 `.nitro/cache/functions/ghStars/<owner>/<repo>.json` 中，`value` 即为 star 数量。
+
+```json
+{"expires":1677851092249,"value":43991,"mtime":1677847492540,"integrity":"ZUHcsxCWEH"}
+```
+
+<important>
+
+由于缓存数据会被序列化为 JSON，因此缓存函数不能返回任何无法序列化的内容（例如 Symbols、Maps、Sets 等），这一点很重要。
+
+</important>
+
+<callout>
+
+如果你使用边缘工作程序（edge workers）托管应用，请遵循以下说明。
+
+<collapsible name="边缘工作程序说明">
+
+在边缘工作程序中，实例在每个请求后会被销毁。Nitro 自动使用 `event.waitUntil` 来保持实例存活，以便在将响应发送给客户端的同时在后台更新缓存。
+
+为了确保缓存函数在边缘工作程序中按预期工作，**你应该始终在使用 defineCachedFunction 时将 event 作为第一个参数传递给函数。**
+
+```ts [routes/api/stars/[...repo].ts]
+import { defineCachedFunction } from "nitro/cache";
+
+
+export default defineHandler(async (event) => {
+  const { repo } = event.context.params;
+  const stars = await cachedGHStars(event, repo).catch(() => 0)
+
+  return { repo, stars }
+});
+
+const cachedGHStars = defineCachedFunction(async (event: H3Event, repo: string) => {
+  const data = await fetch(`https://api.github.com/repos/${repo}`).then(res => res.json());
+
+  return data.stargazers_count;
+}, {
+  maxAge: 60 * 60,
+  name: "ghStars",
+  getKey: (event: H3Event, repo: string) => repo
+});
+```
+
+这样，函数就能够在更新缓存时保持实例存活，而不会减慢对客户端的响应。
+
+</collapsible>
+</callout>
+
+## 使用路由规则
+
+此功能允许你直接在主配置文件中基于 glob 模式添加缓存路由。这对于为应用的一部分设置全局缓存策略特别有用。
+
+使用 `stale-while-revalidate` 行为将所有博客路由缓存 1 小时：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  routeRules: {
+    "/blog/**": { cache: { maxAge: 60 * 60 } },
+  },
+});
+```
+
+如果我们想使用 [自定义缓存存储](#cache-storage) 挂载点，可以使用 `base` 选项。
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  storage: {
+    redis: {
+      driver: "redis",
+      url: "redis://localhost:6379",
+    },
+  },
+  routeRules: {
+    "/blog/**": { cache: { maxAge: 60 * 60, base: "redis" } },
+  },
+});
+```
+
+### 路由规则快捷方式
+
+你可以使用 `swr` 快捷方式在路由规则上启用 `stale-while-revalidate` 缓存。设置为 `true` 时，将使用默认的 `maxAge` 启用 SWR。设置为数字时，该数字将作为 `maxAge` 的值（以秒为单位）。
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  routeRules: {
+    "/blog/**": { swr: true },
+    "/api/**": { swr: 3600 },
+  },
+});
+```
+
+要显式禁用某个路由的缓存，请设置 `cache: false`：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  routeRules: {
+    "/api/realtime/**": { cache: false },
+  },
+});
+```
+
+<note>
+
+使用路由规则时，缓存处理器使用组 `'nitro/route-rules'` 而不是默认的 `'nitro/handlers'`。
+
+</note>
+
+## 缓存存储
+
+Nitro 将数据存储在 `cache` 存储挂载点中。
+
+- 在生产环境中，默认使用 [memory 驱动程序](https://unstorage.unjs.io/drivers/memory)。
+- 在开发环境中，将使用 [filesystem 驱动程序](https://unstorage.unjs.io/drivers/fs)，写入临时目录（`.nitro/cache`）。
+
+要覆盖生产环境存储，请使用 `storage` 选项设置 `cache` 挂载点：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  storage: {
+    cache: {
+      driver: 'redis',
+      /* redis 连接器选项 */
+    }
+  }
+})
+```
+
+在开发环境中，你还可以使用 `devStorage` 选项覆盖缓存挂载点：
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  storage: {
+    cache: {
+      // 生产环境缓存存储
+    },
+  },
+  devStorage: {
+    cache: {
+      // 开发环境缓存存储
+    }
+  }
+})
+```
+
+## 选项
+
+`defineCachedHandler` 和 `defineCachedFunction` 函数接受以下选项：
+
+### 共享选项
+
+以下选项适用于 `defineCachedHandler` 和 `defineCachedFunction`：
+
+<field-group>
+<field name="base" type="string">
+
+用于缓存的存储挂载点名称。:br
+默认为 `cache`。
+
+</field>
+
+<field name="name" type="string">
+
+如果未提供，则从函数名猜测，否则回退到 `'_'`。
+
+</field>
+
+<field name="group" type="string">
+
+对于处理器默认为 `'nitro/handlers'`，对于函数默认为 `'nitro/functions'`。
+
+</field>
+
+<field name="getKey()" type="(...args) => string">
+
+一个接受与原始函数相同参数并返回缓存键（`String`）的函数。:br
+如果未提供，将使用内置哈希函数基于函数参数生成键。对于缓存处理器，键派生自请求 URL 路径和搜索参数。
+
+</field>
+
+<field name="integrity" type="string">
+
+更改时使缓存失效的值。:br
+默认情况下，它从**函数代码**计算得出，用于在开发环境中当函数代码更改时使缓存失效。
+
+</field>
+
+<field name="maxAge" type="number">
+
+缓存有效的最大期限，以秒为单位。:br
+默认为 `1`（秒）。
+
+</field>
+
+<field name="staleMaxAge" type="number">
+
+旧缓存有效的最大期限，以秒为单位。如果设置为 `-1`，即使在后台更新缓存时，仍将向客户端发送旧值。:br
+默认为 `0`（禁用）。
+
+</field>
+
+<field name="swr" type="boolean">
+
+启用 `stale-while-revalidate` 行为，以在异步重新验证时提供旧的缓存响应。:br
+启用时，立即返回缓存的旧值，同时在后台进行重新验证。禁用时，调用者会等待新值后再响应（旧条目被清除）。:br
+默认为 `true`。
+
+</field>
+
+<field name="shouldInvalidateCache()" type="(...args) => boolean | Promise<boolean>">
+
+一个返回 `boolean` 以使当前缓存失效并创建新缓存的函数。
+
+</field>
+
+<field name="shouldBypassCache()" type="(...args) => boolean | Promise<boolean>">
+
+一个返回 `boolean` 以绕过当前缓存而不使现有条目失效的函数。
+
+</field>
+
+<field name="onError()" type="(error: unknown) => void">
+
+缓存函数抛出错误时调用的自定义错误处理器。:br
+默认情况下，错误会记录到控制台并由 Nitro 错误处理器捕获。
+
+</field>
+</field-group>
+
+### 仅处理器选项
+
+以下选项仅适用于 `defineCachedHandler`：
+
+<field-group>
+<field name="headersOnly" type="boolean">
+
+当为 `true` 时，跳过完整响应缓存，仅处理条件请求头（`if-none-match`、`if-modified-since`）以返回 `304 Not Modified` 响应。处理器会在每个请求上被调用，但受益于条件缓存。
+
+</field>
+
+<field name="varies" type="string[]">
+
+一个用于改变缓存键的请求头名称数组。此处列出的请求头在缓存解析期间会被保留在请求中，并包含在缓存键中，使每个请求头值组合的缓存都是唯一的。:br <br />
+
+
+未在 `varies` 中列出的请求头会在调用处理器之前从请求中剥离，以确保一致的缓存命中。:br <br />
+
+
+对于多租户环境，你可能需要传递 `['host', 'x-forwarded-host']` 以确保这些请求头不被丢弃，并且每个租户的缓存都是唯一的。
+
+</field>
+</field-group>
+
+### 仅函数选项
+
+以下选项仅适用于 `defineCachedFunction`：
+
+<field-group>
+<field name="transform()" type="(entry: CacheEntry, ...args) => any">
+
+在返回前转换缓存条目。返回值会替换缓存值。
+
+</field>
+
+<field name="validate()" type="(entry: CacheEntry, ...args) => boolean">
+
+验证缓存条目。返回 `false` 会将该条目视为无效并触发重新解析。
+
+</field>
+</field-group>
+
+## SWR 行为
+
+`stale-while-revalidate`（SWR）模式默认启用（`swr: true`）。了解它如何与其他选项交互：
+
+<table>
+<thead>
+  <tr>
+    <th>
+      <code>
+        swr
+      </code>
+    </th>
+    
+    <th>
+      <code>
+        maxAge
+      </code>
+    </th>
+    
+    <th>
+      行为
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        true
+      </code>
+      
+      （默认）
+    </td>
+    
+    <td>
+      <code>
+        1
+      </code>
+      
+      （默认）
+    </td>
+    
+    <td>
+      缓存 1 秒，在重新验证期间提供旧数据
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        true
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        3600
+      </code>
+    </td>
+    
+    <td>
+      缓存 1 小时，在重新验证期间提供旧数据
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        false
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        3600
+      </code>
+    </td>
+    
+    <td>
+      缓存 1 小时，过期时等待新值
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        true
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        3600
+      </code>
+      
+       配合 <code>
+        staleMaxAge: 600
+      </code>
+    </td>
+    
+    <td>
+      缓存 1 小时，在重新验证期间提供最多 10 分钟的旧数据
+    </td>
+  </tr>
+</tbody>
+</table>
+
+当 `swr` 启用且缓存值存在但已过期时：
+
+<steps level="4">
+
+#### 过期的缓存值会立即返回给客户端。
+
+#### 函数/处理器在后台被调用以刷新缓存。
+
+#### 在边缘工作器上，使用 `event.waitUntil` 来保持后台刷新运行。
+
+</steps>
+
+当 `swr` 禁用且缓存值已过期时：
+
+<steps level="4">
+
+#### 过期条目被清除。
+
+#### 客户端等待函数/处理器解析出新值。
+
+</steps>
+
+## 缓存键和失效
+
+使用 `defineCachedFunction` 或 `defineCachedHandler` 函数时，缓存键使用以下模式生成：
+
+```ts
+`${options.base}:${options.group}:${options.name}:${options.getKey(...args)}.json`
+```
+
+例如，以下函数：
+
+```ts
+import { defineCachedFunction } from "nitro/cache";
+
+const getAccessToken = defineCachedFunction(() => {
+  return String(Date.now())
+}, {
+  maxAge: 10,
+  name: "getAccessToken",
+  getKey: () => "default"
+});
+```
+
+将生成以下缓存键：
+
+```ts
+cache:nitro/functions:getAccessToken:default.json
+```
+
+你可以通过以下方式使缓存的函数条目失效：
+
+```ts
+import { useStorage } from "nitro/storage";
+
+await useStorage('cache').removeItem('nitro/functions:getAccessToken:default.json')
+```
+
+<note>
+
+对于缓存的处理器，缓存键包含 URL 路径的哈希值，并且当使用 [`varies`](#processor-only-options) 选项时，还会将指定头部值的哈希值附加到键中。
+
+</note>
+
+<note>
+
+HTTP 状态码 `>= 400` 或主体未定义的响应不会被缓存。这可以防止缓存错误响应。
+
+</note>
+
+<read-more to="/docs/storage">
+
+阅读更多关于 Nitro 存储的内容。
+
+</read-more>

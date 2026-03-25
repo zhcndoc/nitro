@@ -1,0 +1,416 @@
+# 迁移指南
+
+> 
+
+<note>
+
+这是一份关于从 Nitro 2 迁移到 3 的动态文档。在使用测试版期间，请定期查看。
+
+</note>
+
+Nitro v3 引入了有意的不向后兼容的更改。本指南帮助你从 Nitro v2 迁移。
+
+## `nitropack` 重命名为 `nitro`
+
+NPM 包 [nitropack](https://www.npmjs.com/package/nitropack) (v2) 已重命名为 [nitro](https://www.npmjs.com/package/nitro) (v3)。
+
+**迁移：** 在 `package.json` 中将 `nitropack` 依赖更新为 `nitro`：
+
+<CodeGroup>
+
+```diff [release channel]
+{
+  "dependencies": {
+--    "nitropack": "latest"
+++    "nitro": "latest"
+  }
+}
+```
+
+```diff [nightly channel]
+{
+  "dependencies": {
+--    "nitropack": "latest"
+++    "nitro": "npm:nitro-nightly"
+  }
+}
+```
+
+</CodeGroup>
+
+**迁移：** 搜索你的代码库，将所有 nitropack 实例重命名为 nitro：
+
+```diff
+-- import { defineNitroConfig } from "nitropack/config"
+++ import { defineNitroConfig } from "nitro/config"
+```
+
+## nitro/runtime
+
+运行时工具已移至独立的 `nitro/*` 子路径导出。有关用法请参阅文档。
+
+```diff
+-- import { useStorage } from "nitropack/runtime/storage"
+++ import { useStorage } from "nitro/storage"
+```
+
+## 最低支持的 Node.js 版本：20
+
+Nitro 现在需要最低 Node.js 版本 20，因为 Node.js 18 将于 [2025 年 4 月](https://nodejs.org/en/about/previous-releases) 结束生命周期。
+
+请升级到 [最新的 LTS](https://nodejs.org/en/download) 版本（>= 20）。
+
+**迁移：**
+
+- 使用 `node --version` 检查你的本地 Node.js 版本，并在必要时更新。
+- 如果你使用 CI/CD 系统进行部署，请确保你的流水线正在运行 Node.js 20 或更高版本。
+- 如果你的托管提供商管理 Node.js 运行时，请确保其设置为版本 20、22 或更高。
+
+## 类型导入
+
+Nitro 类型现在仅从 `nitro/types` 导出。
+
+**迁移：** 从 nitro/types 而不是 nitro 导入类型：
+
+```diff
+-- import { NitroRuntimeConfig } from "nitropack"
+++ import { NitroRuntimeConfig } from "nitro/types"
+```
+
+## 应用配置支持已移除
+
+Nitro v2 支持捆绑的应用配置，允许在 `app.config.ts` 中定义配置，并通过 `useAppConfig()` 在运行时访问它们。
+
+此功能已被移除。
+
+**迁移：**
+
+在你的 server 目录中使用常规的 `.ts` 文件并直接导入它。
+
+## 预设更新
+
+Nitro 预设已更新以兼容最新版本。
+
+一些（旧版）预设已被移除或重命名。
+
+<table>
+<thead>
+  <tr>
+    <th>
+      旧预设
+    </th>
+    
+    <th>
+      新预设
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      <code>
+        node
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        node_middleware
+      </code>
+      
+      （导出更改为 <code>
+        middleware
+      </code>
+      
+      ）
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        cloudflare
+      </code>
+      
+      , <code>
+        cloudflare_worker
+      </code>
+      
+      , <code>
+        cloudflare_module_legacy
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        cloudflare_module
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        deno-server-legacy
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        deno_server
+      </code>
+      
+      （使用 Deno v2）
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        netlify-builder
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        netlify
+      </code>
+      
+       或 <code>
+        netlify_edge
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        vercel-edge
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        vercel
+      </code>
+      
+      （启用 Fluid 计算）
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        azure
+      </code>
+      
+      , <code>
+        azure_functions
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        azure_swa
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        firebase
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        firebase_app_hosting
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        iis
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        iis_handler
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        deno
+      </code>
+    </td>
+    
+    <td>
+      <code>
+        deno_deploy
+      </code>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        edgio
+      </code>
+    </td>
+    
+    <td>
+      已停止维护
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        cli
+      </code>
+    </td>
+    
+    <td>
+      因缺乏使用而移除
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <code>
+        service_worker
+      </code>
+    </td>
+    
+    <td>
+      因不稳定而移除
+    </td>
+  </tr>
+</tbody>
+</table>
+
+## Cloudflare 绑定访问
+
+在 Nitro v2 中，可通过 `event.context.cloudflare.env` 访问 Cloudflare 环境变量和绑定。
+
+在 Nitro v3 中，Cloudflare 运行时上下文已附加到请求的运行时对象上。
+
+**迁移：**
+
+```diff
+-- const { cloudflare } = event.context
+-- const binding = cloudflare.env.MY_BINDING
+++ const { env } = event.req.runtime.cloudflare
+++ const binding = env.MY_BINDING
+```
+
+## 更改的 nitro 子路径导入
+
+Nitro v2 引入了多个子路径导出，其中一些已被移除或更新：
+
+- `nitro/rollup`、`nitropack/core`（使用 `nitro/builder`）
+- `nitropack/runtime/*`（使用 `nitro/*`）
+- `nitropack/kit`（已移除）
+- `nitropack/presets`（已移除）
+
+实验性的 `nitropack/kit` 曾被引入，但现已移除。未来可能会推出独立的 Nitro Kit 包，目标更加明确。
+
+**迁移：**
+
+- 使用 `nitro/types` 中的 `NitroModule` 替代 kit 中的 `defineNitroModule`。
+- 优先使用内置的 Nitro 预设（外部预设仅用于评估目的）。
+
+## H3 v2
+
+Nitro v3 升级到 [H3 v2](https://h3.dev)，其中包含 API 更改。所有 H3 工具从 `nitro/h3` 导入。
+
+### Web 标准
+
+H3 v2 基于 Web 标准原语（[`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL)、[`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers)、[`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) 和 [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response)）重写。
+
+仅在 Node.js 运行时中可访问 `event.node.{req,res}`。`event.web` 已重命名为 `event.req`（Web [`Request`](https://developer.mozilla.org/en-US/docs/Web/API/Request) 的实例）。
+
+### 响应处理
+
+你应该始终显式地 **return** 响应体或 **throw** 一个错误：
+
+```diff
+-- import { send, sendRedirect, sendStream } from "nitro/h3"
+-- send(event, value)
+-- sendStream(event, stream)
+-- sendRedirect(event, location, code)
+++ import { redirect } from "nitro/h3"
+++ return value
+++ return stream
+++ return redirect(event, location, code)
+```
+
+其他更改：
+
+- `sendError(event, error)` → `throw createError(error)`
+- `sendNoContent(event)` → `return noContent(event)`
+- `sendProxy(event, target)` → `return proxy(event, target)`
+
+### 请求体
+
+大多数 body 工具可以被原生的 `event.req` 方法替代：
+
+```diff
+-- import { readBody, readRawBody, readFormData } from "nitro/h3"
+++ // 使用原生 Request 方法
+++ const json = await event.req.json()
+++ const text = await event.req.text()
+++ const formData = await event.req.formData()
+++ const stream = event.req.body
+```
+
+### 请求头
+
+H3 现在使用标准 Web [`Headers`](https://developer.mozilla.org/en-US/docs/Web/API/Headers)。请求头的值始终是纯 `string`（没有 `null`、`undefined` 或 `string[]`）。
+
+```diff
+-- import { getHeader, setHeader, getResponseStatus } from "nitro/h3"
+-- getHeader(event, "x-foo")
+-- setHeader(event, "x-foo", "bar")
+++ event.req.headers.get("x-foo")
+++ event.res.headers.set("x-foo", "bar")
+++ event.res.status // 替代 getResponseStatus(event)
+```
+
+### 处理器工具
+
+```diff
+-- import { eventHandler, defineEventHandler } from "nitro/h3"
+++ import { defineHandler } from "nitro"
+```
+
+- `lazyEventHandler` → `defineLazyEventHandler`
+- `useBase` → `withBase`
+
+### 错误工具
+
+```diff
+-- import { createError, isError } from "nitro/h3"
+++ import { HTTPError } from "nitro"
+++ throw new HTTPError({ status: 404, message: "Not found" })
+++ HTTPError.isError(error)
+```
+
+### Node.js 工具
+
+```diff
+-- import { defineNodeListener, fromNodeMiddleware, toNodeListener } from "nitro/h3"
+++ import { defineNodeHandler, fromNodeHandler, toNodeHandler } from "nitro/h3"
+```
+
+## 可选钩子
+
+如果你之前曾在 Nitro 插件之外使用 `useNitroApp().hooks`，它可能是 undefined。使用新的 `useNitroHooks()` 来确保获得实例。

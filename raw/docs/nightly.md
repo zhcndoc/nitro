@@ -1,0 +1,35 @@
+# 每日构建通道
+
+> Nitro 有一个每日构建发布通道，它会针对 main 分支的每一次提交自动发布，以便尝试最新的更改。
+
+你可以通过更新 `package.json` 来选择加入每日构建发布通道：
+
+```json
+{
+  "devDependencies": {
+    "nitro": "npm:nitro-nightly@latest"
+  }
+}
+```
+
+删除锁文件（`package-lock.json`、`yarn.lock`、`pnpm-lock.yaml`、`bun.lock` 或 `bun.lockb`）并重新安装依赖。
+
+<important>
+
+在 mono-repo 中使用 **Bun 作为包管理器**时，你需要确保 nitro 包被正确地提升。
+
+<br />
+
+```toml [bunfig.toml]
+[install]
+publicHoistPattern = ["nitro*"]
+```
+
+</important>
+
+<important>
+
+避免使用 `<npm|pnpm|yarn|bun|deno> install nitro-nightly`；这样无法正确安装。
+如果遇到问题，请删除 `node_modules` 和锁文件，然后按照上述步骤操作。
+
+</important>

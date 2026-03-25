@@ -1,0 +1,72 @@
+# GitHub Pages
+
+> 将 Nitro 应用部署到 GitHub Pages。
+
+**预设：** `github_pages`
+
+<read-more title="GitHub Pages" to="https://pages.github.com/">
+
+
+
+</read-more>
+
+## 设置
+
+按照[创建 GitHub Pages 站点](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site)的步骤操作。
+
+## 部署
+
+以下是一个使用 `github_pages` 预设将您的站点部署到 GitHub Pages 的 GitHub Actions 工作流示例：
+
+```yaml [.github/workflows/deploy.yml]
+# https://github.com/actions/deploy-pages#usage
+name: Deploy to GitHub Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: corepack enable
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "18"
+
+      - run: npx nypm install
+      - run: npm run build
+        env:
+          NITRO_PRESET: github_pages
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./.output/public
+
+  # 部署任务
+  deploy:
+    # 添加对构建任务的依赖
+    needs: build
+
+    # 授予 GITHUB_TOKEN 部署到 Pages 所需的权限
+    permissions:
+      pages: write      # 用于部署到 Pages
+      id-token: write   # 用于验证部署是否来自适当的来源
+
+    # 部署到 github_pages 环境
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    # 指定运行器 + 部署步骤
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
+```

@@ -1,0 +1,297 @@
+# 任务
+
+> Nitro 任务允许在运行时执行一次性操作。
+
+## 选择加入实验性功能
+
+<important>
+
+任务支持目前处于实验阶段。
+请参阅 [nitrojs/nitro#1974](https://github.com/nitrojs/nitro/issues/1974) 了解相关讨论。
+
+</important>
+
+为了使用任务 API，你需要启用实验性功能标志。
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  experimental: {
+    tasks: true
+  }
+})
+```
+
+## 定义任务
+
+任务可以在 `tasks/[name].ts` 文件中定义。
+
+支持嵌套目录。任务名称将使用 `:` 连接。（例如：`tasks/db/migrate.ts` 的任务名称将是 `db:migrate`）
+
+**示例：**
+
+```ts [tasks/db/migrate.ts]
+export default defineTask({
+  meta: {
+    name: "db:migrate",
+    description: "Run database migrations",
+  },
+  run({ payload, context }) {
+    console.log("Running DB migration task...");
+    return { result: "Success" };
+  },
+});
+```
+
+### 任务接口
+
+`defineTask` 辅助函数接受一个具有以下属性的对象：
+
+- **meta**（可选）：一个包含可选的 `name` 和 `description` 字符串字段的对象，用于在开发服务器和 CLI 中显示。
+- **run**（必需）：一个接收 [`TaskEvent`](#taskevent) 并返回（或解析为）一个包含可选 `result` 属性的对象的函数。
+
+```ts
+interface Task<RT = unknown> {
+  meta?: { name?: string; description?: string };
+  run(event: TaskEvent): { result?: RT } | Promise<{ result?: RT }>;
+}
+```
+
+### `TaskEvent`
+
+`run` 函数接收一个具有以下属性的 `TaskEvent` 对象：
+
+- **name**：正在执行的任务的名称。
+- **payload**：一个包含传递给任务的任何数据的对象（`Record<string, unknown>`）。
+- **context**：一个 `TaskContext` 对象（根据运行时的不同，可能包含 `waitUntil`）。
+
+```ts
+interface TaskEvent {
+  name: string;
+  payload: TaskPayload;
+  context: TaskContext;
+}
+```
+
+### 通过配置注册任务
+
+除了基于文件的扫描之外，任务还可以直接在 Nitro 配置中注册。这对于由模块提供的任务或指向自定义处理程序路径的任务非常有用。
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  experimental: {
+    tasks: true
+  },
+  tasks: {
+    "db:migrate": {
+      handler: "./tasks/custom-migrate.ts",
+      description: "Run database migrations"
+    }
+  }
+})
+```
+
+如果一个任务既从 `tasks/` 目录扫描到，又在配置中定义了，则配置中定义的 `handler` 优先。
+
+## 定时任务
+
+你可以使用 Nitro 配置来定义定时任务，以便在每个时间段后自动运行。
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  scheduledTasks: {
+    // 每分钟运行 `cms:update` 任务
+    '* * * * *': ['cms:update'],
+    // 运行单个任务（字符串简写形式）
+    '0 * * * *': 'db:cleanup'
+  }
+})
+```
+
+`scheduledTasks` 配置将 cron 表达式映射为单个任务名称（字符串）或任务名称数组。当多个任务被分配到同一个 cron 表达式时，它们会并行运行。
+
+<tip>
+
+你可以使用 [crontab.guru](https://crontab.guru/) 轻松生成和理解 cron 表达式模式。
+
+</tip>
+
+当定时任务运行时，它会自动接收一个 `payload`，其中 `scheduledTime` 设置为当前时间戳（`Date.now()`）。
+
+### 平台支持
+
+- **dev**、**node_server**、**node_cluster**、**node_middleware**、**bun** 和 **deno_server** 预设使用 [croner](https://croner.56k.guru/) 引擎支持。
+- **cloudflare_module** 和 **cloudflare_pages** 预设与 [Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/) 原生集成。Nitro 会在构建时自动在 wrangler 配置中生成 cron 触发器 - 无需手动设置 wrangler。
+- **vercel** 预设与 [Vercel Cron Jobs](https://vercel.com/docs/cron-jobs) 原生集成。Nitro 会在构建时自动生成 cron 作业配置 - 无需手动设置 `vercel.json`。你可以通过设置 `CRON_SECRET` 环境变量来保护 cron 端点。
+- 计划支持更多预设（具有原生基元支持）！
+
+## `waitUntil`
+
+在运行后台任务时，你可能需要确保服务器或工作进程等待任务完成。
+
+根据运行时的不同，一个可选的 `context.waitUntil` 函数 *可能* 可用。
+
+```ts
+export default defineTask({
+  run({ context }) {
+    const promise = fetch(...)
+    context.waitUntil?.(promise);
+    await promise;
+    return { result: "Success" };
+  },
+});
+```
+
+## 以编程方式运行任务
+
+要手动运行任务，你可以使用 `nitro/task` 中的 `runTask(name, { payload?, context? })` 工具函数。
+
+**示例：**
+
+```ts [api/migrate.ts]
+import { defineHandler } from "nitro";
+
+export default defineHandler(async (event) => {
+  // 重要：验证用户身份并验证 payload！
+  const payload = Object.fromEntries(event.url.searchParams);
+  const { result } = await runTask("db:migrate", { payload });
+
+  return { result };
+});
+```
+
+### 错误处理
+
+`runTask` 在以下情况下会抛出 HTTP 错误：
+
+- 任务不存在（状态 `404`）。
+- 任务没有处理程序实现（状态 `501`）。
+
+在任务的 `run` 函数中抛出的任何错误都会传播给调用者。
+
+## 使用开发服务器运行任务
+
+Nitro 的内置开发服务器公开了任务，以便无需编程即可轻松执行。
+
+### 使用 API 路由
+
+#### `/_nitro/tasks`
+
+此端点返回可用任务名称及其元数据的列表。
+
+```json
+// [GET] /_nitro/tasks
+{
+  "tasks": {
+    "db:migrate": {
+      "description": "Run database migrations"
+    },
+     "cms:update": {
+      "description": "Update CMS content"
+    }
+  },
+  "scheduledTasks": [
+    {
+      "cron": "* * * * *",
+      "tasks": [
+        "cms:update"
+      ]
+    }
+  ]
+}
+```
+
+#### `/_nitro/tasks/:name`
+
+此端点执行任务。你可以使用查询参数和 JSON 请求体来提供 payload。在 JSON 请求体中发送的 payload 必须位于 `"payload"` 属性下。
+
+<code-group>
+
+```ts [tasks/echo/payload.ts]
+export default defineTask({
+  meta: {
+    name: "echo:payload",
+    description: "Returns the provided payload",
+  },
+  run({ payload, context }) {
+    console.log("Running echo task...");
+    return { result: payload };
+  },
+});
+```
+
+```json [GET]
+// [GET] /_nitro/tasks/echo:payload?field=value&array=1&array=2
+{
+  "field": "value",
+  "array": ["1", "2"]
+}
+```
+
+```json [POST]
+/**
+ * [POST] /_nitro/tasks/echo:payload?field=value
+ * 请求体: {
+ *   "payload": {
+ *     "answer": 42,
+ *     "nested": {
+ *       "value": true
+ *     }
+ *   }
+ * }
+ */
+{
+  "field": "value",
+  "answer": 42,
+  "nested": {
+    "value": true
+  }
+}
+```
+
+</code-group>
+
+<note>
+
+请求体中包含的 JSON payload 将覆盖查询参数中存在的键。
+
+</note>
+
+### 使用 CLI
+
+<important>
+
+只有在**开发服务器正在运行**时才能运行这些命令。你应该在第二个终端中运行它们。
+
+</important>
+
+#### 列出任务
+
+```sh
+nitro task list
+```
+
+#### 运行任务
+
+```sh
+nitro task run db:migrate --payload "{}"
+```
+
+`--payload` 标志接受一个 JSON 字符串，该字符串将被解析并传递给任务。如果该值不是有效的 JSON 对象，任务将在没有 payload 的情况下运行。
+
+## 注意事项
+
+### 并发
+
+每个任务只能有**一个运行实例**。并行多次调用同名任务，结果只会调用一次，所有调用者都将获得相同的返回值。
+
+<note>
+
+Nitro 任务可以多次并行运行。
+
+</note>
