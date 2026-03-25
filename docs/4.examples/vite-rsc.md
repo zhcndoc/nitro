@@ -28,13 +28,13 @@ icon: i-logos-react
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@types/react": "^19.2.13",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.3",
-    "@vitejs/plugin-rsc": "^0.5.19",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-rsc": "^0.5.21",
     "nitro": "latest",
     "rsc-html-stream": "^0.0.7",
-    "vite": "beta"
+    "vite": "latest"
   }
 }
 ```
@@ -224,7 +224,7 @@ button:focus-visible {
 ```
 
 ```tsx [app/root.tsx]
-import "./index.css"; // css 导入会自动注入导出的服务端组件中
+import "./index.css"; // CSS 导入会自动注入导出的服务端组件中
 import viteLogo from "./assets/vite.svg";
 import { getServerCounter, updateServerCounter } from "./action.tsx";
 import reactLogo from "./assets/react.svg";
@@ -646,21 +646,21 @@ export async function renderHTML(
     debugNoJS?: boolean;
   }
 ): Promise<{ stream: ReadableStream<Uint8Array>; status?: number }> {
-  // 将一个 RSC 流复制为两个。
-  // - 一个用于 SSR (下面 ReactClient.createFromReadableStream)
-  // - 一个用于浏览器水合时注入 <script>...FLIGHT_DATA...</script> 的载荷。
+  // Clone an RSC stream into two:
+  // - One for SSR (ReactClient.createFromReadableStream below)
+  // - One for browser hydration via injection of <script>...FLIGHT_DATA...</script>
   const [rscStream1, rscStream2] = rscStream.tee();
 
-  // 反序列化 RSC 流为 React 虚拟 DOM
+  // Deserialize RSC stream to React virtual DOM
   let payload: Promise<RscPayload> | undefined;
   function SsrRoot() {
-    // 反序列化需在 ReactDOMServer 上下文触发，
-    // 以支持 ReactDOMServer 预初始化/预加载。
+    // Deserialization needs to be triggered in a ReactDOMServer environment
+    // to support pre-initialization/preloading
     payload ??= createFromReadableStream<RscPayload>(rscStream1);
     return React.use(payload).root;
   }
 
-  // 渲染 HTML（传统 SSR）
+  // Render HTML (traditional SSR)
   const bootstrapScriptContent = await import.meta.viteRsc.loadBootstrapScriptContent("index");
 
   let htmlStream: ReadableStream<Uint8Array>;
@@ -673,13 +673,13 @@ export async function renderHTML(
       formState: options?.formState,
     });
   } catch {
-    // 失败时回退，渲染空壳并在浏览器运行纯 CSR，
-    // 这样可以重现服务器组件错误并触发错误边界。
+    // Fallback on failure, render a shell and run pure client-side rendering in the browser,
+    // this reproduces server component errors and triggers error boundaries.
     status = 500;
     htmlStream = await renderToReadableStream(
       <html>
         <body>
-          <noscript>内部服务器错误：SSR 失败</noscript>
+          <noscript>Server Internal Error: SSR Failed</noscript>
         </body>
       </html>,
       {
@@ -692,8 +692,8 @@ export async function renderHTML(
 
   let responseStream: ReadableStream<Uint8Array> = htmlStream;
   if (!options?.debugNoJS) {
-    // 初始 RSC 流通过 <script>...FLIGHT_DATA...</script> 注入 HTML 流中，
-    // 使用 devongovett 制作的工具 https://github.com/devongovett/rsc-html-stream
+    // The initial RSC stream is injected into the HTML stream via <script>...FLIGHT_DATA...</script>
+    // Using devongovett's utility https://github.com/devongovett/rsc-html-stream
     responseStream = responseStream.pipeThrough(
       injectRSCPayload(rscStream2, {
         nonce: options?.nonce,
@@ -950,7 +950,7 @@ SSR 入口负责渲染流程。它加载 RSC 入口模块，复制 RSC 流（一
 ## 2. 根服务器组件
 
 ```tsx [app/root.tsx]
-import "./index.css"; // css 导入会自动注入导出的服务器组件中
+import "./index.css"; // CSS imports are automatically injected into server components that export them
 import viteLogo from "./assets/vite.svg";
 import { getServerCounter, updateServerCounter } from "./action.tsx";
 import reactLogo from "./assets/react.svg";
@@ -995,30 +995,30 @@ function App(props: { url: URL }) {
       </div>
       <div className="card">
         <form action={updateServerCounter.bind(null, 1)}>
-          <button>服务端计数器: {getServerCounter()}</button>
+          <button>Server Counter: {getServerCounter()}</button>
         </form>
       </div>
-      <div className="card">请求 URL: {props.url?.href}</div>
+      <div className="card">Request URL: {props.url?.href}</div>
       <ul className="read-the-docs">
         <li>
-          编辑 <code>src/client.tsx</code> 测试客户端 HMR。
+          Edit <code>src/client.tsx</code> to test client-side HMR.
         </li>
         <li>
-          编辑 <code>src/root.tsx</code> 测试服务器端 HMR。
+          Edit <code>src/root.tsx</code> to test server-side HMR.
         </li>
         <li>
-          访问{" "}
+          Visit{" "}
           <a href="./_.rsc" target="_blank">
             <code>_.rsc</code>
           </a>{" "}
-          查看 RSC 流载荷。
+          to see the RSC stream payload.
         </li>
         <li>
-          访问{" "}
+          Visit{" "}
           <a href="?__nojs" target="_blank">
             <code>?__nojs</code>
           </a>{" "}
-          测试无 JS 支持下的服务端操作。
+          to test server actions without JS support.
         </li>
       </ul>
     </div>
@@ -1026,9 +1026,9 @@ function App(props: { url: URL }) {
 }
 ```
 
-服务器组件仅在服务器端运行。它们可以直接导入 CSS，使用服务器端数据，调用服务器操作。`ClientCounter` 组件被导入但因含有 `"use client"` 指令故运行于客户端。
+Server components run only on the server. They can import CSS directly, use server-side data, and call server actions. The `ClientCounter` component is imported but runs on the client because it contains the `"use client"` directive.
 
-## 3. 客户端组件
+## 3. Client Components
 
 ```tsx [app/client.tsx]
 "use client";
@@ -1038,14 +1038,14 @@ import React from "react";
 export function ClientCounter() {
   const [count, setCount] = React.useState(0);
 
-  return <button onClick={() => setCount((count) => count + 1)}>客户端计数器: {count}</button>;
+  return <button onClick={() => setCount((count) => count + 1)}>Client Counter: {count}</button>;
 }
 ```
 
-`"use client"` 指令标记该组件为客户端组件。它在浏览器端水合，处理交互状态。服务器组件可以导入并渲染客户端组件，但客户端组件不得导入服务器组件。
+The `"use client"` directive marks this component as a client component. It hydrates in the browser and handles interactive state. Server components can import and render client components, but client components cannot import server components.
 
 <!-- /automd -->
 
-## 了解更多
+## Learn More
 
-- [React 服务器组件](https://react.dev/reference/rsc/server-components)
+- [React Server Components](https://react.dev/reference/rsc/server-components)

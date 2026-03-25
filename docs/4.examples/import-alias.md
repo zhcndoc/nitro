@@ -16,9 +16,6 @@ import { defineConfig } from "nitro";
 
 export default defineConfig({
   serverDir: true,
-  experimental: {
-    tsconfigPaths: true,
-  },
 });
 ```
 
@@ -54,7 +51,7 @@ export default defineConfig({
 import { defineConfig } from "vite";
 import { nitro } from "nitro/vite";
 
-export default defineConfig({ plugins: [nitro()] });
+export default defineConfig({ plugins: [nitro()], resolve: { tsconfigPaths: true } });
 ```
 
 ```ts [server/routes/index.ts]
@@ -70,10 +67,12 @@ export default () => {
 ```
 
 ```ts [server/utils/math.ts]
+// 生成 min 和 max 之间的随机数
 export function rand(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+// 计算两个数字的和
 export function sum(a: number, b: number): number {
   return a + b;
 }

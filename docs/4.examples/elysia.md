@@ -25,7 +25,7 @@ export default defineConfig({});
     "dev": "nitro dev"
   },
   "devDependencies": {
-    "elysia": "^1.4.22",
+    "elysia": "^1.4.28",
     "nitro": "latest"
   }
 }
@@ -36,7 +36,7 @@ import { Elysia } from "elysia";
 
 const app = new Elysia();
 
-app.get("/", () => "Hello, Elysia with Nitro!");
+app.get("/", () => "你好，Elysia 与 Nitro！");
 
 export default app.compile();
 ```
@@ -67,7 +67,7 @@ import { Elysia } from "elysia";
 
 const app = new Elysia();
 
-app.get("/", () => "Hello, Elysia with Nitro!");
+app.get("/", () => "你好，Elysia 与 Nitro！");
 
 export default app.compile();
 ```

@@ -7,7 +7,6 @@ icon: i-logos-html-5
 
 > 使用原生 HTML、Vite 和 Nitro 进行服务器端渲染。
 
-
 <!-- automd:ui-code-tree src="../../examples/vite-ssr-html" default="app/entry-server.ts" ignore="README.md,GUIDE.md" expandAll -->
 
 ::code-tree{defaultValue="app/entry-server.ts" expandAll}
@@ -43,22 +42,22 @@ icon: i-logos-html-5
           class="mt-5 bg-white/20 border border-white/30 text-white px-6 py-3 rounded-full cursor-pointer text-sm transition hover:bg-white/30 hover:-translate-y-0.5"
           onclick="fetchQuote()"
         >
-          新引用
+          New Quote
         </button>
       </div>
       <div class="mt-8 text-sm opacity-60">
-        由
+        Powered by
         <a
           class="text-white no-underline border-b border-white/30 hover:border-white transition-colors"
           href="https://vitejs.dev/"
           >Vite</a
         >
-        和
+        and
         <a
           class="text-white no-underline border-b border-white/30 hover:border-white transition-colors"
           href="https://github.com/nitrojs/nitro"
           >Nitro v3</a
-        >驱动。
+        >.
       </div>
     </div>
 
@@ -80,14 +79,14 @@ icon: i-logos-html-5
 
       async function fetchQuote() {
         try {
-          quoteElement.textContent = "加载中...";
+          quoteElement.textContent = "Loading...";
           quoteElement.className = loadingQuoteClasses;
           authorElement.textContent = "";
           authorElement.className = hiddenAuthorClasses;
           refreshBtn.style.display = "none";
           const response = await fetch("/quote");
           if (!response.ok) {
-            throw new Error(`HTTP 错误! 状态: ${response.status}`);
+            throw new Error(`HTTP error! Status: ${response.status}`);
           }
           const { text, author } = await response.json();
           quoteElement.textContent = `"${text}"`;
@@ -95,8 +94,8 @@ icon: i-logos-html-5
           authorElement.textContent = `— ${author}`;
           authorElement.className = visibleAuthorClasses;
         } catch (error) {
-          console.error("获取引用时出错:", error);
-          quoteElement.textContent = "加载引用失败。请重试。";
+          console.error("Error fetching quote:", error);
+          quoteElement.textContent = "Failed to load quote. Please try again.";
           quoteElement.className = errorQuoteClasses;
           authorElement.textContent = "";
           authorElement.className = hiddenAuthorClasses;
@@ -118,10 +117,10 @@ icon: i-logos-html-5
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.18",
+    "@tailwindcss/vite": "^4.2.2",
     "nitro": "latest",
-    "tailwindcss": "^4.1.18",
-    "vite": "beta"
+    "tailwindcss": "^4.2.2",
+    "vite": "latest"
   }
 }
 ```
@@ -160,6 +159,7 @@ export default {
   },
 };
 
+// Split text into words and stream them one by one with a delay
 function tokenizedStream(text: string, delay: number): ReadableStream<Uint8Array> {
   const tokens = text.split(" ");
   return new ReadableStream({
@@ -181,9 +181,11 @@ function tokenizedStream(text: string, delay: number): ReadableStream<Uint8Array
 ```
 
 ```ts [routes/quote.ts]
+// URL to a JSON file containing quotes
 const QUOTES_URL =
   "https://github.com/JamesFT/Database-Quotes-JSON/raw/refs/heads/master/quotes.json";
 
+// Cache the quotes promise to avoid fetching multiple times
 let _quotes: Promise<unknown> | undefined;
 
 function getQuotes() {
@@ -192,6 +194,7 @@ function getQuotes() {
   >;
 }
 
+// Return a random quote from the database
 export default async function quotesHandler() {
   const quotes = await getQuotes();
   const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
@@ -208,26 +211,26 @@ export default async function quotesHandler() {
 
 <!-- automd:file src="../../examples/vite-ssr-html/README.md" -->
 
-此示例使用服务器端数据渲染 HTML 模板，并逐字流式传输响应。它演示了如何在无框架的情况下使用 Nitro 的 Vite SSR 集成。
+This example uses server-side data to render an HTML template and streams the response word by word. It demonstrates how to use Nitro's Vite SSR integration without a framework.
 
-## 概述
+## Overview
 
-1. **添加 Nitro Vite 插件** 来启用 SSR
-2. **创建一个 HTML 模板**，其中包含一个 `<!--ssr-outlet-->` 注释，作为服务器内容插入处
-3. **创建服务器入口**，负责获取数据并返回流
-4. **添加 API 路由** 以提供服务器端数据
+1. **Add the Nitro Vite plugin** to enable SSR
+2. **Create an HTML template** with a `<!--ssr-outlet-->` comment as the insertion point for server content
+3. **Create a server entry** that fetches data and returns a stream
+4. **Add an API route** to serve the server-side data
 
-## 工作原理
+## How it works
 
-`index.html` 文件包含一个 `<!--ssr-outlet-->` 注释，标记服务器渲染内容将被插入的位置。Nitro 会用你的服务器入口输出替换该注释。
+The `index.html` file contains a `<!--ssr-outlet-->` comment that marks where the server-rendered content will be inserted. Nitro replaces this comment with the output from your server entry.
 
-服务器入口导出一个带有 `fetch` 方法的对象。它使用 Nitro 的内部 fetch 调用 `/quote` API 路由，然后返回一个 `ReadableStream`，按单词逐个发出引用文本，每个单词间隔 50 毫秒。
+The server entry exports an object with a `fetch` method. It uses Nitro's internal fetch to call the `/quote` API route, then returns a `ReadableStream` that emits the quote text word by word, with 50 milliseconds between each word.
 
-引用路由从 GitHub 获取一个 JSON 格式的引用文件，缓存结果并返回一个随机引用。服务器入口调用该路由以获取页面内容。
+The quotes route fetches a JSON file of quotes from GitHub, caches the result, and returns a random quote. The server entry calls this route to get the page content.
 
 <!-- /automd -->
 
-## 了解更多
+## Learn more
 
 - [Renderer](/docs/renderer)
 - [Server Entry](/docs/server-entry)

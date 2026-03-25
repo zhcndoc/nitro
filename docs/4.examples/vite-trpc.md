@@ -159,4 +159,21 @@ export default {
 </html>
 ```
 
+```json [package.json]
+{
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@trpc/client": "^11.13.4",
+    "@trpc/server": "^11.13.4",
+    "nitro": "latest",
+    "vite": "latest",
+    "zod": "^4.3.6"
+  }
+}
+```
 

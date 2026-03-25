@@ -1,5 +1,5 @@
 ---
-category: server side rendering
+category: 服务端渲染
 icon: i-logos-preact
 ---
 
@@ -20,13 +20,13 @@ icon: i-logos-preact
     "dev": "vite dev"
   },
   "devDependencies": {
-    "@preact/preset-vite": "^2.10.3",
-    "@tailwindcss/vite": "^4.1.18",
+    "@preact/preset-vite": "^2.10.4",
+    "@tailwindcss/vite": "^4.2.2",
     "nitro": "latest",
-    "preact": "^10.28.3",
-    "preact-render-to-string": "^6.6.5",
-    "tailwindcss": "^4.1.18",
-    "vite": "beta"
+    "preact": "^10.29.0",
+    "preact-render-to-string": "^6.6.6",
+    "tailwindcss": "^4.2.2",
+    "vite": "latest"
   }
 }
 ```
@@ -140,14 +140,14 @@ button {
 
 <!-- automd:file src="../../examples/vite-ssr-preact/README.md" -->
 
-使用 Preact、Vite 和 Nitro 设置服务器端渲染（SSR）。此配置支持流式 HTML 响应、自动资产管理和客户端水合。
+使用 Preact、Vite 和 Nitro 设置服务器端渲染（SSR）。此配置支持流式 HTML 响应、自动资源管理和客户端水合。
 
 ## 概述
 
-1. 在 Vite 配置中添加 Nitro Vite 插件  
-2. 配置客户端和服务器入口文件  
-3. 创建渲染应用为 HTML 的服务器入口  
-4. 创建将服务器渲染的 HTML 水合的客户端入口  
+1. 在 Vite 配置中添加 Nitro Vite 插件
+2. 配置客户端和服务器入口文件
+3. 创建渲染应用为 HTML 的服务器入口
+4. 创建将服务器渲染的 HTML 水合的客户端入口
 
 ## 1. 配置 Vite
 
@@ -258,5 +258,5 @@ main();
 
 ## 了解更多
 
-- [Renderer](/docs/renderer)
-- [Server Entry](/docs/server-entry)
+- [渲染器](/docs/renderer)
+- [服务器入口](/docs/server-entry)

@@ -34,7 +34,7 @@ redirects:
   "/deploy/providers/edgio": "/deploy"
   "/deploy/node": "/deploy/runtimes/node"
 themeColor: "rose"
-automd: true
+automd: false
 branch: main
 versions:
   - label: "v3 (beta)"

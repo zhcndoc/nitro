@@ -20,25 +20,25 @@ icon: i-simple-icons-tanstack
     "start": "node .output/server/index.mjs"
   },
   "dependencies": {
-    "@tanstack/react-router": "^1.158.1",
-    "@tanstack/react-router-devtools": "^1.158.1",
-    "@tanstack/react-start": "^1.158.3",
+    "@tanstack/react-router": "^1.168.1",
+    "@tanstack/react-router-devtools": "^1.166.10",
+    "@tanstack/react-start": "^1.167.1",
     "nitro": "latest",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "tailwind-merge": "^3.4.0",
+    "tailwind-merge": "^3.5.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.18",
+    "@tailwindcss/vite": "^4.2.2",
     "@types/node": "latest",
-    "@types/react": "^19.2.13",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.3",
-    "tailwindcss": "^4.1.18",
+    "@vitejs/plugin-react": "^6.0.1",
+    "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3",
-    "vite": "beta",
-    "vite-tsconfig-paths": "^6.0.5"
+    "vite": "latest",
+    "vite-tsconfig-paths": "^6.1.1"
   }
 }
 ```
@@ -111,9 +111,9 @@ export function getRouter() {
 
 // noinspection JSUnusedGlobalSymbols
 
-// 该文件由 TanStack Router 自动生成。
-// 请不要修改此文件，因其会被覆盖。
-// 同时，也建议排除此文件不被你的 linter 和/或格式化工具检查和修改。
+// 此文件由 TanStack Router 自动生成。
+// 请勿直接编辑此文件，因为其会被覆盖。
+// 建议将此文件从 linter 和格式化工具中排除。
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'

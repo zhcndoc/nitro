@@ -36,16 +36,16 @@ icon: i-simple-icons-tanstack
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@tanstack/react-router": "^1.158.1",
-    "@tanstack/react-router-devtools": "^1.158.1",
-    "@tanstack/router-plugin": "^1.158.1",
-    "@types/react": "^19.2.13",
+    "@tanstack/react-router": "^1.168.1",
+    "@tanstack/react-router-devtools": "^1.166.10",
+    "@tanstack/router-plugin": "^1.167.1",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.3",
+    "@vitejs/plugin-react": "^6.0.1",
     "nitro": "latest",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "vite": "beta"
+    "vite": "latest"
   }
 }
 ```
@@ -111,9 +111,9 @@ if (!rootElement.innerHTML) {
 
 // noinspection JSUnusedGlobalSymbols
 
-// 该文件由 TanStack Router 自动生成。
-// 请勿在此文件中进行任何更改，因为它会被重写。
-// 此外，请将此文件从你的代码检查工具和格式化工具中排除，避免被检查或修改。
+// 此文件由 TanStack Router 自动生成。
+// 请勿手动修改此文件，因为每次代码变更时都会重新生成。
+// 请将此文件添加到你的 linter 和 formatter 配置的忽略列表中。
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
