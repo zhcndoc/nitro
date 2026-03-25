@@ -25,7 +25,6 @@ export default defineCommand({
     }) || ["npm", "x"];
     const runnerCmd = runner.join(" ");
     const args = rawArgs?.join(" ") || "";
-    console.log({ docsDir });
     execSync(`${runnerCmd} mdzilla ${docsDir!}${args ? ` ${args}` : ""}`, {
       stdio: "inherit",
     });
