@@ -5,7 +5,7 @@ icon: i-lucide-code
 
 # 自定义渲染器
 
-> 使用 Nitro 构建一个带有服务端数据获取的自定义 HTML 渲染器。
+> 在 Nitro 中构建一个带有服务端数据获取功能的自定义 HTML 渲染器。
 
 <!-- automd:ui-code-tree src="../../examples/renderer" default="renderer.ts" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -46,8 +46,8 @@ export default async function renderer({ url }: { req: Request; url: URL }) {
     </head>
     <body>
       <h1>来自自定义渲染器的问候！</h1>
-      <p>当前路径: ${url.pathname}</p>
-      <p>API 返回: ${apiRes}</p>
+      <p>当前路径：${url.pathname}</p>
+      <p>API 说：${apiRes}</p>
     </body>
     </html>`,
     { headers: { "content-type": "text/html; charset=utf-8" } }
@@ -71,7 +71,7 @@ export default defineConfig({ plugins: [nitro()] });
 ```ts [api/hello.ts]
 import { defineHandler } from "nitro";
 
-export default defineHandler(() => "Nitro 真棒！");
+export default defineHandler(() => "Nitro 令人惊叹！");
 ```
 
 ::
@@ -80,7 +80,7 @@ export default defineHandler(() => "Nitro 真棒！");
 
 <!-- automd:file src="../../examples/renderer/README.md" -->
 
-创建一个自定义渲染器，生成包含来自 API 路由数据的 HTML 响应。使用 Nitro 内部的 `fetch` 调用路由，无需网络开销。
+创建一个自定义渲染器，该渲染器使用来自 API 路由的数据生成 HTML 响应。使用 Nitro 内部的 `fetch` 来调用路由，无需网络开销。
 
 ## 渲染器
 
@@ -97,8 +97,8 @@ export default async function renderer({ url }: { req: Request; url: URL }) {
     </head>
     <body>
       <h1>来自自定义渲染器的问候！</h1>
-      <p>当前路径: ${url.pathname}</p>
-      <p>API 返回: ${apiRes}</p>
+      <p>当前路径：${url.pathname}</p>
+      <p>API 说：${apiRes}</p>
     </body>
     </html>`,
     { headers: { "content-type": "text/html; charset=utf-8" } }
@@ -106,19 +106,19 @@ export default async function renderer({ url }: { req: Request; url: URL }) {
 }
 ```
 
-Nitro 会自动检测项目根目录下的 `renderer.ts` 并用于所有非 API 路由。渲染函数接收请求 URL 并返回一个 `Response`。
+Nitro 会自动检测项目根目录中的 `renderer.ts` 文件，并将其用于所有非 API 路由。渲染器函数接收请求 URL 并返回一个 `Response`。
 
-使用来自 `nitro` 的 `fetch` 调用 API 路由，无需网络开销 —— 这些请求在进程内完成。
+使用 `nitro` 中的 `fetch` 来调用 API 路由，无需网络开销——这些请求在进程内完成。
 
 ## API 路由
 
 ```ts [api/hello.ts]
 import { defineHandler } from "nitro";
 
-export default defineHandler(() => "Nitro 真棒！");
+export default defineHandler(() => "Nitro 令人惊叹！");
 ```
 
-在 `api/` 目录中定义 API 路由。当渲染器调用 `fetch("/api/hello")` 时，执行该处理函数并返回响应。
+在 `api/` 目录中定义 API 路由。当渲染器调用 `fetch("/api/hello")` 时，该处理程序会运行并返回其响应。
 
 <!-- /automd -->
 

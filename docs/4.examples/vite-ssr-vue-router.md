@@ -1,11 +1,11 @@
 ---
-category: 服务器端渲染
+category: server side rendering
 icon: i-logos-vue
 ---
 
-# 使用 Vue Router 的 SSR
+# 基于 Vue Router 的 SSR
 
-> 在 Nitro 中使用 Vite 实现 Vue Router 的服务器端渲染。
+> 在 Nitro 中使用 Vite 和 Vue Router 进行服务端渲染。
 
 <!-- automd:ui-code-tree src="../../examples/vite-ssr-vue-router" default="app/entry-server.ts" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -51,7 +51,7 @@ export default defineConfig((_env) => ({
   },
 }));
 
-// 解决 https://github.com/vitejs/vite-plugin-vue/issues/677 的问题
+// 变通方案 https://github.com/vitejs/vite-plugin-vue/issues/677
 function patchVueExclude(plugin, exclude) {
   const original = plugin.transform.handler;
   plugin.transform.handler = function (...args) {
@@ -128,7 +128,7 @@ async function main() {
   app.mount("#root");
 }
 
-// eslint-disable-next-line unicorn/prefer-top-level-await
+// eslint-disable-next-line unicorn/更倾向于顶层-await
 main();
 ```
 
@@ -307,7 +307,7 @@ button:hover {
     <h1>关于</h1>
     <div class="card">
       <p>这是一个使用 Vite Plugin Fullstack 构建的简单 Vue Router 演示应用。</p>
-      <p>演示了基础的路由和服务器端渲染功能。</p>
+      <p>它展示了基本的路由和服务端渲染。</p>
     </div>
   </main>
 </template>
@@ -328,12 +328,12 @@ function increment() {
   <main>
     <div class="hero">
       <h1>Vue Router 自定义框架</h1>
-      <p class="subtitle">一个基于 Vite 的简单演示应用</p>
+      <p class="subtitle">使用 Vite 的简单演示应用</p>
     </div>
 
     <div class="card counter-card">
-      <p>计数: {{ count }}</p>
-      <button @click="increment">递增</button>
+      <p>计数：{{ count }}</p>
+      <button @click="increment">增加</button>
     </div>
   </main>
 </template>
@@ -368,7 +368,7 @@ function increment() {
 ```vue [app/pages/not-found.vue]
 <template>
   <main>
-    <h1>未找到页面 404</h1>
+    <h1>页面未找到 404</h1>
   </main>
 </template>
 ```
@@ -379,19 +379,19 @@ function increment() {
 
 <!-- automd:file src="../../examples/vite-ssr-vue-router/README.md" -->
 
-使用 Vue、Vue Router、Vite 和 Nitro 设置服务器端渲染（SSR）。该设置支持按路由拆分代码，使用 unhead 进行头部管理，并实现客户端的水合。
+使用 Vue、Vue Router、Vite 和 Nitro 设置服务端渲染（SSR）。该配置支持按路由代码分割、使用 unhead 进行 head 管理以及客户端水合。
 
-## 概览
+## 概述
 
-1. 在 Vite 配置中添加 Nitro Vite 插件
+1. 将 Nitro Vite 插件添加到 Vite 配置中
 2. 定义带有懒加载组件的路由
-3. 创建支持路由的服务器入口文件进行渲染
-4. 创建客户端入口文件进行水合并接管路由
+3. 创建支持路由渲染的服务端入口
+4. 创建客户端入口，用于水合并接管路由
 5. 创建页面组件
 
 ## 1. 配置 Vite
 
-把 Nitro 和 Vue 插件添加到你的 Vite 配置。定义 `client` 和 `ssr` 两个构建环境：
+将 Nitro 和 Vue 插件添加到 Vite 配置中。定义 `client` 和 `ssr` 两个环境：
 
 ```js [vite.config.mjs]
 import vue from "@vitejs/plugin-vue";
@@ -407,7 +407,7 @@ export default defineConfig((_env) => ({
   },
 }));
 
-// 解决 https://github.com/vitejs/vite-plugin-vue/issues/677 的问题
+// 变通方案 https://github.com/vitejs/vite-plugin-vue/issues/677
 function patchVueExclude(plugin, exclude) {
   const original = plugin.transform.handler;
   plugin.transform.handler = function (...args) {
@@ -418,11 +418,11 @@ function patchVueExclude(plugin, exclude) {
 }
 ```
 
-`patchVueExclude` 辅助函数阻止 Vue 插件处理带有 `?assets` 查询参数的资源导入。
+`patchVueExclude` 辅助函数防止 Vue 插件处理资源导入（带有 `?assets` 查询参数的文件）。
 
 ## 2. 定义路由
 
-用懒加载组件和资源元数据创建路由定义：
+创建带有懒加载组件和资源元数据的路由定义：
 
 ```ts [app/routes.ts]
 import type { RouteRecordRaw } from "vue-router";
@@ -465,11 +465,11 @@ export const routes: RouteRecordRaw[] = [
 ];
 ```
 
-使用动态导入实现懒加载组件以支持代码拆分。`meta.assets` 函数加载路由对应的 CSS 和 JS 代码块。将子路由定义在根布局组件下，支持嵌套路由。
+使用动态导入实现懒加载组件，以启用代码分割。`meta.assets` 函数加载路由特定的 CSS 和 JS 代码块。在根布局组件下定义子路由以实现嵌套路由。
 
-## 3. 创建服务器入口
+## 3. 创建服务端入口
 
-服务器入口使用路由支持和头部管理渲染你的 Vue 应用：
+服务端入口用于渲染 Vue 应用，并支持路由和 head 管理：
 
 ```ts [app/entry-server.ts]
 import { createSSRApp } from "vue";
@@ -539,11 +539,11 @@ export default {
 };
 ```
 
-服务器使用 `createMemoryHistory()`，因为没有浏览器的 URL 栏——路由会导航到请求的 URL 后再进行渲染。根据匹配的路由动态加载资源，保证只包含当前页面所需的 CSS 和 JS。使用 `unhead` 库管理 `<head>` 元素，通过 `transformHtmlTemplate` 注入样式表和脚本。
+服务端使用 `createMemoryHistory()`，因为没有浏览器地址栏——路由会在渲染前导航到请求的 URL。资源会根据匹配的路由动态加载，确保仅包含当前页面所需的 CSS 和 JS。`unhead` 库负责管理 `<head>` 元素，并通过 `transformHtmlTemplate` 注入样式表和脚本。
 
 ## 4. 创建客户端入口
 
-客户端入口对服务器渲染的 HTML 进行水合并接管路由：
+客户端入口用于对服务端渲染的 HTML 进行注水并接管路由：
 
 ```ts [app/entry-client.ts]
 import { createSSRApp } from "vue";
@@ -563,7 +563,7 @@ async function main() {
 main();
 ```
 
-客户端入口使用 `createWebHistory()` 创建 Vue 应用以支持浏览器路由。路由准备好后，将挂载到 `#root` 元素并水合服务器渲染的 HTML。
+客户端入口使用 `createWebHistory()` 创建 Vue 应用，以实现基于浏览器的路由。路由就绪后，它会挂载到 `#root` 元素并对服务端渲染的 HTML 进行注水。
 
 ## 5. 创建根组件
 
@@ -627,5 +627,5 @@ nav a.active {
 
 - [Vue Router 文档](https://router.vuejs.org/)
 - [Unhead 文档](https://unhead.unjs.io/)
-- [Renderer](/docs/renderer)
-- [Server Entry](/docs/server-entry)
+- [渲染器](/docs/renderer)
+- [服务端入口](/docs/server-entry)

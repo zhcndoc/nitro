@@ -5,7 +5,7 @@ icon: i-lucide-database
 
 # 数据库
 
-> 内置支持数据库，使用 SQL 模板字面量。
+> 使用 SQL 模板字面量的内置数据库支持。
 
 <!-- automd:ui-code-tree src="../../examples/database" default="server.ts" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -45,7 +45,7 @@ import { useDatabase } from "nitro/database";
 export default defineHandler(async () => {
   const db = useDatabase();
 
-  // 创建 users 表
+  // 创建用户表
   await db.sql`DROP TABLE IF EXISTS users`;
   await db.sql`CREATE TABLE IF NOT EXISTS users ("id" TEXT PRIMARY KEY, "firstName" TEXT, "lastName" TEXT, "email" TEXT)`;
 
@@ -81,14 +81,14 @@ import { useDatabase } from "nitro/database";
 
 export default defineTask({
   meta: {
-    description: "执行数据库迁移",
+    description: "运行数据库迁移",
   },
   async run() {
     const db = useDatabase();
 
     console.log("正在运行数据库迁移...");
 
-    // 创建 users 表
+    // 创建用户表
     await db.sql`DROP TABLE IF EXISTS users`;
     await db.sql`CREATE TABLE IF NOT EXISTS users ("id" TEXT PRIMARY KEY, "firstName" TEXT, "lastName" TEXT, "email" TEXT)`;
 
@@ -105,7 +105,7 @@ export default defineTask({
 
 <!-- automd:file src="../../examples/database/README.md" -->
 
-Nitro 提供了内置的数据库层，使用 SQL 模板字面量进行安全的参数化查询。此示例演示创建 users 表，插入记录，并查询该记录。
+Nitro 提供了一个使用 SQL 模板字面量进行安全、参数化查询的内置数据库层。本示例创建了用户表，插入一条记录，并查询返回。
 
 ## 查询数据库
 
@@ -116,7 +116,7 @@ import { useDatabase } from "nitro/database";
 export default defineHandler(async () => {
   const db = useDatabase();
 
-  // 创建 users 表
+  // 创建用户表
   await db.sql`DROP TABLE IF EXISTS users`;
   await db.sql`CREATE TABLE IF NOT EXISTS users ("id" TEXT PRIMARY KEY, "firstName" TEXT, "lastName" TEXT, "email" TEXT)`;
 
@@ -133,11 +133,11 @@ export default defineHandler(async () => {
 });
 ```
 
-通过 `useDatabase()` 获取数据库实例。可以使用 `db.sql` 进行查询，像 `${userId}` 这样的变量会自动转义以防止 SQL 注入。
+使用 `useDatabase()` 获取数据库实例。可以使用 `db.sql` 查询数据库，像 `${userId}` 这样的变量会自动转义以防止 SQL 注入。
 
-## 使用任务运行迁移
+## 使用 Tasks 运行迁移
 
-Nitro 的任务功能允许你在请求处理之外运行操作。对于数据库迁移，创建一个位于 `tasks/` 目录的任务文件，并通过 CLI 运行。这能将数据库模式变更与应用代码分离。
+Nitro 任务允许你在请求处理程序之外运行操作。对于数据库迁移，在 `tasks/` 中创建任务文件并通过 CLI 运行。这样可以将架构更改与应用程序代码分离。
 
 ```ts [tasks/db/migrate.ts]
 import { defineTask } from "nitro/task";
@@ -145,14 +145,14 @@ import { useDatabase } from "nitro/database";
 
 export default defineTask({
   meta: {
-    description: "执行数据库迁移",
+    description: "运行数据库迁移",
   },
   async run() {
     const db = useDatabase();
 
     console.log("正在运行数据库迁移...");
 
-    // 创建 users 表
+    // 创建用户表
     await db.sql`DROP TABLE IF EXISTS users`;
     await db.sql`CREATE TABLE IF NOT EXISTS users ("id" TEXT PRIMARY KEY, "firstName" TEXT, "lastName" TEXT, "email" TEXT)`;
 

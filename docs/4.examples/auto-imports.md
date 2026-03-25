@@ -5,7 +5,7 @@ icon: i-lucide-import
 
 # 自动导入
 
-> 实用工具和组合函数的自动导入。
+> 自动导入工具函数和组合式函数。
 
 <!-- automd:ui-code-tree src="../../examples/auto-imports" default="nitro.config.ts" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -65,7 +65,7 @@ export function makeGreeting(name: string) {
 
 <!-- automd:file src="../../examples/auto-imports/README.md" -->
 
-当启用自动导入时，从 `server/utils/` 导出的函数无需显式导入即可使用。只需定义一次实用工具函数，即可在服务器代码的任何位置使用。
+当启用自动导入时，从 `server/utils/` 导出的函数会自动可用，无需显式导入。只需定义一次工具函数，即可在服务器代码的任何地方使用。
 
 ## 配置
 
@@ -82,7 +82,7 @@ export default defineConfig({
 
 ## 使用自动导入
 
-1. 在 `server/utils/` 中创建一个实用工具文件：
+1. 在 `server/utils/` 中创建工具文件：
 
 ```ts [server/utils/hello.ts]
 export function makeGreeting(name: string) {
@@ -90,7 +90,7 @@ export function makeGreeting(name: string) {
 }
 ```
 
-2. 函数无需导入即可使用：
+2. 无需导入即可使用该函数：
 
 ```ts [server.ts]
 import { defineHandler } from "nitro";
@@ -99,7 +99,7 @@ import { makeGreeting } from "./server/utils/hello.ts";
 export default defineHandler(() => `<h1>${makeGreeting("Nitro")}</h1>`);
 ```
 
-通过此配置，`server/utils/` 中导出的任何函数都将全局可用。Nitro 会扫描该目录，并自动生成所需的导入。
+通过此设置，从 `server/utils/` 导出的任何函数都会全局可用。Nitro 会扫描目录并自动生成必要的导入。
 
 <!-- /automd -->
 

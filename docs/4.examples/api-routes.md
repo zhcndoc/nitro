@@ -13,7 +13,7 @@ icon: i-lucide-route
 
 ```html [index.html]
 <!doctype html>
-<html lang="zh">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -67,13 +67,13 @@ export default defineConfig({ plugins: [nitro()] });
 ```ts [api/hello.ts]
 import { defineHandler } from "nitro";
 
-export default defineHandler(() => "Nitro 很棒！");
+export default defineHandler(() => "Nitro is amazing!");
 ```
 
 ```ts [api/test.get.ts]
 import { defineHandler } from "nitro";
 
-export default defineHandler(() => "测试 GET 处理器");
+export default defineHandler(() => "Test get handler");
 ```
 
 ```ts [api/test.post.ts]
@@ -82,7 +82,7 @@ import { defineHandler } from "nitro";
 export default defineHandler(async (event) => {
   const body = await event.req.json();
   return {
-    message: "测试 POST 处理器",
+    message: "Test post handler",
     body,
   };
 });
@@ -91,7 +91,7 @@ export default defineHandler(async (event) => {
 ```ts [api/hello/[name].ts]
 import { defineHandler } from "nitro";
 
-export default defineHandler((event) => `你好 (参数: ${event.context.params!.name})！`);
+export default defineHandler((event) => `Hello (param: ${event.context.params!.name})!`);
 ```
 
 ::
@@ -100,16 +100,16 @@ export default defineHandler((event) => `你好 (参数: ${event.context.params!
 
 <!-- automd:file src="../../examples/api-routes/README.md" -->
 
-Nitro 支持在 `api/` 或 `routes/` 目录中基于文件的路由。每个文件根据其路径成为一个 API 端点。
+Nitro 支持在 `api/` 或 `routes/` 目录中进行基于文件的路由。每个文件都基于其路径成为一个 API 端点。
 
 ## 基础路由
 
-在 `api/` 目录下创建文件以定义路由。文件路径即为 URL 路径：
+在 `api/` 目录中创建一个文件以定义路由。文件路径即成为 URL 路径：
 
 ```ts [api/hello.ts]
 import { defineHandler } from "nitro";
 
-export default defineHandler(() => "Nitro 很棒！");
+export default defineHandler(() => "Nitro is amazing!");
 ```
 
 这将创建一个 `GET /api/hello` 端点。
@@ -121,21 +121,21 @@ export default defineHandler(() => "Nitro 很棒！");
 ```ts [api/hello/[name].ts]
 import { defineHandler } from "nitro";
 
-export default defineHandler((event) => `你好 (参数: ${event.context.params!.name})！`);
+export default defineHandler((event) => `Hello (param: ${event.context.params!.name})!`);
 ```
 
 这将创建一个 `GET /api/hello/:name` 端点（例如 `/api/hello/world`）。
 
 ## HTTP 方法
 
-在文件名后缀加上 HTTP 方法（`.get.ts`、`.post.ts`、`.put.ts`、`.delete.ts` 等）：
+为文件添加 HTTP 方法后缀（`.get.ts`、`.post.ts`、`.put.ts`、`.delete.ts` 等）：
 
 ### GET 处理器
 
 ```ts [api/test.get.ts]
 import { defineHandler } from "nitro";
 
-export default defineHandler(() => "测试 GET 处理器");
+export default defineHandler(() => "Test get handler");
 ```
 
 ### POST 处理器
@@ -146,7 +146,7 @@ import { defineHandler } from "nitro";
 export default defineHandler(async (event) => {
   const body = await event.req.json();
   return {
-    message: "测试 POST 处理器",
+    message: "Test post handler",
     body,
   };
 });

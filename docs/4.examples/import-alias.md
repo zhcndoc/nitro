@@ -5,7 +5,7 @@ icon: i-lucide-at-sign
 
 # 导入别名
 
-> 自定义导入别名，以实现更简洁的模块路径。
+> 用于更简洁模块路径的自定义导入别名。
 
 <!-- automd:ui-code-tree src="../../examples/import-alias" default="server/routes/index.ts" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -67,12 +67,10 @@ export default () => {
 ```
 
 ```ts [server/utils/math.ts]
-// 生成 min 和 max 之间的随机数
 export function rand(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// 计算两个数字的和
 export function sum(a: number, b: number): number {
   return a + b;
 }
@@ -84,7 +82,7 @@ export function sum(a: number, b: number): number {
 
 <!-- automd:file src="../../examples/import-alias/README.md" -->
 
-像 `~` 和 `#` 这样的导入别名让你可以使用更短的路径引用模块，而不用使用相对导入。
+像 `~` 和 `#` 这样的导入别名让你可以使用更短的路径引用模块，而不是使用相对导入。
 
 ## 使用别名导入
 
@@ -100,7 +98,7 @@ export default () => {
 };
 ```
 
-该路由使用 `~server/` 导入了 `sum` 函数，使用 `#server/` 导入了 `rand` 函数。两者都解析为相同的 `server/utils/math.ts` 文件。处理函数生成两个随机数并返回它们的和。
+该路由使用 `~server/` 导入 `sum` 函数，使用 `#server/` 导入 `rand`。两者都解析到同一个 `server/utils/math.ts` 文件。处理器生成两个随机数并返回它们的和。
 
 ## 配置
 

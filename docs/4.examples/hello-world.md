@@ -3,9 +3,9 @@ category: features
 icon: i-lucide-sparkles
 ---
 
-# 你好，世界
+# 你好世界
 
-> 使用 Web 标准 fetch 处理器的极简 Nitro 服务器。
+> 使用 Web 标准 fetch 处理程序的极简 Nitro 服务器。
 
 <!-- automd:ui-code-tree src="../../examples/hello-world" default="server.ts" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -58,7 +58,7 @@ export default defineConfig({ plugins: [nitro()] });
 
 <!-- automd:file src="../../examples/hello-world/README.md" -->
 
-最简单的 Nitro 服务器。导出一个带有 `fetch` 方法的对象，该方法接受标准的 `Request` 并返回 `Response`。无框架、无抽象，仅使用 Web 平台。
+最简单的 Nitro 服务器。导出一个带有 `fetch` 方法的对象，该方法接收一个标准的 `Request` 并返回一个 `Response`。没有框架，没有抽象，只有 Web 平台。
 
 
 ## 服务器入口
@@ -71,9 +71,9 @@ export default {
 };
 ```
 
-`fetch` 方法遵循与 Service Workers 和 Cloudflare Workers 相同的签名。此模式适用于所有部署目标，因为它使用 Web 标准。
+`fetch` 方法遵循与 Service Workers 和 Cloudflare Workers 相同的签名。这种模式适用于所有部署目标，因为它使用了 Web 标准。
 
-将 Nitro 插件添加到 Vite，它会处理剩下的内容：开发服务器、热重载和生产构建。
+将 Nitro 插件添加到 Vite，它会处理其余工作：开发服务器、热重载和生产构建。
 
 <!-- /automd -->
 

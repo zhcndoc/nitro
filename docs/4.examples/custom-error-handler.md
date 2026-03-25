@@ -5,7 +5,7 @@ icon: i-lucide-alert-circle
 
 # 自定义错误处理器
 
-> 使用全局错误处理器自定义错误响应。
+> 使用全局错误处理器来自定义错误响应。
 
 <!-- automd:ui-code-tree src="../../examples/custom-error-handler" default="error.ts" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -15,7 +15,7 @@ icon: i-lucide-alert-circle
 import { defineErrorHandler } from "nitro";
 
 export default defineErrorHandler((error, _event) => {
-  return new Response(`自定义错误处理器: ${error.message}`, {
+  return new Response(`Custom Error Handler: ${error.message}`, {
     status: 500,
     headers: { "Content-Type": "text/plain" },
   });
@@ -24,7 +24,7 @@ export default defineErrorHandler((error, _event) => {
 
 ```ts [nitro.config.ts]
 import { defineConfig } from "nitro";
-// import errorHandler from "./error";
+// 从 "./error" 导入 errorHandler
 
 export default defineConfig({
   errorHandler: "./error.ts",
@@ -49,7 +49,7 @@ export default defineConfig({
 import { defineHandler, HTTPError } from "nitro";
 
 export default defineHandler(() => {
-  throw new HTTPError("示例错误！", { status: 500 });
+  throw new HTTPError("Example Error!", { status: 500 });
 });
 ```
 
@@ -76,34 +76,34 @@ export default defineConfig({ plugins: [nitro()] });
 
 ## 错误处理器
 
-在项目根目录创建一个 `error.ts` 文件来定义全局错误处理器：
+在项目根目录创建 `error.ts` 文件来定义全局错误处理器：
 
 ```ts [error.ts]
 import { defineErrorHandler } from "nitro";
 
 export default defineErrorHandler((error, _event) => {
-  return new Response(`自定义错误处理器: ${error.message}`, {
+  return new Response(`Custom Error Handler: ${error.message}`, {
     status: 500,
     headers: { "Content-Type": "text/plain" },
   });
 });
 ```
 
-该处理器接收抛出的错误和 H3 事件对象。你可以使用事件对象访问请求的详细信息，如 headers、cookies 或 URL 路径，从而针对不同路由自定义响应。
+处理器接收抛出的错误和 H3 事件对象。你可以使用事件来访问请求详情，如请求头、Cookie 或 URL 路径，以便为每个路由自定义响应。
 
 ## 触发错误
 
-主处理器抛出一个错误以演示自定义错误处理器：
+主处理器抛出一个错误来演示自定义错误处理器：
 
 ```ts [server.ts]
 import { defineHandler, HTTPError } from "nitro";
 
 export default defineHandler(() => {
-  throw new HTTPError("示例错误！", { status: 500 });
+  throw new HTTPError("Example Error!", { status: 500 });
 });
 ```
 
-当你访问页面时，不会看到通用错误页面，而是看到“自定义错误处理器: 示例错误！”的提示，因为错误处理器拦截了抛出的错误。
+当你访问页面时，你会看到「Custom Error Handler: Example Error!」而不是通用错误页面，因为错误处理器拦截了抛出的错误。
 
 <!-- /automd -->
 

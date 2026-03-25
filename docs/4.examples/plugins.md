@@ -5,7 +5,7 @@ icon: i-lucide-plug
 
 # 插件
 
-> 通过自定义插件扩展 Nitro，以支持钩子和生命周期事件。
+> 使用自定义插件扩展 Nitro，用于钩子和生命周期事件。
 
 <!-- automd:ui-code-tree src="../../examples/plugins" default="server/plugins/test.ts" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -69,9 +69,9 @@ export default definePlugin((nitroApp) => {
 
 <!-- automd:file src="../../examples/plugins/README.md" -->
 
-插件允许你钩入 Nitro 的运行时生命周期。此示例展示了一个在每个响应上修改 `Content-Type` 头的插件。你只需在 `server/plugins/` 目录创建文件，它们会在启动时自动加载。
+插件让你能够接入 Nitro 的运行时生命周期。本示例展示了一个插件，它在每个响应上修改 `Content-Type` 标头。在 `server/plugins/` 中创建文件，它们将在启动时自动加载。
 
-## 定义一个插件
+## 定义插件
 
 ```ts [server/plugins/test.ts]
 import { definePlugin } from "nitro";
@@ -85,7 +85,7 @@ export default definePlugin((nitroApp) => {
 });
 ```
 
-插件通过调用 `useNitroHooks()` 访问钩子系统，然后注册一个会在每个请求后运行的 `response` 钩子。在这里它将内容类型设置为 HTML，但你也可以记录请求、添加安全头或以任何方式修改响应。
+该插件使用 `useNitroHooks()` 来访问钩子系统，然后注册一个在每次请求后运行的 `response` 钩子。这里它将内容类型设置为 HTML，但你可以记录请求、添加安全标头或以任何方式修改响应。
 
 ## 主处理器
 
@@ -95,7 +95,7 @@ import { eventHandler } from "h3";
 export default eventHandler(() => "<h1>Hello Nitro!</h1>");
 ```
 
-处理器返回 HTML 内容但未设置内容类型。插件会自动为响应添加正确的 `Content-Type: html; charset=utf-8` 头。
+该处理器返回 HTML 而不设置内容类型。插件会自动将正确的 `Content-Type: html; charset=utf-8` 标头添加到响应中。
 
 <!-- /automd -->
 

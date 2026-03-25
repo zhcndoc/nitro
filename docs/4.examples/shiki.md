@@ -5,7 +5,7 @@ icon: i-lucide-highlighter
 
 # Shiki
 
-> 在 Nitro 中使用 Shiki 实现服务器端语法高亮。
+> 在 Nitro 中使用 Shiki 进行服务端语法高亮。
 
 <!-- automd:ui-code-tree src="../../examples/shiki" default="api/highlight.ts" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -30,7 +30,7 @@ icon: i-lucide-highlighter
             body: code,
           });
       </script>
-      <pre><code>{{{ hl(`console.log("💚 简单即美丽！");`) }}}</code></pre>
+      <pre><code>{{{ hl(`console.log("💚 Simple is beautiful!");`) }}}</code></pre>
     </div>
   </body>
 </html>
@@ -148,7 +148,7 @@ export default async ({ req }: { req: Request }) => {
 
 <!-- automd:file src="../../examples/shiki/README.md" -->
 
-使用 Shiki 结合 TextMate 语法文件进行语法高亮。此示例通过 Nitro 的服务器脚本功能在服务器端高亮代码，该功能允许在发送响应前在 HTML 文件中运行 JavaScript。
+使用 Shiki 配合 TextMate 语法进行语法高亮。本示例使用 Nitro 的服务端脚本功能在服务端高亮代码，该功能会在发送响应前在 HTML 文件内部运行 JavaScript。
 
 ## API 路由
 
@@ -174,9 +174,9 @@ export default async ({ req }: { req: Request }) => {
 };
 ```
 
-创建一个带有 Vitesse Dark 主题和 TypeScript 语言支持的 Shiki 高亮器。当 API 接收到 POST 请求时，会从请求体读取代码并返回高亮过的 HTML。
+创建一个使用 Vitesse Dark 主题和 TypeScript 语言支持的 Shiki 高亮器。当 API 收到 POST 请求时，它会从请求体中读取代码并返回高亮后的 HTML。
 
-## 服务器端渲染
+## 服务端渲染
 
 ```html [index.html]
 <!doctype html>
@@ -197,13 +197,13 @@ export default async ({ req }: { req: Request }) => {
             body: code,
           });
       </script>
-      <pre><code>{{{ hl(`console.log("💚 简单即美丽！");`) }}}</code></pre>
+      <pre><code>{{{ hl(`console.log("💚 Simple is beautiful!");`) }}}</code></pre>
     </div>
   </body>
 </html>
 ```
 
-`<script server>` 标签在 HTML 发送前于服务器端执行。它定义了一个辅助函数，使用 `serverFetch` 调用高亮 API。三重大括号语法 `{{{ }}}` 用来输出未转义的结果，因此高亮的 HTML 能正确渲染。
+`<script server>` 标签在 HTML 发送前在服务端运行。它定义了一个辅助函数，使用 `serverFetch` 调用高亮 API。三重大括号语法 `{{{ }}}` 会不经转义地输出结果，因此高亮后的 HTML 能够正确渲染。
 
 <!-- /automd -->
 

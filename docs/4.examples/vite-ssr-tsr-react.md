@@ -3,9 +3,9 @@ category: server side rendering
 icon: i-simple-icons-tanstack
 ---
 
-# 使用 TanStack Router 实现 SSR
+# 使用 TanStack Router 的 SSR
 
-> 在 Nitro 中使用 Vite 进行客户端路由，搭配 TanStack Router。
+> 在 Nitro 中使用 Vite 结合 TanStack Router 实现客户端路由。
 
 <!-- automd:ui-code-tree src="../../examples/vite-ssr-tsr-react" default="src/main.tsx" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -79,13 +79,13 @@ import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 
-// 导入自动生成的路由树
+// 导入生成的路由树
 import { routeTree } from "./routeTree.gen.ts";
 
 // 创建新的路由实例
 const router = createRouter({ routeTree });
 
-// 注册路由实例以实现类型安全
+// 注册路由实例以确保类型安全
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
@@ -112,8 +112,8 @@ if (!rootElement.innerHTML) {
 // noinspection JSUnusedGlobalSymbols
 
 // 此文件由 TanStack Router 自动生成。
-// 请勿手动修改此文件，因为每次代码变更时都会重新生成。
-// 请将此文件添加到你的 linter 和 formatter 配置的忽略列表中。
+// 你不应修改此文件，因为它会被覆盖。
+// 此外，你还应将此文件排除在代码检查器（linter）和/或格式化工具之外，以防止其被检查或修改。
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
@@ -273,7 +273,7 @@ const RootLayout = () => (
   <>
     <div className="p-2 flex gap-2">
       <Link to="/" className="[&.active]:font-bold">
-        首页
+        Home
       </Link>
     </div>
     <hr />
@@ -313,18 +313,18 @@ function Index() {
 
 <!-- automd:file src="../../examples/vite-ssr-tsr-react/README.md" -->
 
-使用 React、Vite 和 Nitro 搭建 TanStack Router。该配置提供基于文件的路由、类型安全的导航及自动代码拆分。
+使用 React、Vite 和 Nitro 配置 TanStack Router。此配置提供基于文件的路由、类型安全的导航以及自动代码分割。
 
-## 概览
+## 概述
 
-1. 在 Vite 配置中添加 Nitro 插件
+1. 将 Nitro Vite 插件添加到你的 Vite 配置中
 2. 创建包含应用入口的 HTML 模板
 3. 创建初始化路由的主入口文件
-4. 使用基于文件的路由定义路由规则
+4. 使用基于文件的路由定义路由
 
 ## 1. 配置 Vite
 
-在 Vite 配置中添加 Nitro、React 和 TanStack Router 插件：
+将 Nitro、React 和 TanStack Router 插件添加到你的 Vite 配置中：
 
 ```js [vite.config.mjs]
 import { defineConfig } from "vite";
@@ -337,7 +337,7 @@ export default defineConfig({
 });
 ```
 
-`tanstackRouter` 插件会根据 `routes/` 目录结构生成路由树。启用 `autoCodeSplitting` 可以自动将路由拆分为不同代码块。确保 TanStack Router 插件放在 React 插件之前。
+`tanstackRouter` 插件会根据你的 `routes/` 目录结构生成路由树。启用 `autoCodeSplitting` 可将路由自动分割成独立的代码块。在数组中将 TanStack Router 插件放在 React 插件之前。
 
 ## 2. 创建 HTML 模板
 
@@ -361,20 +361,20 @@ export default defineConfig({
 
 ## 3. 创建应用入口
 
-创建主入口，初始化 TanStack Router：
+创建初始化 TanStack Router 的主入口文件：
 
 ```tsx [src/main.tsx]
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 
-// 导入自动生成的路由树
+// 导入生成的路由树
 import { routeTree } from "./routeTree.gen.ts";
 
 // 创建新的路由实例
 const router = createRouter({ routeTree });
 
-// 注册路由实例以实现类型安全
+// 注册路由实例以确保类型安全
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
@@ -393,11 +393,11 @@ if (!rootElement.innerHTML) {
 }
 ```
 
-`routeTree.gen.ts` 文件由 `routes/` 目录自动生成。`Register` 接口声明提供了完整的路由路径及参数类型推断。`!rootElement.innerHTML` 检查可避免热更新时重复渲染。
+`routeTree.gen.ts` 文件是根据你的 `routes/` 目录结构自动生成的。`Register` 接口声明为路由路径和参数提供完整的类型推断。`!rootElement.innerHTML` 检查可防止在热模块替换（HMR）期间重新渲染。
 
 ## 4. 创建根路由
 
-根路由（`__root.tsx`）定义应用的布局：
+根路由（`__root.tsx`）定义了应用的布局：
 
 ```tsx [src/routes/__root.tsx]
 import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
@@ -407,7 +407,7 @@ const RootLayout = () => (
   <>
     <div className="p-2 flex gap-2">
       <Link to="/" className="[&.active]:font-bold">
-        首页
+        Home
       </Link>
     </div>
     <hr />
@@ -419,11 +419,11 @@ const RootLayout = () => (
 export const Route = createRootRoute({ component: RootLayout });
 ```
 
-使用 `Link` 实现类型安全的导航及激活状态样式。`Outlet` 组件用于渲染子路由。包含 `TanStackRouterDevtools` 以便开发时调试（生产环境会自动剔除）。
+使用 `Link` 进行类型安全的导航，并支持激活状态样式。`Outlet` 组件用于渲染子路由。包含 `TanStackRouterDevtools` 以使用开发工具（在生产环境中会自动移除）。
 
 ## 5. 创建页面路由
 
-页面路由使用 `createFileRoute`，并且可包含加载数据的 loader：
+页面路由使用 `createFileRoute` 创建，并可包含加载器（loader）：
 
 ```tsx [src/routes/index.tsx]
 import { createFileRoute } from "@tanstack/react-router";
@@ -447,11 +447,11 @@ function Index() {
 }
 ```
 
-通过 `loader` 函数在渲染前加载数据，数据可通过 `Route.useLoaderData()` 访问。文件路径即对应 URL 路径，例如：`routes/index.tsx` 对应 `/`，`routes/about.tsx` 对应 `/about`，`routes/users/$id.tsx` 对应 `/users/:id`。
+使用 `loader` 函数在渲染前获取数据——数据可通过 `Route.useLoaderData()` 获取。文件路径决定 URL 路径：`routes/index.tsx` 映射到 `/`，`routes/about.tsx` 映射到 `/about`，`routes/users/$id.tsx` 映射到 `/users/:id`。
 
 <!-- /automd -->
 
-## 更多学习
+## 了解更多
 
 - [TanStack Router 文档](https://tanstack.com/router)
-- [Renderer](/docs/renderer)
+- [渲染器](/docs/renderer)

@@ -3,9 +3,9 @@ category: server side rendering
 icon: i-simple-icons-tanstack
 ---
 
-# 使用 TanStack Start 实现 SSR（服务器端渲染）
+# 使用 TanStack Start 进行 SSR
 
-> 通过 TanStack Start 在 Nitro 中使用 Vite 实现全栈 React。
+> 在 Nitro 中使用 Vite 配合 TanStack Start 实现全栈 React。
 
 <!-- automd:ui-code-tree src="../../examples/vite-ssr-tss-react" default="server.ts" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -96,8 +96,8 @@ export function getRouter() {
   const router = createRouter({
     routeTree,
     defaultPreload: "intent",
-    defaultErrorComponent: () => <div>服务器内部错误</div>,
-    defaultNotFoundComponent: () => <div>未找到页面</div>,
+    defaultErrorComponent: () => <div>Internal Server Error</div>,
+    defaultNotFoundComponent: () => <div>Not Found</div>,
     scrollRestoration: true,
   });
   return router;
@@ -112,8 +112,8 @@ export function getRouter() {
 // noinspection JSUnusedGlobalSymbols
 
 // 此文件由 TanStack Router 自动生成。
-// 请勿直接编辑此文件，因为其会被覆盖。
-// 建议将此文件从 linter 和格式化工具中排除。
+// 你不应该对这个文件进行任何更改，因为它将被覆盖。
+// 此外，你还应该将此文件从你的 linter 和/或 formatter 中排除，以防止被检查或修改。
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
@@ -209,8 +209,8 @@ export const Route = createRootRoute({
     links: [{ rel: "stylesheet", href: appCss }],
     scripts: [{ src: "/customScript.js", type: "text/javascript" }],
   }),
-  errorComponent: () => <h1>500：服务器内部错误</h1>,
-  notFoundComponent: () => <h1>404：页面未找到</h1>,
+  errorComponent: () => <h1>500: Internal Server Error</h1>,
+  notFoundComponent: () => <h1>404: Page Not Found</h1>,
   shellComponent: RootDocument,
 });
 
@@ -223,7 +223,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <div className="p-2 flex gap-2 text-lg">
           <Link to="/" activeProps={{ className: "font-bold" }} activeOptions={{ exact: true }}>
-            首页
+            Home
           </Link>{" "}
           <Link
             // @ts-ignore
@@ -251,7 +251,7 @@ export const Route = createFileRoute("/")({ component: Home });
 function Home() {
   return (
     <div className="p-2">
-      <h3>欢迎回家！</h3>
+      <h3>Welcome Home!</h3>
       <a href="/api/test">/api/test</a>
     </div>
   );
@@ -297,18 +297,18 @@ function Home() {
 
 <!-- automd:file src="../../examples/vite-ssr-tss-react/README.md" -->
 
-使用 Nitro 配合 TanStack Start 搭建，体验全栈 React 框架，支持服务器端渲染、基于文件的路由及集成 API 路由。
+使用 Nitro 设置 TanStack Start，获得包含服务端渲染、基于文件的路由和集成 API 路由的全栈 React 框架体验。
 
-## 概览
+## 概述
 
-1. 在 Vite 配置中添加 Nitro Vite 插件
-2. 使用 TanStack Start 的服务器处理器创建服务器入口
-3. 配置路由器及默认组件
-4. 使用基于文件的路由定义页面路由与 API 端点
+1. 将 Nitro Vite 插件添加到你的 Vite 配置中
+2. 使用 TanStack Start 的服务端处理程序创建服务端入口
+3. 使用默认组件配置路由
+4. 使用基于文件的路由定义路由和 API 端点
 
 ## 1. 配置 Vite
 
-向你的 Vite 配置中添加 Nitro、React、TanStack Start 和 Tailwind 插件：
+将 Nitro、React、TanStack Start 和 Tailwind 插件添加到你的 Vite 配置中：
 
 ```js [vite.config.mjs]
 import { defineConfig } from "vite";
@@ -332,11 +332,11 @@ export default defineConfig({
 });
 ```
 
-`tanstackStart()` 插件提供完整的 SSR 集成及自动客户端入口处理。使用 `viteTsConfigPaths()` 启用 tsconfig 中类似 `~/` 的路径别名。`environments.ssr` 指定服务器入口文件。
+`tanstackStart()` 插件提供了完整的 SSR 集成，并自动处理客户端入口。使用 `viteTsConfigPaths()` 来启用 tsconfig 中的路径别名，如 `~/`。`environments.ssr` 选项指向服务端入口文件。
 
-## 2. 创建服务器入口
+## 2. 创建服务端入口
 
-创建一个使用 TanStack Start 处理器的服务器入口：
+创建一个使用 TanStack Start 处理程序的服务端入口：
 
 ```ts [server.ts]
 import handler, { createServerEntry } from "@tanstack/react-start/server-entry";
@@ -348,11 +348,11 @@ export default createServerEntry({
 });
 ```
 
-TanStack Start 会自动处理 SSR。`createServerEntry` 包装以适配 Nitro 的服务器入口格式，`handler.fetch` 处理所有传入请求。
+TanStack Start 自动处理 SSR。`createServerEntry` 包装器与 Nitro 的服务端入口格式集成，`handler.fetch` 处理所有传入的请求。
 
-## 3. 配置路由器
+## 3. 配置路由
 
-创建路由器工厂函数，带默认错误和未找到组件：
+创建一个包含默认错误和未找到组件的路由工厂函数：
 
 ```tsx [src/router.tsx]
 import { createRouter } from "@tanstack/react-router";
@@ -362,19 +362,19 @@ export function getRouter() {
   const router = createRouter({
     routeTree,
     defaultPreload: "intent",
-    defaultErrorComponent: () => <div>服务器内部错误</div>,
-    defaultNotFoundComponent: () => <div>未找到页面</div>,
+    defaultErrorComponent: () => <div>Internal Server Error</div>,
+    defaultNotFoundComponent: () => <div>Not Found</div>,
     scrollRestoration: true,
   });
   return router;
 }
 ```
 
-路由器工厂配置预加载行为、滚动恢复以及默认错误和未找到组件。
+路由工厂配置了预加载行为、滚动恢复以及默认的错误/未找到组件。
 
 ## 4. 创建根路由
 
-根路由定义 HTML shell，包括 head 管理与脚本：
+根路由定义了你的 HTML 外壳，包含 head 管理和脚本：
 
 ```tsx [src/routes/__root.tsx]
 /// <reference types="vite/client" />
@@ -392,8 +392,8 @@ export const Route = createRootRoute({
     links: [{ rel: "stylesheet", href: appCss }],
     scripts: [{ src: "/customScript.js", type: "text/javascript" }],
   }),
-  errorComponent: () => <h1>500：服务器内部错误</h1>,
-  notFoundComponent: () => <h1>404：页面未找到</h1>,
+  errorComponent: () => <h1>500: Internal Server Error</h1>,
+  notFoundComponent: () => <h1>404: Page Not Found</h1>,
   shellComponent: RootDocument,
 });
 
@@ -406,7 +406,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <div className="p-2 flex gap-2 text-lg">
           <Link to="/" activeProps={{ className: "font-bold" }} activeOptions={{ exact: true }}>
-            首页
+            Home
           </Link>{" "}
           <Link
             // @ts-ignore
@@ -426,11 +426,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 }
 ```
 
-在 `head()` 函数中定义 meta 标签、样式表和脚本。`shellComponent` 提供 HTML 文档 shell，包裹所有页面。使用 `HeadContent` 渲染 head 配置，使用 `Scripts` 注入客户端 JavaScript 以实现 hydration 功能。
+在 `head()` 函数中定义 meta 标签、样式表和脚本。`shellComponent` 提供了包裹所有页面的 HTML 文档外壳。使用 `HeadContent` 渲染 head 配置，使用 `Scripts` 注入用于水合的客户端 JavaScript。
 
 ## 5. 创建页面路由
 
-页面路由定义应用的页面：
+页面路由定义了你的应用页面：
 
 ```tsx [src/routes/index.tsx]
 import { createFileRoute } from "@tanstack/react-router";
@@ -449,7 +449,7 @@ function Home() {
 
 ## API 路由
 
-TanStack Start 同时支持 API 路由和页面路由。在 `src/routes/api/` 目录下创建文件即可定义服务器端接口，Nitro 会自动提供服务支持。
+TanStack Start 支持 API 路由与页面路由并存。在 `src/routes/api/` 中创建文件以定义 Nitro 自动提供服务的端点。
 
 <!-- /automd -->
 

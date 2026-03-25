@@ -5,7 +5,7 @@ icon: i-logos-vitejs
 
 # Vite Nitro 插件
 
-> 将 Nitro 作为 Vite 插件，以实现编程式配置。
+> 将 Nitro 作为 Vite 插件使用，以进行程序化配置。
 
 <!-- automd:ui-code-tree src="../../examples/vite-nitro-plugin" default="vite.config.mjs" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -59,7 +59,7 @@ export default defineConfig({
 
 <!-- automd:file src="../../examples/vite-nitro-plugin/README.md" -->
 
-你可以不使用单独的 `nitro.config.ts`，而是直接在你的 Vite 配置中配置 Nitro。这样你就可以使用 Nitro 的 setup 钩子，编程式地注册路由和虚拟模块。
+无需使用单独的 `nitro.config.ts` 文件，您可以直接在 Vite 配置中配置 Nitro。这使您可以访问 Nitro 的 setup 钩子，从而以编程方式注册路由和虚拟模块。
 
 ## Vite 配置
 
@@ -84,7 +84,7 @@ export default defineConfig({
 });
 ```
 
-该配置添加了两个插件：`nitro()` 插件和一个使用 `nitro.setup` 钩子的自定义插件。在 setup 函数内部，你可以访问 Nitro 的 options 对象。这个示例在 `/` 注册了一个虚拟路由，映射到一个虚拟模块 `#virtual-by-plugin`，并且内联定义了该模块。
+该配置添加了两个插件：`nitro()` 插件和一个使用 `nitro.setup` 钩子的自定义插件。在 setup 函数内部，您可以访问 Nitro 的选项对象。此示例在 `/` 处注册了一个虚拟路由，该路由映射到虚拟模块 `#virtual-by-plugin`，然后内联定义了该模块。
 
 <!-- /automd -->
 

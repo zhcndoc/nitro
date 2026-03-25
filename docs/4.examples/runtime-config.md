@@ -5,7 +5,7 @@ icon: i-lucide-settings
 
 # 运行时配置
 
-> 支持环境感知并能在运行时访问的配置。
+> 支持环境感知的配置，可在运行时访问。
 
 <!-- automd:ui-code-tree src="../../examples/runtime-config" default="nitro.config.ts" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -64,7 +64,7 @@ export default defineConfig({ plugins: [nitro()] });
 
 <!-- automd:file src="../../examples/runtime-config/README.md" -->
 
-运行时配置允许你定义可由环境变量在运行时覆盖的配置值。
+运行时配置允许你定义可在运行时被环境变量覆盖的配置值。
 
 ## 定义配置模式
 
@@ -81,9 +81,9 @@ export default defineConfig({
 });
 ```
 
-## 运行时访问
+## 在运行时访问
 
-在处理函数中使用 `useRuntimeConfig` 访问配置值：
+使用 `useRuntimeConfig` 在你的处理程序中访问配置值：
 
 ```ts [server.ts]
 import { defineHandler } from "nitro";
@@ -97,10 +97,10 @@ export default defineHandler((event) => {
 
 ## 环境变量
 
-使用以 `NITRO_` 为前缀的环境变量覆盖配置值：
+通过带有 `NITRO_` 前缀的环境变量覆盖配置值：
 
 ```sh [.env]
-# 切勿提交敏感数据。此处仅为演示用途。
+# 切勿提交敏感数据。这仅用于演示目的。
 NITRO_API_KEY=secret-api-key
 ```
 

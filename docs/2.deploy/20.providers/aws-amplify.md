@@ -4,24 +4,24 @@
 
 **预设:** `aws_amplify`
 
-:read-more{title="AWS Amplify Hosting" to="https://aws.amazon.com/amplify"}
+:read-more{title="AWS Amplify 托管服务" to="https://aws.amazon.com/amplify"}
 
 ## 部署到 AWS Amplify Hosting
 
 ::tip
-与该提供商的集成可以通过 [零配置](/deploy/#zero-config-providers) 实现。
+使用[零配置](/deploy/#zero-config-providers)即可与提供程序集成。
 ::
 
 1. 登录到 [AWS Amplify Hosting 控制台](https://console.aws.amazon.com/amplify/)
-2. 点击 "开始使用" > Amplify Hosting (托管你的 web 应用)
-3. 选择并授权访问你的 Git 仓库提供商，并选择主分支
-4. 为你的应用程序选择一个名称，确保构建设置被自动检测，并在高级部分可选地设置环境变量
-5. 可选地选择启用 SSR 日志记录，以便将服务器端日志记录到你的 Amazon CloudWatch 帐户
-6. 确认配置并点击 "保存并部署"
+2. 点击"开始使用" > Amplify Hosting（托管您的 Web 应用）
+3. 选择并授权访问您的 Git 仓库提供程序，然后选择主分支
+4. 为您的应用选择一个名称，确保构建设置是自动检测的，并在高级部分下可选地设置所需的环境变量
+5. （可选）选择启用 SSR 日志记录，以将服务端日志记录到您的 Amazon CloudWatch 账户
+6. 确认配置，然后点击"保存并部署"
 
 ## 高级配置
 
-你可以使用 `awsAmplify` 选项配置该预设的高级选项。
+您可以使用 `awsAmplify` 选项配置此预设的高级选项。
 
 ```ts [nitro.config.ts]
 import { defineNitroConfig } from "nitro/config";
@@ -31,14 +31,14 @@ export default defineNitroConfig({
       // catchAllStaticFallback: true,
       // imageOptimization: { path: "/_image", cacheControl: "public, max-age=3600, immutable" },
       // imageSettings: { ... },
-      // runtime: "nodejs18.x", // default: "nodejs18.x" | "nodejs16.x" | "nodejs20.x"
+      // runtime: "nodejs18.x", // 默认值: "nodejs18.x" | "nodejs16.x" | "nodejs20.x"
   }
 })
 ```
 
 ### `amplify.yml`
 
-你可能需要一个自定义的 `amplify.yml` 文件用于高级配置。以下是两个模板示例：
+对于高级配置，您可能需要自定义的 `amplify.yml` 文件。以下是两个模板示例：
 
 ::code-group
 
@@ -59,7 +59,7 @@ frontend:
       - "**/*"
 ```
 
-```yml [amplify.yml (单体仓库)]
+```yml [amplify.yml (monorepo)]
 version: 1
 applications:
   - frontend:

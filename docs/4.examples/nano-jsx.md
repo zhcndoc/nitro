@@ -1,11 +1,11 @@
 ---
-category: 服务器端渲染
+category: server side rendering
 icon: i-lucide-brackets
 ---
 
 # Nano JSX
 
-> 在 Nitro 中使用 nano-jsx 实现服务器端 JSX 渲染。
+> 在 Nitro 中使用 nano-jsx 进行服务端 JSX 渲染。
 
 <!-- automd:ui-code-tree src="../../examples/nano-jsx" default="server.tsx" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -63,7 +63,7 @@ export default defineConfig({ plugins: [nitro()] });
 
 <!-- automd:file src="../../examples/nano-jsx/README.md" -->
 
-## 服务器入口
+## 服务端入口
 
 ```tsx [server.tsx]
 import { defineHandler, html } from "nitro";
@@ -74,11 +74,11 @@ export default defineHandler(() => {
 });
 ```
 
-Nitro 会自动检测 `server.tsx` 并将其作为服务器入口。使用 nano-jsx 提供的 `renderSSR` 将 JSX 转换为 HTML 字符串。H3 的 `html` 辅助函数会设置正确的内容类型头。
+Nitro 自动检测 `server.tsx` 并将其用作服务端入口。使用 nano-jsx 的 `renderSSR` 将 JSX 转换为 HTML 字符串。来自 H3 的 `html` 辅助函数设置正确的内容类型响应头。
 
 <!-- /automd -->
 
 ## 了解更多
 
-- [Renderer](/docs/renderer)
+- [渲染器](/docs/renderer)
 - [nano-jsx](https://nanojsx.io/)

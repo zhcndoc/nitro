@@ -2,23 +2,23 @@
 
 > 将 Nitro 应用部署到 DigitalOcean。
 
-**预设:** `digital_ocean`
+**预设：** `digital_ocean`
 
 :read-more{title="Digital Ocean 应用平台" to="https://docs.digitalocean.com/products/app-platform/"}
 
-## 设置应用程序
+## 设置应用
 
 1. 按照[指南](https://docs.digitalocean.com/products/app-platform/how-to/create-apps/)创建一个新的 Digital Ocean 应用。
 
-1. 接下来，您需要配置环境变量。在您的应用设置中，请确保设置以下应用级环境变量：
+1. 接下来，你需要配置环境变量。在应用设置中，确保设置以下应用级环境变量：
 
    ```bash
    NITRO_PRESET=digital_ocean
    ```
 
-   [更多信息](https://docs.digitalocean.com/products/app-platform/how-to/use-environment-variables/)。
+   [更多信息](https://docs.digitalocean.com/products/app-platform/how-to/use-environment-variables/).
 
-1. 您需要确保在应用的 `package.json` 中设置 `engines.node` 字段，以确保 Digital Ocean 使用支持的 Node.js 版本：
+1. 你需要确保在应用的 `package.json` 中设置了 `engines.node` 字段，以确保 Digital Ocean 使用受支持的 Node.js 版本：
 
    ```json
    {
@@ -28,9 +28,9 @@
    }
    ```
 
-   [查看更多信息](https://docs.digitalocean.com/products/app-platform/languages-frameworks/nodejs/#node-version)。
+   [查看更多信息](https://docs.digitalocean.com/products/app-platform/languages-frameworks/nodejs/#node-version).
 
-1. 您还需要添加一个运行命令，以便 Digital Ocean 知道在构建后要运行哪个命令。您可以通过在 `package.json` 中添加一个启动脚本来做到这一点：
+1. 你还需要添加一个运行命令，以便 Digital Ocean 知道构建后要运行什么命令。你可以通过向 `package.json` 添加一个 start 脚本来实现：
 
    ```json
    {
@@ -40,6 +40,6 @@
    }
    ```
 
-1. 最后，您需要将此启动脚本添加到 Digital Ocean 应用的运行命令中。转到 `Components > Settings > Commands`，点击“编辑”，然后添加 `npm run start`
+1. 最后，你需要将这个 start 脚本添加到 Digital Ocean 应用的运行命令中。转到 `Components > Settings > Commands`，点击"编辑"，然后添加 `npm run start`
 
-您的应用应该在 Digital Ocean 生成的 URL 上实时可用，您现在可以按照[其余 Digital Ocean 部署指南](https://docs.digitalocean.com/products/app-platform/how-to/manage-deployments/)进行操作。
+你的应用应该会在 Digital Ocean 生成的 URL 上上线，你现在可以遵循 [Digital Ocean 部署指南的其余部分](https://docs.digitalocean.com/products/app-platform/how-to/manage-deployments/).

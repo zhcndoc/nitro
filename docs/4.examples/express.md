@@ -1,11 +1,11 @@
 ---
-category: backend frameworks
+category: 后端框架
 icon: i-simple-icons-express
 ---
 
 # Express
 
-> 使用服务器入口将 Express 集成到 Nitro 中。
+> 使用服务端入口将 Express 与 Nitro 集成。
 
 <!-- automd:ui-code-tree src="../../examples/express" default="server.node.ts" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -63,7 +63,7 @@ export default defineConfig({ plugins: [nitro()] });
 
 <!-- automd:file src="../../examples/express/README.md" -->
 
-## 服务器入口
+## 服务端入口
 
 ```ts [server.node.ts]
 import Express from "express";
@@ -77,15 +77,15 @@ app.use("/", (_req, res) => {
 export default app;
 ```
 
-Nitro 会自动检测项目根目录中的 `server.node.ts` 并将其作为服务器入口。Express 应用处理所有传入请求，让你可以全面控制路由和中间件。
+Nitro 会在你的项目根目录自动检测 `server.node.ts` 并将其用作服务端入口。Express 应用会处理所有传入的请求，让你完全掌控路由和中间件。
 
 ::note
-`.node.ts` 后缀表示该入口仅针对 Node.js，不能用于如 Cloudflare Workers 或 Deno 等其他运行时。
+`.node.ts` 后缀表明此入口是 Node.js 专有的，无法在其他运行时（如 Cloudflare Workers 或 Deno）中工作。
 ::
 
 <!-- /automd -->
 
 ## 了解更多
 
-- [服务器入口](/docs/server-entry)
+- [服务端入口](/docs/server-entry)
 - [Express 文档](https://expressjs.com/)

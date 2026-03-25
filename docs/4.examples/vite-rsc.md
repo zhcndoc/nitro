@@ -5,7 +5,7 @@ icon: i-logos-react
 
 # Vite RSC
 
-> 使用 Vite 和 Nitro 的 React 服务器组件。
+> React Server Components with Vite and Nitro.
 
 <!-- automd:ui-code-tree src="../../examples/vite-rsc" default="app/root.tsx" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -104,7 +104,7 @@ import React from "react";
 export function ClientCounter() {
   const [count, setCount] = React.useState(0);
 
-  return <button onClick={() => setCount((count) => count + 1)}>客户端计数器: {count}</button>;
+  return <button onClick={() => setCount((count) => count + 1)}>Client Counter: {count}</button>;
 }
 ```
 
@@ -224,7 +224,7 @@ button:focus-visible {
 ```
 
 ```tsx [app/root.tsx]
-import "./index.css"; // CSS 导入会自动注入导出的服务端组件中
+import "./index.css"; // css import is automatically injected in exported server components
 import viteLogo from "./assets/vite.svg";
 import { getServerCounter, updateServerCounter } from "./action.tsx";
 import reactLogo from "./assets/react.svg";
@@ -269,30 +269,30 @@ function App(props: { url: URL }) {
       </div>
       <div className="card">
         <form action={updateServerCounter.bind(null, 1)}>
-          <button>服务端计数器: {getServerCounter()}</button>
+          <button>Server Counter: {getServerCounter()}</button>
         </form>
       </div>
-      <div className="card">请求 URL: {props.url?.href}</div>
+      <div className="card">Request URL: {props.url?.href}</div>
       <ul className="read-the-docs">
         <li>
-          编辑 <code>src/client.tsx</code> 来测试客户端 HMR。
+          Edit <code>src/client.tsx</code> to test client HMR.
         </li>
         <li>
-          编辑 <code>src/root.tsx</code> 来测试服务端 HMR。
+          Edit <code>src/root.tsx</code> to test server HMR.
         </li>
         <li>
-          访问{" "}
+          Visit{" "}
           <a href="./_.rsc" target="_blank">
             <code>_.rsc</code>
           </a>{" "}
-          查看 RSC 流载荷。
+          to view RSC stream payload.
         </li>
         <li>
-          访问{" "}
+          Visit{" "}
           <a href="?__nojs" target="_blank">
             <code>?__nojs</code>
           </a>{" "}
-          测试无 JS 启用下的服务端 action。
+          to test server action without js enabled.
         </li>
       </ul>
     </div>
@@ -301,7 +301,7 @@ function App(props: { url: URL }) {
 ```
 
 ```text [app/assets/nitro.svg]
-<!-- nitro 标志 -->
+<!-- nitro logo -->
 <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
   <g clip-path="url(#clip0_115_108)">
     <path fill-rule="evenodd" clip-rule="evenodd"
@@ -369,16 +369,17 @@ import type { RscPayload } from "./entry.rsc";
 import { createRscRenderRequest } from "./request";
 
 async function main() {
-  // 存储 `setPayload` 函数，用于从 `BrowserRoot` 组件外触发重新渲染（例如服务器函数调用、导航、HMR）
+  // Stash `setPayload` function to trigger re-rendering
+  // from outside of `BrowserRoot` component (e.g. server function call, navigation, hmr)
   let setPayload: (v: RscPayload) => void;
 
-  // 反序列化 RSC 流为 React 虚拟 DOM 以实现客户端渲染
+  // Deserialize RSC stream back to React VDOM for CSR
   const initialPayload = await createFromReadableStream<RscPayload>(
-    // 初始 RSC 流作为 <script>...FLIGHT_DATA...</script> 注入在 SSR 流中
+    // Initial RSC stream is injected in SSR stream as <script>...FLIGHT_DATA...</script>
     rscStream
   );
 
-  // 浏览器根组件，作为 RSC 载荷状态的渲染入口
+  // Browser root component to (re-)render RSC payload as state
   function BrowserRoot() {
     const [payload, setPayload_] = React.useState(initialPayload);
 
@@ -386,7 +387,7 @@ async function main() {
       setPayload = (v) => React.startTransition(() => setPayload_(v));
     }, [setPayload_]);
 
-    // 客户端导航时重新获取并渲染
+    // Re-fetch/render on client side navigation
     React.useEffect(() => {
       return listenNavigation(() => fetchRscPayload());
     }, []);
@@ -394,14 +395,15 @@ async function main() {
     return payload.root;
   }
 
-  // 重新获取RSC数据并触发重新渲染
+  // Re-fetch RSC and trigger re-rendering
   async function fetchRscPayload() {
     const renderRequest = createRscRenderRequest(globalThis.location.href);
     const payload = await createFromFetch<RscPayload>(fetch(renderRequest));
     setPayload(payload);
   }
 
-  // 注册服务器函数请求的回调，供 React 在水合后调用。
+  // Register a handler which will be internally called by React
+  // on server function request after hydration.
   setServerCallback(async (id, args) => {
     const temporaryReferences = createTemporaryReferenceSet();
     const renderRequest = createRscRenderRequest(globalThis.location.href, {
@@ -417,7 +419,7 @@ async function main() {
     return data;
   });
 
-  // 水合流程
+  // Hydration
   const browserRoot = (
     <React.StrictMode>
       <GlobalErrorBoundary>
@@ -433,7 +435,7 @@ async function main() {
     });
   }
 
-  // 实现服务端 HMR：服务端代码变动时触发重新获取与渲染 RSC
+  // Implement server HMR by triggering re-fetch/render of RSC upon server code change
   if (import.meta.hot) {
     import.meta.hot.on("rsc:update", () => {
       fetchRscPayload();
@@ -441,7 +443,7 @@ async function main() {
   }
 }
 
-// 一个辅助函数，拦截客户端导航事件
+// A little helper to setup events interception for client side navigation
 function listenNavigation(onNavigation: () => void) {
   globalThis.addEventListener("popstate", onNavigation);
 
@@ -468,10 +470,10 @@ function listenNavigation(onNavigation: () => void) {
       (!link.target || link.target === "_self") &&
       link.origin === location.origin &&
       !link.hasAttribute("download") &&
-      e.button === 0 && // 仅左键点击
-      !e.metaKey && // mac 新窗口打开
-      !e.ctrlKey && // windows 新窗口打开
-      !e.altKey && // 下载
+      e.button === 0 && // left clicks only
+      !e.metaKey && // open in new tab (mac)
+      !e.ctrlKey && // open in new tab (windows)
+      !e.altKey && // download
       !e.shiftKey &&
       !e.defaultPrevented
     ) {
@@ -506,27 +508,29 @@ import type { ReactFormState } from "react-dom/client";
 import { Root } from "../root.tsx";
 import { parseRenderRequest } from "./request.tsx";
 
-// 载荷的数据结构，用于 RSC 环境中序列化，SSR/客户端环境中反序列化。
+// The schema of payload which is serialized into RSC stream on rsc environment
+// and deserialized on ssr/client environments.
 export type RscPayload = {
-  // 本示例渲染/序列化/反序列化整个根 html 元素
-  // 您也可根据路由约定改变此机制，渲染/获取不同组件部分。
+  // this demo renders/serializes/deserializes entire root html element
+  // but this mechanism can be changed to render/fetch different parts of components
+  // based on your own route conventions.
   root: React.ReactNode;
 
-  // 非渐进增强情形的服务器 action 返回值
+  // Server action return value of non-progressive enhancement case
   returnValue?: { ok: boolean; data: unknown };
 
-  // 渐进增强情形的服务器 action 表单状态（例如 useActionState）
+  // Server action form state (e.g. useActionState) of progressive enhancement case
   formState?: ReactFormState;
 };
 
-// 插件默认假设 `rsc` 入口导出请求处理函数。
-// 但服务器入口执行方式可自定义，支持注册自定义服务器处理函数。
+// The plugin by default assumes `rsc` entry having default export of request handler.
+// however, how server entries are executed can be customized by registering own server handler.
 export default async function handler(request: Request): Promise<Response> {
-  // 区分 RSC、SSR、action 等请求。
+  // Differentiate RSC, SSR, action, etc.
   const renderRequest = parseRenderRequest(request);
   request = renderRequest.request;
 
-  // 处理服务器函数请求
+  // Handle server function request
   let returnValue: RscPayload["returnValue"] | undefined;
   let formState: ReactFormState | undefined;
   let temporaryReferences: unknown | undefined;
@@ -534,7 +538,7 @@ export default async function handler(request: Request): Promise<Response> {
 
   if (renderRequest.isAction === true) {
     if (renderRequest.actionId) {
-      // Action 通过 `ReactClient.setServerCallback` 调用。
+      // Action is called via `ReactClient.setServerCallback`.
       const contentType = request.headers.get("content-type");
       const body = contentType?.startsWith("multipart/form-data")
         ? await request.formData()
@@ -551,17 +555,17 @@ export default async function handler(request: Request): Promise<Response> {
         actionStatus = 500;
       }
     } else {
-      // 否则服务端函数通过 `<form action={...}>` 调用
-      // 水合前触发（例如禁用 JavaScript）。
-      // 即渐进增强。
+      // Otherwise server function is called via `<form action={...}>`
+      // before hydration (e.g. when JavaScript is disabled).
+      // aka progressive enhancement.
       const formData = await request.formData();
       const decodedAction = await decodeAction(formData);
       try {
         const result = await decodedAction();
         formState = await decodeFormState(result, formData);
       } catch {
-        // 这里没有单一通用方式显示错误，
-        // 因此显式返回经典 500 响应。
+        // there's no single general obvious way to surface this error,
+        // so explicitly return classic 500 response.
         return new Response("Internal Server Error: server action failed", {
           status: 500,
         });
@@ -569,10 +573,10 @@ export default async function handler(request: Request): Promise<Response> {
     }
   }
 
-  // 从 React 虚拟 DOM 渲染为 RSC 流
-  // 我们在处理服务器函数请求后渲染 RSC 流，
-  // 使新的渲染反映服务器函数调用后更新的状态，
-  // 实现操作与获取服务端数据的单轮往返。
+  // Serialization from React VDOM tree to RSC stream.
+  // We render RSC stream after handling server function request
+  // so that new render reflects updated state from server function call
+  // to achieve single round trip to mutate and fetch from server.
   const rscPayload: RscPayload = {
     root: <Root url={renderRequest.url} />,
     formState,
@@ -582,7 +586,7 @@ export default async function handler(request: Request): Promise<Response> {
   const rscOptions = { temporaryReferences };
   const rscStream = renderToReadableStream<RscPayload>(rscPayload, rscOptions);
 
-  // 如果是 RSC 请求，根据 `RenderRequest` 决定直接返回 RSC 流，不进行 HTML 渲染。
+  // Respond RSC stream without HTML rendering as decided by `RenderRequest`
   if (renderRequest.isRsc) {
     return new Response(rscStream, {
       status: actionStatus,
@@ -592,9 +596,10 @@ export default async function handler(request: Request): Promise<Response> {
     });
   }
 
-  // 委托 SSR 环境进行 HTML 渲染。
-  // 插件提供 `loadModule` 助手，允许在 RSC 环境加载 SSR 入口模块。
-  // 也可实现自定义运行时通信，例如 `@cloudflare/vite-plugin` 的服务绑定。
+  // Delegate to SSR environment for HTML rendering.
+  // The plugin provides `loadModule` helper to allow loading SSR environment entry module
+  // in RSC environment. however this can be customized by implementing own runtime communication
+  // e.g. `@cloudflare/vite-plugin`'s service binding.
   const ssrEntryModule = await import.meta.viteRsc.loadModule<typeof import("./entry.ssr.tsx")>(
     "ssr",
     "index"
@@ -602,11 +607,11 @@ export default async function handler(request: Request): Promise<Response> {
 
   const ssrResult = await ssrEntryModule.renderHTML(rscStream, {
     formState,
-    // 允许模拟禁用 JavaScript 的浏览器状态
+    // Allow quick simulation of JavaScript disabled browser
     debugNoJS: renderRequest.url.searchParams.has("__nojs"),
   });
 
-  // 返回 HTML 响应
+  // Respond HTML
   return new Response(ssrResult.stream, {
     status: ssrResult.status,
     headers: {
@@ -646,16 +651,16 @@ export async function renderHTML(
     debugNoJS?: boolean;
   }
 ): Promise<{ stream: ReadableStream<Uint8Array>; status?: number }> {
-  // Clone an RSC stream into two:
-  // - One for SSR (ReactClient.createFromReadableStream below)
-  // - One for browser hydration via injection of <script>...FLIGHT_DATA...</script>
+  // Duplicate one RSC stream into two.
+  // - one for SSR (ReactClient.createFromReadableStream below)
+  // - another for browser hydration payload by injecting <script>...FLIGHT_DATA...</script>.
   const [rscStream1, rscStream2] = rscStream.tee();
 
-  // Deserialize RSC stream to React virtual DOM
+  // Deserialize RSC stream back to React VDOM
   let payload: Promise<RscPayload> | undefined;
   function SsrRoot() {
-    // Deserialization needs to be triggered in a ReactDOMServer environment
-    // to support pre-initialization/preloading
+    // Deserialization needs to be kicked off inside ReactDOMServer context
+    // for ReactDOMServer preinit/preloading to work
     payload ??= createFromReadableStream<RscPayload>(rscStream1);
     return React.use(payload).root;
   }
@@ -673,13 +678,13 @@ export async function renderHTML(
       formState: options?.formState,
     });
   } catch {
-    // Fallback on failure, render a shell and run pure client-side rendering in the browser,
-    // this reproduces server component errors and triggers error boundaries.
+    // fallback to render an empty shell and run pure CSR on browser,
+    // which can replay server component error and trigger error boundary.
     status = 500;
     htmlStream = await renderToReadableStream(
       <html>
         <body>
-          <noscript>Server Internal Error: SSR Failed</noscript>
+          <noscript>Internal Server Error: SSR failed</noscript>
         </body>
       </html>,
       {
@@ -692,8 +697,8 @@ export async function renderHTML(
 
   let responseStream: ReadableStream<Uint8Array> = htmlStream;
   if (!options?.debugNoJS) {
-    // The initial RSC stream is injected into the HTML stream via <script>...FLIGHT_DATA...</script>
-    // Using devongovett's utility https://github.com/devongovett/rsc-html-stream
+    // Initial RSC stream is injected in HTML stream as <script>...FLIGHT_DATA...</script>
+    // using utility made by devongovett https://github.com/devongovett/rsc-html-stream
     responseStream = responseStream.pipeThrough(
       injectRSCPayload(rscStream2, {
         nonce: options?.nonce,
@@ -710,7 +715,7 @@ export async function renderHTML(
 
 import React from "react";
 
-// 浏览器端全局错误边界示例
+// Minimal ErrorBoundary example to handle errors globally on browser
 export function GlobalErrorBoundary(props: { children?: React.ReactNode }) {
   return <ErrorBoundary errorComponent={DefaultGlobalErrorPage}>{props.children}</ErrorBoundary>;
 }
@@ -749,7 +754,7 @@ function DefaultGlobalErrorPage(props: { error: Error; reset: () => void }) {
   return (
     <html>
       <head>
-        <title>意外错误</title>
+        <title>Unexpected Error</title>
       </head>
       <body
         style={{
@@ -763,10 +768,10 @@ function DefaultGlobalErrorPage(props: { error: Error; reset: () => void }) {
           lineHeight: "24px",
         }}
       >
-        <p>捕获到意外错误</p>
+        <p>Caught an unexpected error</p>
         <pre>
-          错误:{" "}
-          {import.meta.env.DEV && "message" in props.error ? props.error.message : "(未知)"}
+          Error:{" "}
+          {import.meta.env.DEV && "message" in props.error ? props.error.message : "(Unknown)"}
         </pre>
         <button
           onClick={() => {
@@ -775,7 +780,7 @@ function DefaultGlobalErrorPage(props: { error: Error; reset: () => void }) {
             });
           }}
         >
-          重置
+          Reset
         </button>
       </body>
     </html>
@@ -784,20 +789,20 @@ function DefaultGlobalErrorPage(props: { error: Error; reset: () => void }) {
 ```
 
 ```tsx [app/framework/request.tsx]
-// 框架约定（本示例中的任意选择）：
-// - 使用 `_.rsc` URL 后缀区分 RSC 请求和 SSR 请求
-// - 使用 `x-rsc-action` 头传递服务器 action ID
+// Framework conventions (arbitrary choices for this demo):
+// - Use `_.rsc` URL suffix to differentiate RSC requests from SSR requests
+// - Use `x-rsc-action` header to pass server action ID
 const URL_POSTFIX = "_.rsc";
 const HEADER_ACTION_ID = "x-rsc-action";
 
-// 解析请求信息，用于在 RSC/SSR 渲染和 action 处理之间路由。
-// 由 parseRenderRequest() 从入站 HTTP 请求创建。
+// Parsed request information used to route between RSC/SSR rendering and action handling.
+// Created by parseRenderRequest() from incoming HTTP requests.
 type RenderRequest = {
-  isRsc: boolean; // 请求是否返回 RSC 载荷（通过 _.rsc 后缀）
-  isAction: boolean; // 是否为服务器 action 调用（POST 请求）
-  actionId?: string; // 从 x-rsc-action 头获取服务器 action ID
-  request: Request; // 规范化后的请求，移除 _.rsc 后缀
-  url: URL; // 规范化后的 URL，移除 _.rsc 后缀
+  isRsc: boolean; // true if request should return RSC payload (via _.rsc suffix)
+  isAction: boolean; // true if this is a server action call (POST request)
+  actionId?: string; // server action ID from x-rsc-action header
+  request: Request; // normalized Request with _.rsc suffix removed from URL
+  url: URL; // normalized URL with _.rsc suffix removed
 };
 
 export function createRscRenderRequest(
@@ -824,7 +829,7 @@ export function parseRenderRequest(request: Request): RenderRequest {
     url.pathname = url.pathname.slice(0, -URL_POSTFIX.length);
     const actionId = request.headers.get(HEADER_ACTION_ID) || undefined;
     if (request.method === "POST" && !actionId) {
-      throw new Error("缺少 RSC action 请求的 action id 头");
+      throw new Error("Missing action id header for RSC action request");
     }
     return {
       isRsc: true,
@@ -850,15 +855,15 @@ export function parseRenderRequest(request: Request): RenderRequest {
 
 <!-- automd:file src="../../examples/vite-rsc/README.md" -->
 
-此示例展示了使用 Vite 的实验性 RSC 插件配合 Nitro 的 React 服务器组件（RSC）。包含服务器组件、客户端组件、服务器 actions 以及流式 SSR。
+This example demonstrates React Server Components (RSC) using Vite's experimental RSC plugin with Nitro. It includes server components, client components, server actions, and streaming SSR.
 
-## 概览
+## Overview
 
-1. **SSR 入口** 处理传入请求并渲染 React 组件为 HTML
-2. **根组件** 以服务器组件形式定义页面结构
-3. **客户端组件** 使用 `"use client"` 指令实现交互部分
+1. **SSR Entry** handles incoming requests and renders React components to HTML
+2. **Root Component** defines the page structure as a server component
+3. **Client Components** use the `"use client"` directive for interactive parts
 
-## 1. SSR 入口
+## 1. SSR Entry
 
 ```tsx [app/framework/entry.ssr.tsx]
 import { createFromReadableStream } from "@vitejs/plugin-rsc/ssr";
@@ -886,21 +891,21 @@ export async function renderHTML(
     debugNoJS?: boolean;
   }
 ): Promise<{ stream: ReadableStream<Uint8Array>; status?: number }> {
-  // 将一个 RSC 流复制为两个：
-  // - 一个用于 SSR（下面 ReactClient.createFromReadableStream）
-  // - 另一个用于通过注入 <script>...FLIGHT_DATA...</script> 完成浏览器端水合载荷
+  // Duplicate one RSC stream into two.
+  // - one for SSR (ReactClient.createFromReadableStream below)
+  // - another for browser hydration payload by injecting <script>...FLIGHT_DATA...</script>.
   const [rscStream1, rscStream2] = rscStream.tee();
 
-  // 反序列化 RSC 流为 React 虚拟 DOM
+  // Deserialize RSC stream back to React VDOM
   let payload: Promise<RscPayload> | undefined;
   function SsrRoot() {
-    // 反序列化需在 ReactDOMServer 环境中触发
-    // 以支持预初始化/预加载
+    // Deserialization needs to be kicked off inside ReactDOMServer context
+    // for ReactDOMServer preinit/preloading to work
     payload ??= createFromReadableStream<RscPayload>(rscStream1);
     return React.use(payload).root;
   }
 
-  // 渲染 HTML（传统 SSR）
+  // Render HTML (traditional SSR)
   const bootstrapScriptContent = await import.meta.viteRsc.loadBootstrapScriptContent("index");
 
   let htmlStream: ReadableStream<Uint8Array>;
@@ -913,13 +918,13 @@ export async function renderHTML(
       formState: options?.formState,
     });
   } catch {
-    // 失败时回退，渲染空壳并在浏览器运行纯客户端渲染，
-    // 这可以重现服务器组件错误并触发错误边界。
+    // fallback to render an empty shell and run pure CSR on browser,
+    // which can replay server component error and trigger error boundary.
     status = 500;
     htmlStream = await renderToReadableStream(
       <html>
         <body>
-          <noscript>服务器内部错误：SSR 失败</noscript>
+          <noscript>Internal Server Error: SSR failed</noscript>
         </body>
       </html>,
       {
@@ -932,8 +937,8 @@ export async function renderHTML(
 
   let responseStream: ReadableStream<Uint8Array> = htmlStream;
   if (!options?.debugNoJS) {
-    // 初始 RSC 流通过 <script>...FLIGHT_DATA...</script> 注入 HTML 流中
-    // 使用 devongovett 维护的工具 https://github.com/devongovett/rsc-html-stream
+    // Initial RSC stream is injected in HTML stream as <script>...FLIGHT_DATA...</script>
+    // using utility made by devongovett https://github.com/devongovett/rsc-html-stream
     responseStream = responseStream.pipeThrough(
       injectRSCPayload(rscStream2, {
         nonce: options?.nonce,
@@ -945,12 +950,12 @@ export async function renderHTML(
 }
 ```
 
-SSR 入口负责渲染流程。它加载 RSC 入口模块，复制 RSC 流（一个用于 SSR，一个用于水合），反序列化流回 React 虚拟 DOM，并渲染为 HTML。RSC 载荷被注入到 HTML 中以供客户端水合。
+The SSR entry handles the rendering pipeline. It loads the RSC entry module, duplicates the RSC stream (one for SSR, one for hydration), deserializes the stream back to React VDOM, and renders it to HTML. The RSC payload is injected into the HTML for client hydration.
 
-## 2. 根服务器组件
+## 2. Root Server Component
 
 ```tsx [app/root.tsx]
-import "./index.css"; // CSS imports are automatically injected into server components that export them
+import "./index.css"; // css import is automatically injected in exported server components
 import viteLogo from "./assets/vite.svg";
 import { getServerCounter, updateServerCounter } from "./action.tsx";
 import reactLogo from "./assets/react.svg";
@@ -1001,24 +1006,24 @@ function App(props: { url: URL }) {
       <div className="card">Request URL: {props.url?.href}</div>
       <ul className="read-the-docs">
         <li>
-          Edit <code>src/client.tsx</code> to test client-side HMR.
+          Edit <code>src/client.tsx</code> to test client HMR.
         </li>
         <li>
-          Edit <code>src/root.tsx</code> to test server-side HMR.
+          Edit <code>src/root.tsx</code> to test server HMR.
         </li>
         <li>
           Visit{" "}
           <a href="./_.rsc" target="_blank">
             <code>_.rsc</code>
           </a>{" "}
-          to see the RSC stream payload.
+          to view RSC stream payload.
         </li>
         <li>
           Visit{" "}
           <a href="?__nojs" target="_blank">
             <code>?__nojs</code>
           </a>{" "}
-          to test server actions without JS support.
+          to test server action without js enabled.
         </li>
       </ul>
     </div>
@@ -1026,9 +1031,9 @@ function App(props: { url: URL }) {
 }
 ```
 
-Server components run only on the server. They can import CSS directly, use server-side data, and call server actions. The `ClientCounter` component is imported but runs on the client because it contains the `"use client"` directive.
+Server components run only on the server. They can import CSS directly, use server-side data, and call server actions. The `ClientCounter` component is imported but runs on the client because it has the `"use client"` directive.
 
-## 3. Client Components
+## 3. Client Component
 
 ```tsx [app/client.tsx]
 "use client";
@@ -1042,7 +1047,7 @@ export function ClientCounter() {
 }
 ```
 
-The `"use client"` directive marks this component as a client component. It hydrates in the browser and handles interactive state. Server components can import and render client components, but client components cannot import server components.
+The `"use client"` directive marks this as a client component. It hydrates on the browser and handles interactive state. Server components can import and render client components, but client components cannot import server components.
 
 <!-- /automd -->
 

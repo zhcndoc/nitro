@@ -1,11 +1,11 @@
 ---
-category: 服务器端渲染
+category: 服务端渲染
 icon: i-lucide-brackets
 ---
 
 # Mono JSX
 
-> 使用 mono-jsx 在 Nitro 中进行服务器端 JSX 渲染。
+> 在 Nitro 中使用 mono-jsx 进行服务端 JSX 渲染。
 
 <!-- automd:ui-code-tree src="../../examples/mono-jsx" default="server.tsx" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -34,7 +34,7 @@ export default defineConfig({});
 ```tsx [server.tsx]
 export default () => (
   <html>
-    <h1>Nitro + mono-jsx works!</h1>
+    <h1>Nitro + mono-jsx 正常工作！</h1>
   </html>
 );
 ```
@@ -62,17 +62,17 @@ export default defineConfig({ plugins: [nitro()] });
 
 <!-- automd:file src="../../examples/mono-jsx/README.md" -->
 
-## 服务器入口
+## 服务端入口
 
 ```tsx [server.tsx]
 export default () => (
   <html>
-    <h1>Nitro + mono-jsx works!</h1>
+    <h1>Nitro + mono-jsx 正常工作！</h1>
   </html>
 );
 ```
 
-Nitro 会自动检测 `server.tsx` 并使用 mono-jsx 将 JSX 转换成 HTML。导出一个返回 JSX 的函数，Nitro 会将渲染后的 HTML 发送作为响应。
+Nitro 自动检测 `server.tsx` 并使用 mono-jsx 将 JSX 转换为 HTML。导出一个返回 JSX 的函数，Nitro 会将渲染后的 HTML 作为响应发送。
 
 <!-- /automd -->
 

@@ -72,12 +72,12 @@ icon: i-lucide-radio
         const isSecure = location.protocol === "https:";
         const url = (isSecure ? "wss://" : "ws://") + location.host + "/_ws";
         if (ws) {
-          log("ws", "重新连接前关闭之前的连接...");
+          log("ws", "Closing previous connection before reconnecting...");
           ws.close();
           clear();
         }
 
-        log("ws", "正在连接到", url, "...");
+        log("ws", "Connecting to", url, "...");
         ws = new WebSocket(url);
 
         ws.addEventListener("message", async (event) => {
@@ -89,16 +89,16 @@ icon: i-lucide-radio
         });
 
         await new Promise((resolve) => ws.addEventListener("open", resolve));
-        log("ws", "已连接！");
+        log("ws", "Connected!");
       };
 
       const clear = () => {
         store.messages.splice(0, store.messages.length);
-        log("system", "之前的消息已清除");
+        log("system", "previous messages cleared");
       };
 
       const send = () => {
-        console.log("正在发送消息...");
+        console.log("sending message...");
         if (store.message) {
           ws.send(store.message);
         }
@@ -106,7 +106,7 @@ icon: i-lucide-radio
       };
 
       const ping = () => {
-        log("ws", "发送 ping");
+        log("ws", "Sending ping");
         ws.send("ping");
       };
 
@@ -124,7 +124,7 @@ icon: i-lucide-radio
   </head>
   <body class="h-screen flex flex-col justify-between">
     <main v-scope="{}">
-      <!-- 消息列表 -->
+      <!-- Messages -->
       <div id="messages" class="flex-grow flex flex-col justify-end px-4 py-8">
         <div class="flex items-center mb-4" v-for="message in store.messages">
           <div class="flex flex-col">
@@ -132,7 +132,7 @@ icon: i-lucide-radio
             <div class="flex items-center">
               <img
                 :src="'https://www.gravatar.com/avatar/' + encodeURIComponent(message.user + rand) + '?s=512&d=monsterid'"
-                alt="头像"
+                alt="Avatar"
                 class="w-8 h-8 rounded-full"
               />
               <div class="ml-2 bg-gray-800 rounded-lg p-2">
@@ -149,12 +149,12 @@ icon: i-lucide-radio
         </div>
       </div>
 
-      <!-- 聊天输入框 -->
+      <!-- Chatbox -->
       <div class="bg-gray-800 px-4 py-2 flex items-center justify-between fixed bottom-0 w-full">
         <div class="w-full min-w-6">
           <input
             type="text"
-            placeholder="输入消息..."
+            placeholder="输入你的消息..."
             class="w-full rounded-l-lg px-4 py-2 bg-gray-700 text-white focus:outline-none focus:ring focus:border-blue-300"
             @keydown.enter="send"
             v-model="store.message"
@@ -225,8 +225,8 @@ import { defineWebSocketHandler } from "nitro";
 
 export default defineWebSocketHandler({
   open(peer) {
-    peer.send({ user: "server", message: `欢迎 ${peer}!` });
-    peer.publish("chat", { user: "server", message: `${peer} 加入了!` });
+    peer.send({ user: "server", message: `Welcome ${peer}!` });
+    peer.publish("chat", { user: "server", message: `${peer} joined!` });
     peer.subscribe("chat");
   },
   message(peer, message) {
@@ -242,7 +242,7 @@ export default defineWebSocketHandler({
     }
   },
   close(peer) {
-    peer.publish("chat", { user: "server", message: `${peer} 离开了!` });
+    peer.publish("chat", { user: "server", message: `${peer} left!` });
   },
 });
 ```
@@ -253,19 +253,19 @@ export default defineWebSocketHandler({
 
 <!-- automd:file src="../../examples/websocket/README.md" -->
 
-此示例演示了如何使用 WebSockets 实现一个简单的聊天室。客户端连接后可以发送消息，并实时接收其他用户的消息。服务器通过发布/订阅频道将消息广播给所有已连接的客户端。
+这个示例使用 WebSocket 实现了一个简单的聊天室。客户端连接、发送消息，并实时接收来自其他用户的消息。服务器使用发布/订阅频道向所有连接的客户端广播消息。
 
 ## WebSocket 处理器
 
-使用 `defineWebSocketHandler` 创建一个 WebSocket 路由。
+使用 `defineWebSocketHandler` 创建 WebSocket 路由。
 
 ```ts [routes/_ws.ts]
 import { defineWebSocketHandler } from "nitro";
 
 export default defineWebSocketHandler({
   open(peer) {
-    peer.send({ user: "server", message: `欢迎 ${peer}!` });
-    peer.publish("chat", { user: "server", message: `${peer} 加入了!` });
+    peer.send({ user: "server", message: `Welcome ${peer}!` });
+    peer.publish("chat", { user: "server", message: `${peer} joined!` });
     peer.subscribe("chat");
   },
   message(peer, message) {
@@ -281,12 +281,12 @@ export default defineWebSocketHandler({
     }
   },
   close(peer) {
-    peer.publish("chat", { user: "server", message: `${peer} 离开了!` });
+    peer.publish("chat", { user: "server", message: `${peer} left!` });
   },
 });
 ```
 
-`defineWebSocketHandler()` 提供了不同的钩子，以便在 websocket 生命周期的不同阶段进行集成。
+`defineWebSocketHandler()` 暴露了不同的钩子，用于集成 WebSocket 生命周期的不同部分。
 
 <!-- /automd -->
 

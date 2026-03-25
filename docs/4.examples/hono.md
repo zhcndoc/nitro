@@ -5,7 +5,7 @@ icon: i-logos-hono
 
 # Hono
 
-> 使用服务器入口将 Hono 与 Nitro 集成。
+> 使用服务端入口将 Hono 与 Nitro 集成。
 
 <!-- automd:ui-code-tree src="../../examples/hono" default="server.ts" ignore="README.md,GUIDE.md" expandAll -->
 
@@ -37,7 +37,7 @@ import { Hono } from "hono";
 const app = new Hono();
 
 app.get("/", (c) => {
-  return c.text("Hello, Hono with Nitro!");
+  return c.text("你好，Hono 与 Nitro！");
 });
 
 export default app;
@@ -62,7 +62,7 @@ export default defineConfig({ plugins: [nitro()] });
 
 <!-- automd:file src="../../examples/hono/README.md" -->
 
-## 服务器入口
+## 服务端入口
 
 ```ts [server.ts]
 import { Hono } from "hono";
@@ -70,19 +70,19 @@ import { Hono } from "hono";
 const app = new Hono();
 
 app.get("/", (c) => {
-  return c.text("Hello, Hono with Nitro!");
+  return c.text("你好，Hono 与 Nitro！");
 });
 
 export default app;
 ```
 
-Nitro 会自动检测项目根目录下的 `server.ts` 并将其作为服务器入口。Hono 应用处理所有传入请求，赋予你对路由和中间件的完全控制权。
+Nitro 会自动检测项目根目录中的 `server.ts` 并将其用作服务端入口。Hono 应用处理所有传入请求，让你完全掌控路由和中间件。
 
-Hono 是跨运行时兼容的，因此此服务器入口适用于所有 Nitro 部署目标，包括 Node.js、Deno、Bun 以及 Cloudflare Workers。
+Hono 具有跨运行时兼容性，因此该服务端入口可在所有 Nitro 部署目标上运行，包括 Node.js、Deno、Bun 和 Cloudflare Workers。
 
 <!-- /automd -->
 
 ## 了解更多
 
-- [服务器入口](/docs/server-entry)
+- [服务端入口](/docs/server-entry)
 - [Hono 文档](https://hono.dev/)
