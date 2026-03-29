@@ -86,7 +86,7 @@
   "devDependencies": {
     "@azure/functions": "^3.5.1",
     "@azure/static-web-apps-cli": "^2.0.8",
-    "@cloudflare/workers-types": "^4.20260317.1",
+    "@cloudflare/workers-types": "^4.20260329.1",
     "@deno/types": "^0.0.1",
     "@hiogawa/vite-plugin-fullstack": "^0.0.11",
     "@netlify/edge-functions": "^3.0.6",
@@ -97,7 +97,7 @@
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-replace": "^6.0.3",
-    "@scalar/api-reference": "^1.49.5",
+    "@scalar/api-reference": "^1.49.7",
     "@types/aws-lambda": "^8.10.161",
     "@types/estree": "^1.0.8",
     "@types/etag": "^1.8.4",
@@ -169,7 +169,7 @@
     "vitest": "^4.1.2",
     "wrangler": "^4.78.0",
     "xml2js": "^0.6.2",
-    "youch": "^4.1.0",
+    "youch": "^4.1.1",
     "youch-core": "^0.3.3",
     "zephyr-agent": "^0.1.16"
   },
@@ -206,7 +206,7 @@
     }
   },
   "resolutions": {
-    "cookie-es": "^3.0.1",
+    "cookie-es": "^3.1.1",
     "nitro": "link:."
   },
   "engines": {
