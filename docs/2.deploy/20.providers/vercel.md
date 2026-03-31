@@ -7,7 +7,7 @@
 :read-more{title="Vercel 框架支持" to="https://vercel.com/docs/frameworks"}
 
 ::note
-与此提供商的集成可以通过[零配置](/deploy/#zero-config-providers)实现。
+与此提供商的集成可以通过 [零配置](/deploy/#zero-config-providers) 实现。
 ::
 
 ## 入门指南
@@ -55,6 +55,35 @@ export default defineNitroConfig({
 }
 ```
 
+## 每条路由的函数配置
+
+使用 `vercel.functionRules` 来覆盖特定路由的 [无服务器函数设置](https://vercel.com/docs/build-output-api/primitives#serverless-function-configuration)。每个键是一个路由模式，其值是一个部分函数配置对象，它会与基础的 `vercel.functions` 配置合并。注意：路由配置中的数组属性（例如 `regions`）将替换基础配置数组，而不是合并它们。
+
+当某些路由需要不同的资源限制、区域或功能（如 [Vercel Queues 触发器](https://vercel.com/docs/queues)）时，这非常有用。
+
+```ts [nitro.config.ts]
+import { defineNitroConfig } from "nitro/config";
+
+export default defineNitroConfig({
+  vercel: {
+    functionRules: {
+      "/api/heavy-computation": {
+        maxDuration: 800,
+        memory: 4096,
+      },
+      "/api/regional": {
+        regions: ["lhr1", "cdg1"],
+      },
+      "/api/queues/process-order": {
+        experimentalTriggers: [{ type: "queue/v2beta", topic: "orders" }],
+      },
+    },
+  },
+});
+```
+
+路由模式支持通过 [rou3](https://github.com/h3js/rou3) 匹配通配符（例如，`/api/slow/**` 匹配 `/api/slow/` 下的所有路由）。
+
 ## 代理路由规则
 
 Nitro 通过在构建时生成 [CDN 级别的重写规则](https://vercel.com/docs/rewrites)，自动优化 Vercel 上的 `proxy` 路由规则。这意味着匹配的请求将在边缘进行代理，而无需调用无服务器函数，从而降低延迟和成本。
@@ -93,9 +122,9 @@ export default defineNitroConfig({
 
 ## 定时任务（Cron 作业）
 
-:read-more{title="Vercel Cron Jobs" to="https://vercel.com/docs/cron-jobs"}
+:read-more{title="Vercel 定时任务" to="https://vercel.com/docs/cron-jobs"}
 
-Nitro 会在构建时自动将你的 [`scheduledTasks`](/docs/tasks#scheduled-tasks) 配置转换为 [Vercel Cron Jobs](https://vercel.com/docs/cron-jobs)。在你的 Nitro 配置中定义计划任务并部署 — 无需手动配置 `vercel.json` 的 cron 设置。
+Nitro 会在构建时自动将你的 [`scheduledTasks`](/docs/tasks#scheduled-tasks) 配置转换为 [Vercel 定时任务](https://vercel.com/docs/cron-jobs)。在你的 Nitro 配置中定义计划任务并部署 — 无需手动配置 `vercel.json` 的 cron 设置。
 
 ```ts [nitro.config.ts]
 import { defineNitroConfig } from "nitro/config";
@@ -121,7 +150,7 @@ export default defineNitroConfig({
 
 ## 自定义构建输出配置
 
-你可以在 `nitro.config` 中使用 `vercel.config` 键提供额外的[构建输出配置](https://vercel.com/docs/build-output-api/v3)。它将与内置的自动生成配置合并。
+你可以在 `nitro.config` 中使用 `vercel.config` 键提供额外的 [构建输出配置](https://vercel.com/docs/build-output-api/v3)。它将与内置的自动生成配置合并。
 
 ## 按需增量静态再生（ISR）
 

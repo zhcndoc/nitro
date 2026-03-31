@@ -1,5 +1,5 @@
 ---
-category: backend frameworks
+category: 后端框架
 icon: i-simple-icons-fastify
 ---
 
@@ -25,7 +25,7 @@ export default defineConfig({});
     "dev": "nitro dev"
   },
   "devDependencies": {
-    "fastify": "^5.8.2",
+    "fastify": "^5.8.4",
     "nitro": "latest"
   }
 }
@@ -88,5 +88,5 @@ Nitro 会自动检测项目根目录下的 `server.node.ts` 并将其用作服�
 
 ## 了解更多
 
-- [Server Entry](/docs/server-entry)
-- [Fastify Documentation](https://fastify.dev/)
+- [服务端入口](/docs/server-entry)
+- [Fastify 文档](https://fastify.dev/)

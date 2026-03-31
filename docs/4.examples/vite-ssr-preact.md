@@ -20,11 +20,11 @@ icon: i-logos-preact
     "dev": "vite dev"
   },
   "devDependencies": {
-    "@preact/preset-vite": "^2.10.4",
+    "@preact/preset-vite": "^2.10.5",
     "@tailwindcss/vite": "^4.2.2",
     "nitro": "latest",
     "preact": "^10.29.0",
-    "preact-render-to-string": "^6.6.6",
+    "preact-render-to-string": "^6.6.7",
     "tailwindcss": "^4.2.2",
     "vite": "latest"
   }
@@ -258,5 +258,5 @@ main();
 
 ## 了解更多
 
-- [Renderer](/docs/renderer)
-- [Server Entry](/docs/server-entry)
+- [渲染器](/docs/renderer)
+- [服务端入口](/docs/server-entry)
