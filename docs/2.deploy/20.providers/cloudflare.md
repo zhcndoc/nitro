@@ -235,7 +235,7 @@ SECRET="top-secret"
 你可以指定自定义的 `wrangler.toml`/`wrangler.json` 文件并在其中定义变量。
 
 ::warning
-注意，不推荐将此用于密钥等敏感数据。
+注意，这不建议用于 secrets 之类的敏感数据。
 ::
 
 **示例：**

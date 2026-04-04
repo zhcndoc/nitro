@@ -55,7 +55,7 @@ export default defineConfig({ plugins: [nitro()] });
 
 ```ts [server/utils/hello.ts]
 export function makeGreeting(name: string) {
-  return `Hello, ${name}!`;
+  return `你好，${name}！`;
 }
 ```
 
@@ -86,7 +86,7 @@ export default defineConfig({
 
 ```ts [server/utils/hello.ts]
 export function makeGreeting(name: string) {
-  return `Hello, ${name}!`;
+  return `你好，${name}！`;
 }
 ```
 
@@ -94,7 +94,6 @@ export function makeGreeting(name: string) {
 
 ```ts [server.ts]
 import { defineHandler } from "nitro";
-import { makeGreeting } from "./server/utils/hello.ts";
 
 export default defineHandler(() => `<h1>${makeGreeting("Nitro")}</h1>`);
 ```
