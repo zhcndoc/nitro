@@ -26,6 +26,7 @@ const edgeone = defineNitroPreset(
   {
     name: "edgeone-pages" as const,
     aliases: ["edgeone"] as const,
+    stdName: "edgeone_pages",
   }
 );
 
