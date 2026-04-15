@@ -22,6 +22,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm vitest run test/unit
       - run: pnpm vitest run test/minimal
+      - run: pnpm vitest run test/vite
   tests-rollup:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
