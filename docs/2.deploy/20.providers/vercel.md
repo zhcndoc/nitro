@@ -37,7 +37,7 @@ Nitro 的 `/api` 目录与 Vercel 不兼容。相反，你应该使用：
 你可以通过在 `nitro.config` 中使用 `vercel.functions` 键指定运行时，从而使用 [Bun](https://bun.com) 替代 Node.js：
 
 ```ts [nitro.config.ts]
-export default defineNitroConfig({
+export default defineConfig({
   vercel: {
     functions: {
       runtime: "bun1.x"
@@ -62,9 +62,9 @@ export default defineNitroConfig({
 当某些路由需要不同的资源限制、区域或功能（如 [Vercel Queues 触发器](https://vercel.com/docs/queues)）时，这非常有用。
 
 ```ts [nitro.config.ts]
-import { defineNitroConfig } from "nitro/config";
+import { defineConfig } from "nitro";
 
-export default defineNitroConfig({
+export default defineConfig({
   vercel: {
     functionRules: {
       "/api/heavy-computation": {
@@ -89,7 +89,7 @@ export default defineNitroConfig({
 Nitro 通过在构建时生成 [CDN 级别的重写规则](https://vercel.com/docs/rewrites)，自动优化 Vercel 上的 `proxy` 路由规则。这意味着匹配的请求将在边缘进行代理，而无需调用无服务器函数，从而降低延迟和成本。
 
 ```ts [nitro.config.ts]
-export default defineNitroConfig({
+export default defineConfig({
   routeRules: {
     // 在 CDN 级别代理 — 无需函数调用
     "/api/**": {
@@ -127,9 +127,9 @@ export default defineNitroConfig({
 Nitro 会在构建时自动将你的 [`scheduledTasks`](/docs/tasks#scheduled-tasks) 配置转换为 [Vercel 定时任务](https://vercel.com/docs/cron-jobs)。在你的 Nitro 配置中定义计划任务并部署 — 无需手动配置 `vercel.json` 的 cron 设置。
 
 ```ts [nitro.config.ts]
-import { defineNitroConfig } from "nitro/config";
+import { defineConfig } from "nitro";
 
-export default defineNitroConfig({
+export default defineConfig({
   experimental: {
     tasks: true
   },
@@ -148,6 +148,68 @@ export default defineNitroConfig({
 
 为防止未经授权访问 cron 处理程序，请在 Vercel 项目设置中设置 `CRON_SECRET` 环境变量。当设置了 `CRON_SECRET` 时，Nitro 会在每次 cron 调用时验证 `Authorization` 请求头。
 
+## Queues
+
+:read-more{title="Vercel Queues" to="https://vercel.com/docs/queues"}
+
+Nitro 集成了 [Vercel Queues](https://vercel.com/docs/queues)，可用于异步处理消息。你可以在 Nitro 配置中定义队列主题，并通过 `vercel:queue` 运行时钩子处理传入消息。
+
+```ts [nitro.config.ts]
+export default defineNitroConfig({
+  vercel: {
+    queues: {
+      triggers: [
+        // Only `topic` is required
+        { topic: "notifications" },
+        { topic: "orders", retryAfterSeconds: 60, initialDelaySeconds: 5 },
+      ],
+    },
+  },
+});
+```
+
+### 处理消息
+
+在 [Nitro 插件](/guide/plugins) 中使用 `vercel:queue` 钩子来处理传入的队列消息：
+
+```ts [server/plugins/queues.ts]
+export default defineNitroPlugin((nitro) => {
+  nitro.hooks.hook("vercel:queue", ({ message, metadata, send }) => {
+    console.log(`[${metadata.topicName}] Message ${metadata.messageId}:`, message);
+  });
+});
+```
+
+### 从队列消息中运行任务
+
+你可以使用队列消息来触发 [Nitro 任务](/docs/tasks)：
+
+```ts [server/plugins/queues.ts]
+import { runTask } from "nitro/task";
+
+export default defineNitroPlugin((nitro) => {
+  nitro.hooks.hook("vercel:queue", async ({ message, metadata }) => {
+    if (metadata.topicName === "orders") {
+      await runTask("orders:fulfill", { payload: message });
+    }
+  });
+});
+```
+
+### 发送消息
+
+直接使用 `@vercel/queue` 包向指定主题发送消息：
+
+```ts [server/routes/api/orders.post.ts]
+import { send } from "@vercel/queue";
+
+export default defineEventHandler(async (event) => {
+  const order = await event.req.json();
+  const { messageId } = await send("orders", order);
+  return { messageId };
+});
+```
+
 ## 自定义构建输出配置
 
 你可以在 `nitro.config` 中使用 `vercel.config` 键提供额外的 [构建输出配置](https://vercel.com/docs/build-output-api/v3)。它将与内置的自动生成配置合并。
@@ -164,9 +226,9 @@ export default defineNitroConfig({
 2. 更新你的配置：
 
     ```ts [nitro.config.ts]
-    import { defineNitroConfig } from "nitro/config";
+    import { defineConfig } from "nitro";
 
-    export default defineNitroConfig({
+    export default defineConfig({
       vercel: {
         config: {
           bypassToken: process.env.VERCEL_BYPASS_TOKEN
@@ -193,7 +255,7 @@ export default defineNitroConfig({
 - `exposeErrBody`：当为 `true` 时，无论状态码如何（包括错误状态码），都会暴露响应体。（默认 `false`
 
 ```ts
-export default defineNitroConfig({
+export default defineConfig({
   routeRules: {
     "/products/**": {
       isr: {

@@ -1,4 +1,4 @@
-Plugins let you hook into Nitro's runtime lifecycle. This example shows a plugin that modifies the `Content-Type` header on every response. Create files in `server/plugins/` and they're automatically loaded at startup.
+插件可以让你接入 Nitro 的运行时生命周期。这个示例展示了一个会在每次响应时修改 `Content-Type` 响应头的插件。将文件创建在 `server/plugins/` 中后，它们会在启动时自动加载。
 
 ## 定义插件
 
@@ -19,9 +19,9 @@ export default definePlugin((nitroApp) => {
 ## 主处理器
 
 ```ts [server.ts]
-import { eventHandler } from "h3";
+import { defineHandler } from "nitro";
 
-export default eventHandler(() => "<h1>Hello Nitro!</h1>");
+export default defineHandler(() => "<h1>Hello Nitro!</h1>");
 ```
 
-The handler returns HTML without setting a content type. The plugin automatically adds the correct `Content-Type: html; charset=utf-8` header to the response.
+这个处理器返回的是 HTML，但没有显式设置内容类型。插件会自动为响应补上正确的 `Content-Type: html; charset=utf-8` 响应头。

@@ -33,9 +33,9 @@ export default defineConfig({
 ```
 
 ```ts [server.ts]
-import { eventHandler } from "h3";
+import { defineHandler } from "nitro";
 
-export default eventHandler(() => "<h1>Hello Nitro!</h1>");
+export default defineHandler(() => "<h1>Hello Nitro!</h1>");
 ```
 
 ```json [tsconfig.json]
@@ -90,9 +90,9 @@ export default definePlugin((nitroApp) => {
 ## 主处理器
 
 ```ts [server.ts]
-import { eventHandler } from "h3";
+import { defineHandler } from "nitro";
 
-export default eventHandler(() => "<h1>Hello Nitro!</h1>");
+export default defineHandler(() => "<h1>Hello Nitro!</h1>");
 ```
 
 该处理器返回 HTML 而不设置内容类型。插件会自动将正确的 `Content-Type: html; charset=utf-8` 标头添加到响应中。

@@ -31,4 +31,4 @@ import { defineHandler } from "nitro";
 export default defineHandler(() => `<h1>${makeGreeting("Nitro")}</h1>`);
 ```
 
-With this setup, any function exported from `server/utils/` becomes globally available. Nitro scans the directory and generates the necessary imports automatically.
+通过这种方式，从 `server/utils/` 导出的任意函数都会自动变为全局可用。Nitro 会扫描该目录并自动生成所需的导入。

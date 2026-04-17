@@ -37,9 +37,9 @@ Nitro 将使用 `zephyr-agent` 上传生成的输出。如果缺少 `zephyr-agen
 如果你的 CI 流水线已经运行 `nitro build`，请在构建步骤期间启用部署：
 
 ```ts [nitro.config.ts]
-import { defineNitroConfig } from "nitro/config";
+import { defineConfig } from "nitro";
 
-export default defineNitroConfig({
+export default defineConfig({
   preset: "zephyr",
   zephyr: {
     deployOnBuild: true,

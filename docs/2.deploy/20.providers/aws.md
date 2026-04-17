@@ -23,9 +23,9 @@ const { statusCode, headers, body } = handler({ rawPath: '/' })
 默认情况下，Nitro 输出使用动态代码块，仅在需要时延迟加载代码。然而，这有时可能对性能不太理想。（请参阅 [nitrojs/nitro#650](https://github.com/nitrojs/nitro/pull/650) 中的讨论）。你可以使用 [`inlineDynamicImports`](/config#inlinedynamicimports) 配置来启用代码块内联行为。
 
 ```ts [nitro.config.ts]
-import { defineNitroConfig } from "nitro/config";
+import { defineConfig } from "nitro";
 
-export default defineNitroConfig({
+export default defineConfig({
   inlineDynamicImports: true
 });
 ```
@@ -37,9 +37,9 @@ export default defineNitroConfig({
 要启用响应流式传输，请启用 `awsLambda.streaming` 标志：
 
 ```ts [nitro.config.ts]
-import { defineNitroConfig } from "nitro/config";
+import { defineConfig } from "nitro";
 
-export default defineNitroConfig({
+export default defineConfig({
   awsLambda: {
     streaming: true
   }

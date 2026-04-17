@@ -80,6 +80,7 @@ export interface NitroOptions extends PresetOptions {
   ssrRoutes: string[];
   serveStatic: boolean | "node" | "deno" | "inline";
   noPublicDir: boolean;
+  tracingChannel?: undefined | TracingOptions;
   manifest?: {
     deploymentId?: string;
   };
@@ -102,8 +103,18 @@ export interface NitroOptions extends PresetOptions {
    * @see https://github.com/unjs/unwasm
    */
   wasm?: false | UnwasmPluginOptions;
+  /**
+   * OpenAPI configuration
+   *
+   * @see https://nitro.build/docs/openapi
+   */
   openAPI?: NitroOpenAPIConfig;
   experimental: {
+    /**
+     * Enable experimental OpenAPI support
+     *
+     * @see https://nitro.build/docs/openapi
+     */
     openAPI?: boolean;
     /**
      * See https://github.com/microsoft/TypeScript/pull/51669
@@ -288,6 +299,7 @@ export interface NitroConfig
         | "serverEntry"
         | "renderer"
         | "output"
+        | "tracingChannel"
       >
     >,
     C12InputConfig<NitroConfig> {
@@ -301,6 +313,7 @@ export interface NitroConfig
   serverEntry?: string | NitroOptions["serverEntry"];
   renderer?: false | NitroOptions["renderer"];
   output?: Partial<NitroOptions["output"]>;
+  tracingChannel?: boolean | TracingOptions;
 }
 
 // ------------------------------------------------------------
@@ -345,6 +358,11 @@ export interface ServerAssetDir {
   pattern?: string;
   dir: string;
   ignore?: string[];
+}
+
+export interface TracingOptions {
+  srvx?: boolean;
+  h3?: boolean;
 }
 
 // Storage mounts

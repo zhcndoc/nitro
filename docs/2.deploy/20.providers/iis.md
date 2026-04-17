@@ -25,10 +25,10 @@
 ## IIS 配置选项
 
 ```ts [nitro.config.ts]
-import { defineNitroConfig } from "nitro/config";
+import { defineConfig } from "nitro";
 
-export default defineNitroConfig({
-  // IIS 选项默认
+export default defineConfig({
+  // IIS options default
   iis: {
     // 将已存在的 web.config 文件合并到 nitro 默认文件中
     mergeConfig: true,
