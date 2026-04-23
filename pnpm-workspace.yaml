@@ -16,7 +16,13 @@ trustPolicyExclude:
 
 blockExoticSubdeps: true
 strictDepBuilds: true
-allowBuilds: {}
+allowBuilds:
+  "@parcel-watcher": false
+  esbuild: false
+  keytar: false
+  sharp: false
+  vue-demi: false
+  workerd: false
 
 peerDependencyRules:
   allowedVersions:
