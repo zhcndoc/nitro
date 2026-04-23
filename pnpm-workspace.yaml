@@ -17,7 +17,7 @@ trustPolicyExclude:
 blockExoticSubdeps: true
 strictDepBuilds: true
 allowBuilds:
-  "@parcel-watcher": false
+  "@parcel/watcher": false
   esbuild: false
   keytar: false
   sharp: false
