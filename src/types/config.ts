@@ -1038,6 +1038,7 @@ export interface ServerAssetDir {
 export interface TracingOptions {
   srvx?: boolean;
   h3?: boolean;
+  unstorage?: boolean;
 }
 
 /**
