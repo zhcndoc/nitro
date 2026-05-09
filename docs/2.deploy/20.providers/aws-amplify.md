@@ -13,11 +13,11 @@
 ::
 
 1. 登录到 [AWS Amplify Hosting 控制台](https://console.aws.amazon.com/amplify/)
-2. 点击"开始使用" > Amplify Hosting（托管您的 Web 应用）
+2. 点击“开始使用” > Amplify Hosting（托管您的 Web 应用）
 3. 选择并授权访问您的 Git 仓库提供程序，然后选择主分支
-4. 为您的应用选择一个名称，确保构建设置是自动检测的，并在高级部分下可选地设置所需的环境变量
+4. 为您的应用选择一个名称，确保构建设置已自动检测，并在高级部分下可选地设置所需的环境变量
 5. （可选）选择启用 SSR 日志记录，以将服务端日志记录到您的 Amazon CloudWatch 账户
-6. 确认配置，然后点击"保存并部署"
+6. 确认配置，然后点击“保存并部署”
 
 ## 高级配置
 
@@ -28,10 +28,10 @@ import { defineConfig } from "nitro";
 
 export default defineConfig({
   awsAmplify: {
-      // catchAllStaticFallback: true,
-      // imageOptimization: { path: "/_image", cacheControl: "public, max-age=3600, immutable" },
-      // imageSettings: { ... },
-      // runtime: "nodejs18.x", // 默认值: "nodejs18.x" | "nodejs16.x" | "nodejs20.x"
+      // 捕获所有静态回退：true,
+      // 图片优化：{ path: "/_image", cacheControl: "public, max-age=3600, immutable" },
+      // 图片设置：{ ... },
+      // 运行时: "nodejs24.x", // 默认值: "nodejs20.x" | "nodejs22.x" | "nodejs24.x"
   }
 })
 ```
@@ -48,7 +48,7 @@ frontend:
   phases:
     preBuild:
       commands:
-        - nvm use 18 && node --version
+        - nvm use 24 && node --version
         - corepack enable && npx --yes nypm install
     build:
       commands:
@@ -66,7 +66,7 @@ applications:
       phases:
         preBuild:
           commands:
-          - nvm use 18 && node --version
+          - nvm use 24 && node --version
           - corepack enable && npx --yes nypm install
         build:
           commands:

@@ -10,13 +10,13 @@ Nitro is a framework-agnostic and deployment-agnostic server framework powered b
 
 ## 关键脚本
 
-- `pnpm build --stub` — 用于开发的快速 stub 构建。
-- `pnpm lint` — 代码检查和格式化。
-- `pnpm format` — 自动修复 lint 和格式化问题。
-- `pnpm test` — 执行所有测试。
-- `pnpm test:types` — 执行类型测试。
+- `pnpm build --stub` — Fast stub build for development.
+- `pnpm lint` — Lint and format code.
+- `pnpm fmt` — Automatically fix lint and formatting issues.
+- `pnpm test` — Run all tests.
+- `pnpm typecheck` — Run type tests.
 
-**每次修改后务必运行** `pnpm format` 和 `pnpm test:types`。
+**Always run** `pnpm fmt` and `pnpm typecheck` after making changes.
 
 ## 仓库结构
 
@@ -95,12 +95,12 @@ Nitro is a framework-agnostic and deployment-agnostic server framework powered b
 
 ### 进行更改
 
-1. 在 `src/` 中修改代码。
-2. 如更改构建逻辑，运行 `pnpm build --stub`。
-3. 运行 `pnpm test` 进行测试。
-4. 运行 `pnpm format` 修复代码风格。
-5. 运行 `pnpm test:types` 检查类型。
-6. 运行 `pnpm vitest run`。
+1. Make changes in `src/`.
+2. Run `pnpm build --stub` if you changed build logic.
+3. Test with `pnpm test`.
+4. Run `pnpm fmt`.
+5. Run `pnpm typecheck`.
+6. Run `pnpm vitest run`.
 
 ## 贡献原则
 
