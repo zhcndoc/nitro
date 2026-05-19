@@ -216,7 +216,7 @@
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
-  "packageManager": "pnpm@11.0.8",
+  "packageManager": "pnpm@11.1.3",
   "compatiblePackages": {
     "schemaVersion": 1,
     "vite": {
