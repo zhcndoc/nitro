@@ -47,3 +47,6 @@ updateConfig:
 
 patchedDependencies:
   '@hiogawa/vite-plugin-fullstack': patches/@hiogawa__vite-plugin-fullstack.patch
+
+minimumReleaseAgeExclude:
+  - env-runner@0.1.8
