@@ -141,7 +141,7 @@
     "miniflare": "^4.20260520.0",
     "mlly": "^1.8.2",
     "nypm": "^0.6.6",
-    "obuild": "^0.4.35",
+    "obuild": "^0.4.36",
     "oxc-parser": "link:shims/oxc-parser",
     "oxfmt": "^0.51.0",
     "oxlint": "^1.66.0",
