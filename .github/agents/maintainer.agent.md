@@ -18,7 +18,7 @@ tools:
 - `.agents/vite.md` — Vite 构建系统、插件架构、开发服务器、HMR。
 - `.agents/docs.md` — 文档约定、H3 v2 API 模式。
 
-H3 v2 文档位于 `node_modules/h3/skills/h3/docs/TOC.md`。
+H3 v2 文档位于 `node_modules/h3/dist/docs/README.md`。
 
 ## 关键原则
 

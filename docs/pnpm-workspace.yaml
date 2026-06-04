@@ -1,5 +1,14 @@
 packages: []
 
+shamefullyHoist: true
+
+allowBuilds:
+  '@parcel/watcher': false
+  esbuild: false
+  sharp: false
+  vue-demi: false
+
+
 ignoredBuiltDependencies:
   - '@parcel/watcher'
   - '@tailwindcss/oxide'

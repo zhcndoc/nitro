@@ -148,9 +148,9 @@ export default defineConfig({
 
 为防止未经授权访问 cron 处理程序，请在 Vercel 项目设置中设置 `CRON_SECRET` 环境变量。当设置了 `CRON_SECRET` 时，Nitro 会在每次 cron 调用时验证 `Authorization` 请求头。
 
-## Queues
+## 队列
 
-:read-more{title="Vercel Queues" to="https://vercel.com/docs/queues"}
+:read-more{title="Vercel 队列" to="https://vercel.com/docs/queues"}
 
 Nitro 集成了 [Vercel Queues](https://vercel.com/docs/queues)，可用于异步处理消息。你可以在 Nitro 配置中定义队列主题，并通过 `vercel:queue` 运行时钩子处理传入消息。
 
@@ -159,7 +159,7 @@ export default defineNitroConfig({
   vercel: {
     queues: {
       triggers: [
-        // Only `topic` is required
+        // 仅需 `topic`
         { topic: "notifications" },
         { topic: "orders", retryAfterSeconds: 60, initialDelaySeconds: 5 },
       ],
@@ -209,6 +209,12 @@ export default defineEventHandler(async (event) => {
   return { messageId };
 });
 ```
+
+### 本地开发
+
+Queues 可以在 `nitro dev` 中工作 — `send()` 会直接将消息发送到你的 `vercel:queue` 钩子，因此你可以在不部署的情况下进行迭代。先使用 `vercel link` 和 `vercel env pull` 拉取你的 Vercel 环境，以便 SDK 能够完成身份验证。
+
+如果你的钩子抛出错误，消息会在本地重试。重试会在设置时遵循每个触发器的 `retryAfterSeconds`。
 
 ## 自定义构建输出配置
 

@@ -1,7 +1,7 @@
 ---
 seo:
-  title: Build Full-Stack Servers
-  description: Nitro extends your Vite application with a production-ready server, compatible with any runtime. Add server routes to your application and deploy many hosting platform with a zero-config experience.
+  title: Nitro 中文文档 - 构建全栈 Web 服务器
+  description: Nitro 为你的 Vite 应用扩展出一个可用于生产的服务器，兼容任意运行时。为你的应用添加服务端路由，并以零配置体验部署到众多托管平台。
 ---
 
 ::u-page-hero
@@ -46,10 +46,10 @@ orientation: horizontal
 :hero-background
 
 #title
-Build [/Servers]{.text-primary}
+构建 [服务器]{.text-primary}
 
 #description
-Nitro extends your Vite application with a production-ready server, compatible with any runtime. Add server routes to your application and deploy many hosting platform with a zero-config experience.
+Nitro 为你的 Vite 应用扩展出一个可用于生产的服务器，兼容任意运行时。为你的应用添加服务端路由，并以零配置体验部署到众多托管平台。
 
 #links
 :app-hero-links
@@ -58,20 +58,20 @@ Nitro extends your Vite application with a production-ready server, compatible w
 ::hero-features
 ---
 features:
-  - title: Fast
-    description: Enjoy the fast Vite 8 (rolldown powered) development experience with HMR on the server and optimized for production.
+  - title: 快速
+    description: 享受由 Vite 8（由 rolldown 驱动）带来的极速开发体验，服务端支持 HMR，并针对生产环境进行了优化。
     icon: i-lucide-zap
     color: text-amber-500
     bgColor: bg-amber-500/10
     borderColor: "group-hover:border-amber-500/30"
-  - title: Agnostic
-    description: Deploy the same codebase to any deployment provider with zero config and locked-in.
+  - title: 无绑定
+    description: 使用同一套代码库，以零配置且无供应商锁定的方式部署到任意部署提供商。
     icon: i-lucide-globe
     color: text-sky-500
     bgColor: bg-sky-500/10
     borderColor: "group-hover:border-sky-500/30"
-  - title: Minimal
-    description: Nitro adds no overhead to runtime. Build your servers with any modern tool you like.
+  - title: 轻量
+    description: Nitro 不会给运行时带来额外开销。使用你喜欢的任何现代工具来构建服务器。
     icon: i-lucide-feather
     color: text-emerald-500
     bgColor: bg-emerald-500/10
@@ -82,37 +82,37 @@ features:
 ::performance-showcase
 ---
 metrics:
-  - label: Bare metal perf
+  - label: 裸金属性能
     value: "~Native"
     unit: RPS
-    description: Using compile router, and fast paths for request handling.
+    description: 使用编译路由器，以及用于请求处理的快速路径。
     icon: i-lucide-gauge
     color: text-emerald-500
     bgColor: bg-emerald-500/10
     barWidth: "95%"
     barColor: bg-emerald-500
-  - label: Minimum install Size
+  - label: 最小安装体积
     value: Tiny
-    unit: deps
-    description: Minimal dependencies. No bloated node_modules.
+    unit: 依赖
+    description: 最少的依赖。没有臃肿的 node_modules。
     icon: i-lucide-package
     color: text-sky-500
     bgColor: bg-sky-500/10
     barWidth: "15%"
     barColor: bg-sky-500
-  - label: Small and portable output
+  - label: 小巧且便携的输出
     value: "‹ 10"
     unit: kB
-    description: Standard server builds produce ultra-small output bundles.
+    description: 标准服务器构建会生成极小的输出包。
     icon: i-lucide-file-output
     color: text-violet-500
     bgColor: bg-violet-500/10
     barWidth: "10%"
     barColor: bg-violet-500
-  - label: FAST builds
+  - label: 极速构建
     value: "‹ 1"
     unit: sec
-    description: Cold production builds complete in seconds, not minutes.
+    description: 冷启动生产构建在几秒内完成，而不是几分钟。
     icon: i-lucide-timer
     color: text-amber-500
     bgColor: bg-amber-500/10
@@ -125,119 +125,119 @@ metrics:
 #body
   :::feature-card
   ---
-  headline: Routing
+  headline: 路由
   link: /docs/routing
-  link-label: Routing docs
+  link-label: 路由文档
   ---
   #title
-  File-system routing
+  文件系统路由
 
   #description
-  Create server routes in the routes/ folder and they are automatically registered. Or bring your own framework — H3, Hono, Elysia, Express — via a server.ts entry.
+  在 routes/ 文件夹中创建服务端路由，它们会自动注册。或者通过一个 server.ts 入口引入你自己的框架——H3、Hono、Elysia、Express——都可以。
   :::
 
   :::feature-card
   ---
-  headline: Versatile
+  headline: 多用途
   link: /deploy
-  link-label: Explore deploy targets
+  link-label: 探索部署目标
   ---
   #title
-  Deploy everywhere
+  部署到任意地方
 
   #description
-  The same codebase deploys to Node.js, Cloudflare Workers, Deno, Bun, AWS Lambda, Vercel, Netlify, and more — zero config, no vendor lock-in.
+  同一套代码库可部署到 Node.js、Cloudflare Workers、Deno、Bun、AWS Lambda、Vercel、Netlify 等平台——零配置，没有供应商锁定。
   :::
 
   :::feature-card
   ---
-  headline: Storage
+  headline: 存储
   link: /docs/storage
-  link-label: Storage docs
+  link-label: 存储文档
   ---
   #title
-  Universal storage
+  通用存储
 
   #description
-  Built-in key-value storage abstraction powered by unstorage. Works with filesystem, Redis, Cloudflare KV, and more — same API everywhere.
+  由 unstorage 提供支持的内置键值存储抽象。可与文件系统、Redis、Cloudflare KV 等配合使用——所有环境下 API 一致。
   :::
 
   :::feature-card
   ---
-  headline: Caching
+  headline: 缓存
   link: /docs/cache
-  link-label: Caching docs
+  link-label: 缓存文档
   ---
   #title
-  Built-in caching
+  内置缓存
 
   #description
-  Cache route handlers and arbitrary functions with a simple API. Supports multiple storage backends and stale-while-revalidate patterns.
+  使用简单的 API 缓存路由处理器和任意函数。支持多种存储后端以及 stale-while-revalidate 模式。
   :::
 
   :::feature-card
   ---
-  headline: Server Entry
+  headline: 服务端入口
   link: /docs/server-entry
-  link-label: Server entry docs
+  link-label: 服务端入口文档
   ---
   #title
-  Web standard server
+  Web 标准服务器
 
   #description
-  Go full Web standard and pick the library of your choice. Use H3, Hono, Elysia, Express, or the raw fetch API — Nitro handles the rest.
+  完全遵循 Web 标准，并选择你喜欢的库。可使用 H3、Hono、Elysia、Express，或原生 fetch API——其余交给 Nitro 处理。
   :::
 
   :::feature-card
   ---
-  headline: Renderer
+  headline: 渲染器
   link: /docs/renderer
-  link-label: Renderer docs
+  link-label: 渲染器文档
   ---
   #title
-  Universal renderer
+  通用渲染器
 
   #description
-  Use any frontend framework as your renderer. Nitro provides the server layer while your framework handles the UI.
+  将任意前端框架用作你的渲染器。Nitro 提供服务器层，而你的框架负责 UI。
   :::
 
   :::feature-card
   ---
-  headline: Plugins
+  headline: 插件
   link: /docs/plugins
-  link-label: Plugins docs
+  link-label: 插件文档
   ---
   #title
-  Server plugins
+  服务端插件
 
   #description
-  Extend Nitro's runtime behavior with plugins. Hook into lifecycle events, register custom logic, and auto-load from the plugins/ directory.
+  使用插件扩展 Nitro 的运行时行为。可接入生命周期事件、注册自定义逻辑，并从 plugins/ 目录自动加载。
   :::
 
   :::feature-card
   ---
-  headline: Database
+  headline: 数据库
   link: /docs/database
-  link-label: Database docs
+  link-label: 数据库文档
   ---
   #title
-  Built-in database
+  内置数据库
 
   #description
-  Lightweight SQL database layer powered by db0. Pre-configured with SQLite out of the box, with support for PostgreSQL, MySQL, and Cloudflare D1.
+  由 db0 提供支持的轻量级 SQL 数据库层。开箱即预配置 SQLite，并支持 PostgreSQL、MySQL 和 Cloudflare D1。
   :::
 
   :::feature-card
   ---
-  headline: Assets
+  headline: 资源
   link: /docs/assets
-  link-label: Assets docs
+  link-label: 资源文档
   ---
   #title
-  Static & server assets
+  静态与服务器资源
 
   #description
-  Serve public assets directly to clients or bundle server assets for programmatic access. Works seamlessly across all deployment targets.
+  直接向客户端提供公共资源，或将服务器资源打包以供程序化访问。可在所有部署目标上无缝工作。
   :::
 ::
 
