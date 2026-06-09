@@ -58,6 +58,7 @@ export async function prerender(nitro: Nitro) {
     static: false,
     rootDir: nitro.options.rootDir,
     renderer: nitro.options.renderer,
+    virtual: { ...nitro.options.virtual },
     logLevel: 0,
     preset: "nitro-prerender",
     builder: nitro.options.builder === "vite" ? "rolldown" : nitro.options.builder,
