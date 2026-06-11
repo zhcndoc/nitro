@@ -261,18 +261,28 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
     // (`routes/[...].ts` -> `/**`, `routes/[...slug].ts` -> `/**:slug`) is as authoritative as the
     // SSR `/**` and must not swallow Vite asset serves either, so both forms count as catch-all;
     // prefixed splat routes (`/api/photos/**`) are deterministic user routes and stay explicit.
-    const match = nitro.routing.routes.match(
-      req.method || "",
-      new URL(withBase(req.url!, nitro.options.baseURL), "http://localhost").pathname
-    );
+    const pathname = new URL(withBase(req.url!, nitro.options.baseURL), "http://localhost")
+      .pathname;
+    const match = nitro.routing.routes.match(req.method || "", pathname);
     const matchedHandlers = match ? (Array.isArray(match) ? match : [match]) : [];
     const isExplicitRoute = matchedHandlers.some(
       (h) => h?.route && h.route !== "/**" && !h.route.startsWith("/**:")
     );
 
+    // Public assets mounted under an explicit non-root `baseURL` without fallthrough are
+    // authoritatively served by Nitro (a miss is a deterministic 404, never a Vite asset),
+    // so they are as deterministic as an explicit route and route to Nitro the same way.
+    const isExplicitPublicAsset = nitro.options.publicAssets.some(
+      (asset) =>
+        asset.baseURL &&
+        asset.baseURL !== "/" &&
+        !asset.fallthrough &&
+        (pathname === asset.baseURL || pathname.startsWith(asset.baseURL + "/"))
+    );
+
     // An explicit user route is a deterministic match and always wins, regardless of how the
     // browser tags the request (#4108, #4241, #4252, #4270) — no heuristic may override it.
-    if (isExplicitRoute) {
+    if (isExplicitRoute || isExplicitPublicAsset) {
       return nitroDevMiddleware(req, res, next);
     }
 
