@@ -1,11 +1,12 @@
 # Nitro 预设参考
 
-## 所有预设（31 个）
+## 所有预设
 
 ### 核心
-- `_nitro/` — 内部预设（开发、预渲染、工作线程模式）
+- `_nitro/` — 内部预设（dev、prerender、worker 模式）
+- `_static/` — 内部静态 / 仅 prerender 输出
 - `standard/` — 与框架无关的标准服务器
-- `node/` — Node.js（服务器、中间件、集群）
+- `node/` — Node.js（server、middleware、cluster）
 - `bun/` — Bun 运行时
 
 ### 云提供商
@@ -13,19 +14,21 @@
 - `aws-amplify/` — AWS Amplify
 - `azure/` — Azure 静态网页应用
 - `cloudflare/` — Cloudflare Pages/Workers
-- `deno/` — Deno 部署
-- `firebase/` — Firebase 托管
-- `netlify/` — Netlify 函数/边缘网络
-- `vercel/` — Vercel 函数/边缘网络
-- `digitalocean/` — DigitalOcean 应用平台
+- `deno/` — Deno Deploy
+- `digitalocean/` — DigitalOcean App Platform
+- `edgeone/` — 腾讯 EdgeOne
+- `firebase/` — Firebase Hosting
+- `genezio/` — Genezio
 - `heroku/` — Heroku
 - `koyeb/` — Koyeb
-- `zeabur/` — Zeabur
+- `netlify/` — Netlify Functions/Edge
 - `render.com/` — Render
 - `stormkit/` — Stormkit
-- `genezio/` — Genezio
+- `vercel/` — Vercel Functions/Edge
 - `winterjs/` — WinterJS
+- `zeabur/` — Zeabur
 - `zephyr/` — Zephyr
+- `zerops/` — Zerops
 - `alwaysdata/`
 - `cleavr/`
 - `flightcontrol/`
@@ -36,7 +39,7 @@
 
 ```
 presets/<name>/
-├── preset.ts        # defineNitroPreset() — 配置覆盖，钩子
+├── preset.ts        # defineNitroPreset() — 配置覆盖、钩子
 ├── runtime/         # 运行时入口（打包到输出中）
 │   └── <name>.ts    # 平台特定的请求处理器
 ├── types.ts         # TypeScript 类型定义（可选）

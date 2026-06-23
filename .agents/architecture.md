@@ -121,7 +121,8 @@
 
 ## 预设（`src/presets/`）
 
-共有 31 个预设。每个预设结构如下：
+多个部署目标预设（+ 内部 `_nitro`/`_static`）；见 `.agents/presets.md`。每个预设的结构：
+
 ```
 presets/<name>/
 ├── preset.ts        # defineNitroPreset()

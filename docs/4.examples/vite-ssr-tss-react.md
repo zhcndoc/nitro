@@ -37,8 +37,7 @@ icon: i-simple-icons-tanstack
     "@vitejs/plugin-react": "^6.0.1",
     "tailwindcss": "^4.2.2",
     "typescript": "^6.0.2",
-    "vite": "latest",
-    "vite-tsconfig-paths": "^6.1.1"
+    "vite": "latest"
   }
 }
 ```
@@ -71,17 +70,11 @@ import { defineConfig } from "vite";
 import { nitro } from "nitro/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
-import viteTsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  plugins: [
-    viteTsConfigPaths({ projects: ["./tsconfig.json"] }),
-    tanstackStart(),
-    viteReact(),
-    tailwindcss(),
-    nitro(),
-  ],
+  plugins: [tanstackStart(), viteReact(), tailwindcss(), nitro()],
+  resolve: { tsconfigPaths: true },
   environments: {
     ssr: { build: { rollupOptions: { input: "./server.ts" } } },
   },
@@ -96,8 +89,8 @@ export function getRouter() {
   const router = createRouter({
     routeTree,
     defaultPreload: "intent",
-    defaultErrorComponent: () => <div>Internal Server Error</div>,
-    defaultNotFoundComponent: () => <div>Not Found</div>,
+    defaultErrorComponent: () => <div>内部服务器错误</div>,
+    defaultNotFoundComponent: () => <div>未找到</div>,
     scrollRestoration: true,
   });
   return router;
@@ -112,7 +105,7 @@ export function getRouter() {
 // noinspection JSUnusedGlobalSymbols
 
 // 此文件由 TanStack Router 自动生成。
-// 你不应该对这个文件进行任何更改，因为它将被覆盖。
+// 你不应对这个文件进行任何更改，因为它会被覆盖。
 // 此外，你还应该将此文件从你的 linter 和/或 formatter 中排除，以防止被检查或修改。
 
 import { Route as rootRouteImport } from './routes/__root'
@@ -209,8 +202,8 @@ export const Route = createRootRoute({
     links: [{ rel: "stylesheet", href: appCss }],
     scripts: [{ src: "/customScript.js", type: "text/javascript" }],
   }),
-  errorComponent: () => <h1>500: Internal Server Error</h1>,
-  notFoundComponent: () => <h1>404: Page Not Found</h1>,
+  errorComponent: () => <h1>500: 内部服务器错误</h1>,
+  notFoundComponent: () => <h1>404: 页面未找到</h1>,
   shellComponent: RootDocument,
 });
 
@@ -223,7 +216,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <div className="p-2 flex gap-2 text-lg">
           <Link to="/" activeProps={{ className: "font-bold" }} activeOptions={{ exact: true }}>
-            Home
+            首页
           </Link>{" "}
           <Link
             // @ts-ignore
@@ -251,7 +244,7 @@ export const Route = createFileRoute("/")({ component: Home });
 function Home() {
   return (
     <div className="p-2">
-      <h3>Welcome Home!</h3>
+      <h3>欢迎回家！</h3>
       <a href="/api/test">/api/test</a>
     </div>
   );
@@ -315,24 +308,18 @@ import { defineConfig } from "vite";
 import { nitro } from "nitro/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
-import viteTsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  plugins: [
-    viteTsConfigPaths({ projects: ["./tsconfig.json"] }),
-    tanstackStart(),
-    viteReact(),
-    tailwindcss(),
-    nitro(),
-  ],
+  plugins: [tanstackStart(), viteReact(), tailwindcss(), nitro()],
+  resolve: { tsconfigPaths: true },
   environments: {
     ssr: { build: { rollupOptions: { input: "./server.ts" } } },
   },
 });
 ```
 
-`tanstackStart()` 插件提供了完整的 SSR 集成，并自动处理客户端入口。使用 `viteTsConfigPaths()` 来启用 tsconfig 中的路径别名，如 `~/`。`environments.ssr` 选项指向服务端入口文件。
+`tanstackStart()` 插件提供完整的 SSR 集成，并自动处理客户端入口。`environments.ssr` 选项指向服务端入口文件。
 
 ## 2. 创建服务端入口
 
@@ -362,8 +349,8 @@ export function getRouter() {
   const router = createRouter({
     routeTree,
     defaultPreload: "intent",
-    defaultErrorComponent: () => <div>Internal Server Error</div>,
-    defaultNotFoundComponent: () => <div>Not Found</div>,
+    defaultErrorComponent: () => <div>内部服务器错误</div>,
+    defaultNotFoundComponent: () => <div>未找到</div>,
     scrollRestoration: true,
   });
   return router;
@@ -392,8 +379,8 @@ export const Route = createRootRoute({
     links: [{ rel: "stylesheet", href: appCss }],
     scripts: [{ src: "/customScript.js", type: "text/javascript" }],
   }),
-  errorComponent: () => <h1>500: Internal Server Error</h1>,
-  notFoundComponent: () => <h1>404: Page Not Found</h1>,
+  errorComponent: () => <h1>500: 内部服务器错误</h1>,
+  notFoundComponent: () => <h1>404: 页面未找到</h1>,
   shellComponent: RootDocument,
 });
 
@@ -406,7 +393,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <div className="p-2 flex gap-2 text-lg">
           <Link to="/" activeProps={{ className: "font-bold" }} activeOptions={{ exact: true }}>
-            Home
+            首页
           </Link>{" "}
           <Link
             // @ts-ignore

@@ -10,111 +10,114 @@ Nitro is a framework-agnostic and deployment-agnostic server framework powered b
 
 ## 关键脚本
 
-- `pnpm build --stub` — Fast stub build for development.
-- `pnpm lint` — Lint and format code.
-- `pnpm fmt` — Automatically fix lint and formatting issues.
-- `pnpm test` — Run all tests.
-- `pnpm typecheck` — Run type tests.
+- `pnpm build --stub` — Fast stub build (`obuild --stub`) for development.
+- `pnpm build` — Full build (`pnpm gen-presets && obuild`).
+- `pnpm lint` — Check lint and formatting (`oxlint` + `oxfmt --check`).
+- `pnpm fmt` — Auto-fix lint and formatting (`automd` + `oxlint --fix` + `oxfmt`).
+- `pnpm test` — Full pipeline: `lint && build && typecheck && test:rollup && test:rolldown` (runs vitest against both the rollup and rolldown builders).
+- `pnpm test:rollup` / `pnpm test:rolldown` — Run vitest against a single builder (`NITRO_BUILDER`).
+- `pnpm typecheck` — Type-check with the TypeScript native-preview compiler (`tsgo --noEmit --skipLibCheck`).
 
 **Always run** `pnpm fmt` and `pnpm typecheck` after making changes.
 
 ## 仓库结构
 
-- `.github/` — GitHub Actions 工作流。
-- `docs/` — 基于 [UnDocs](https://github.com/unjs/undocs) 构建的文档站点。
-- `examples/` — 示例项目和集成案例。
-- `src/` — 项目源码。
-- `test/` — 单元测试、最小化测试和端到端测试。
+- `.github/` — GitHub Actions workflows.
+- `docs/` — Documentation site built with [UnDocs](https://github.com/unjs/undocs).
+- `examples/` — Example projects and integrations.
+- `src/` — Project source code.
+- `test/` — Unit, minimal, and end-to-end tests.
 
-### 代码结构
+### Code Structure
 
-项目源码集中在 `src/` 目录下：
+Project source is centralized under `src/`:
 
-- `src/build` — 构建逻辑（Vite | Rolldown | Rollup 配置、虚拟模板、插件）。
-- `src/cli` — `nitro` CLI 子命令（`src/cli/commands` 中的每个文件是一个命令）。
-- `src/config/` — 配置默认值（`src/config/defaults.ts`）和配置解析/规范化（`src/config/resolvers`）。
-- `src/dev` 和 `src/runner` — 开发服务器逻辑。
-- `src/prerender` — 预渲染逻辑。
-- `src/presets` — 部署预设和运行时入口。
-- `src/types` — 共享类型定义。
-- `src/utils` — 内部工具函数。
-- `src/runtime` — 打包进最终包的运行时代码（运行时和平台无关）。
+- `src/build` — Build logic (Vite | Rolldown | Rollup config, virtual templates in `src/build/virtual/`, plugins in `src/build/plugins/`).
+- `src/cli` — `nitro` CLI subcommands (each file in `src/cli/commands` is a command).
+- `src/config/` — Config defaults (`src/config/defaults.ts`) and resolvers/normalizers (`src/config/resolvers`).
+- `src/dev` — Development server logic (`app.ts`, `server.ts`, `vfs.ts`).
+- `src/prerender` — Prerender logic.
+- `src/presets` — Deployment presets and runtime entry.
+- `src/types` — Shared types.
+- `src/utils` — Internal utilities.
+- `src/runtime` — Runtime code that goes into the bundle (runtime and platform agnostic).
 
-### 为什么修改 `src/` 是高影响的
+### Why Changes in `src/` Are High-Impact
 
-`src/` 中的代码影响所有 Nitro 用户：
+Code in `src/` affects all Nitro users:
 
-- `src/runtime` 的修改会被打包，运行于所有部署目标。
-- `src/build` 的修改会影响构建输出和性能。
-- `src/presets` 的修改影响特定部署平台。
-- `src/config` 的修改影响默认行为。
+- Changes in `src/runtime` are bundled and run across all deployment targets.
+- Changes in `src/build` affect build output and performance.
+- Changes in `src/presets` affect specific deployment platforms.
+- Changes in `src/config` affect default behavior.
 
-请仔细审核这些修改，确保兼容性、包大小以及跨运行时支持。
+Review these changes carefully for backwards compatibility, bundle size, and cross-runtime support.
 
-## 代码模式与规范
+## Code Patterns & Conventions
 
-- `pathe` — 跨平台路径操作（始终优先使用，避免使用 `node:path`）。
-- `defu` — 深层对象合并和配置默认值。
-- `consola` — 构建/开发代码日志（可用时使用 `nitro.logger`）。
-- `unstorage` — 存储抽象。
+- `pathe` — Cross-platform path operations (always prefer over `node:path`).
+- `defu` — Deep object merging and config defaults.
+- `consola` — Logging in build/dev code (use `nitro.logger` when available).
+- `unstorage` — Storage abstraction.
 
-### 运行时限制
+### Runtime Constraints
 
-`src/runtime/` 中的代码必须与运行时无关：
+Code in `src/runtime/` must be runtime-agnostic:
 
-- **禁止使用 Node.js 特定 API**（除非有运行时检查）。
-- 优先使用 **Web API**（fetch、Request、Response、URL 等）。
-- 仅允许使用 `console` 打印日志（运行时禁止使用 `consola`）。
-- 保持打包体积小且无副作用。
+- **Don't use Node.js-specific APIs** (unless behind runtime checks).
+- Prefer **Web APIs** (fetch, Request, Response, URL, etc.).
+- Only use `console` for logging (no `consola` in runtime).
+- Keep bundle size minimal and side-effect free.
 
-## 测试策略
+## Testing Strategy
 
-### 测试结构
+### Test Structure
 
-主要测试在 `test/tests.ts` 中定义，并针对各部署提供者在 `test/presets` 中设置，执行于 `test/fixture` nitro 应用上。新增回归测试请添加至 `test/fixture`。
+Main tests are defined in `test/tests.ts` and setup per each deployment provider in `test/presets` and run against `test/fixture` nitro app. Add new regression tests to `test/fixture`.
 
-其他测试：
+Other tests:
 
-- **单元测试**（`test/unit/`）— 独立单元测试。
-- **最小化测试**（`test/minimal/`）— 最小打包输出。
+- **Unit** (`test/unit/`) — Isolated unit tests.
+- **Minimal** (`test/minimal/`) — Smallest bundle output.
 
-### 测试要求
+### Testing Requirements
 
-- 提交前必须运行 `pnpm run test`。
-- **修复 bug 必须先包含一个失败的测试** — 在 `test/fixture/` 添加回归测试，确保测试脚本在修复前失败，修复后通过。
-- 保持测试确定性与环境无关。
+- Run `pnpm run test` before submitting.
+- **Bug fixes MUST include a failing test first** — add regression tests to `test/fixture/` and make sure test script fails before attempting the fix and resolves after.
+- Keep tests deterministic and environment-independent.
 
-## 预设使用
+## Working with Presets
 
-每个 `src/presets/` 下的预设定义了部署目标行为：
+Each preset in `src/presets/` defines deployment target behavior:
 
-- 运行时逻辑和入口在 `src/presets/<name>/runtime`
-- 预设配置和工具（构建时）在 `src/presets/<name>/*.ts`
+- Runtime logic and entry is in `src/presets/<name>/runtime`
+- Preset config and utils (build time) are in `src/presets/<name>/*.ts`.
 
 ## 开发工作流程
 
 ### 进行更改
 
 1. Make changes in `src/`.
-2. Run `pnpm build --stub` if you changed build logic.
+2. Run `pnpm stub` if you changed build logic.
 3. Test with `pnpm test`.
 4. Run `pnpm fmt`.
 5. Run `pnpm typecheck`.
-6. Run `pnpm vitest run`.
+6. Run `pnpm test:rollup` and/or `pnpm test:rolldown` to run vitest against a specific builder.
 
-## 贡献原则
+## Contribution Principles
 
-- 优先**最小且有针对性的改动**，避免大规模重构。
-- 除非必要，避免引入新依赖。新增依赖应添加至 `devDependencies`，除非运行时必须。
-- 注意**包大小**、启动成本和运行时开销。
-- 保持**向后兼容**，除非明确说明。
-- 多个相关修改应合并提交，避免连续小步提交。
-- 不要修改变更范围外的文件。
+- Prefer **minimal, targeted changes** over large refactors.
+- Avoid introducing new dependencies unless strictly necessary.
+  Add them to `devDependencies` unless they are required in runtime logic.
+- Be mindful of **bundle size**, startup cost, and runtime overhead.
+- Maintain **backwards compatibility** unless explicitly instructed otherwise.
+- Batch multiple related edits together. Avoid sequential micro-changes.
+- Never modify files outside the scope of the requested change.
 
-## 常见陷阱
+## Common Gotchas
 
 - **Don't use Node.js-specific APIs in `src/runtime/`** — Code runs in multiple runtimes (Node, workers, edge).
-- **Virtual modules must be registered** in `src/build/virtual.ts`.
+- **Virtual modules must be registered** in `src/build/virtual/_all.ts` (one template per file under `src/build/virtual/`).
 - **CLI commands** are in `src/cli/commands/` — Each file exports a command definition.
 - **Runtime size matters** — Check bundle impact with `pnpm build`.
 - **Use `pathe` not `node:path`** — Ensures cross-platform compatibility.
@@ -159,7 +162,7 @@ Nitro is a framework-agnostic and deployment-agnostic server framework powered b
 For deeper context, see `.agents/`:
 
 - [`.agents/architecture.md`](.agents/architecture.md) — Full architecture: core instance, build system, config resolution, virtual modules, runtime internals, dev server, routing, key libraries.
-- [`.agents/presets.md`](.agents/presets.md) — All 31 presets, preset structure, how to create presets, resolution logic.
+- [`.agents/presets.md`](.agents/presets.md) — All presets (multiple deployment targets + internal `_nitro`/`_static`), preset structure, how to create presets, resolution logic.
 - [`.agents/testing.md`](.agents/testing.md) — Test structure, how tests work, adding regression tests, running tests.
 - [`.agents/vite.md`](.agents/vite.md) — Vite build system: plugin architecture (6 sub-plugins), environments API, dev server integration, production build stages, bundler config, HMR, runtime worker.
 - [`.agents/docs.md`](.agents/docs.md) — Documentation conventions: structure, preset naming (underscore), H3 v2 API patterns, import paths, common mistakes.
