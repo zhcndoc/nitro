@@ -155,7 +155,11 @@ export default defineConfig({
 Nitro 集成了 [Vercel Queues](https://vercel.com/docs/queues)，可用于异步处理消息。你可以在 Nitro 配置中定义队列主题，并通过 `vercel:queue` 运行时钩子处理传入消息。
 
 ```ts [nitro.config.ts]
-export default defineNitroConfig({
+import { defineConfig } from "nitro";
+
+export default defineConfig({
+  // 独立模式下，Nitro 会扫描 `serverDir` 中的路由和插件
+  serverDir: "./server",
   vercel: {
     queues: {
       triggers: [
@@ -173,8 +177,10 @@ export default defineNitroConfig({
 在 [Nitro 插件](/guide/plugins) 中使用 `vercel:queue` 钩子来处理传入的队列消息：
 
 ```ts [server/plugins/queues.ts]
-export default defineNitroPlugin((nitro) => {
-  nitro.hooks.hook("vercel:queue", ({ message, metadata, send }) => {
+import { definePlugin } from "nitro";
+
+export default definePlugin((nitroApp) => {
+  nitroApp.hooks.hook("vercel:queue", ({ message, metadata, send }) => {
     console.log(`[${metadata.topicName}] Message ${metadata.messageId}:`, message);
   });
 });
@@ -185,10 +191,11 @@ export default defineNitroPlugin((nitro) => {
 你可以使用队列消息来触发 [Nitro 任务](/docs/tasks)：
 
 ```ts [server/plugins/queues.ts]
+import { definePlugin } from "nitro";
 import { runTask } from "nitro/task";
 
-export default defineNitroPlugin((nitro) => {
-  nitro.hooks.hook("vercel:queue", async ({ message, metadata }) => {
+export default definePlugin((nitroApp) => {
+  nitroApp.hooks.hook("vercel:queue", async ({ message, metadata }) => {
     if (metadata.topicName === "orders") {
       await runTask("orders:fulfill", { payload: message });
     }
@@ -201,9 +208,10 @@ export default defineNitroPlugin((nitro) => {
 直接使用 `@vercel/queue` 包向指定主题发送消息：
 
 ```ts [server/routes/api/orders.post.ts]
+import { defineHandler } from "nitro";
 import { send } from "@vercel/queue";
 
-export default defineEventHandler(async (event) => {
+export default defineHandler(async (event) => {
   const order = await event.req.json();
   const { messageId } = await send("orders", order);
   return { messageId };

@@ -49,7 +49,7 @@ orientation: horizontal
 构建 [服务器]{.text-primary}
 
 #description
-Nitro 为你的 Vite 应用扩展出一个可用于生产的服务器，兼容任意运行时。为你的应用添加服务端路由，并以零配置体验部署到众多托管平台。
+Nitro 通过一个可用于生产的服务器为你的 Vite 应用扩展功能，兼容任意运行时。为你的应用添加服务端路由，并以零配置体验部署到众多托管平台。
 
 #links
 :app-hero-links
