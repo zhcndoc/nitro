@@ -19,12 +19,12 @@
 3. 通过 `initNitroRouting()` 初始化路由
 4. 通过 `scanAndSyncOptions()` 扫描处理器/插件/任务
 5. 准备 unimport 用于自动导入
-6. 设置钩子
+6. 设置钩子。
 
 ## 入口点
 
 - `src/builder.ts` — 主要公共 API：`createNitro()`, `build()`, `createDevServer()`, `prerender()`, `copyPublicAssets()`, `prepare()`, `writeTypes()`, `runTask()`, `listTasks()`
-- `src/vite.ts` — 来自 `src/build/vite/plugin.ts` 的 Vite 插件导出
+- `src/vite.ts` — 来自 `src/build/vite/plugin.ts` 的 Vite 插件导出。
 
 ## 构建系统（`src/build/`）
 
@@ -67,31 +67,31 @@
 - `feature-flags.ts` — 功能检测
 - `routing-meta.ts` — 路由元数据（OpenAPI）
 - `renderer-template.ts` — SSR 渲染器
-- `_all.ts` — 聚合文件
+- `_all.ts` — 聚合文件】【。
 
 ## 配置系统（`src/config/`）
 
 **加载器**（`config/loader.ts`）：`loadOptions(config, opts)`
 1. 与默认值合并（`NitroDefaults`）
 2. 加载 c12 配置文件（`nitro.config.ts`、`package.json.nitro` 等）
-3. 解析预设（preset）
-4. 顺序执行配置解析器
+3. 解析预设
+4. 按顺序执行配置解析器
 
 **解析器**（`config/resolvers/`）：
 `compatibility`、`tsconfig`、`paths`、`imports`、`route-rules`、`database`、`export-conditions`、`runtime-config`、`open-api`、`url`、`assets`、`storage`、`error`、`unenv`、`builder`
 
-**默认值**（`config/defaults.ts`）：所有 NitroConfig 默认值。
+**默认值**（`config/defaults.ts`）：所有 NitroConfig 的默认值。
 
 ## 运行时（`src/runtime/`）
 
-**内部**（`runtime/internal/`）：
-- `app.ts` — NitroApp 创建，H3 应用设置
+**内部** (`runtime/internal/`):
+- `app.ts` — NitroApp 创建、H3 应用设置
 - `cache.ts` — 响应缓存
 - `context.ts` — 异步上下文
-- `route-rules.ts` — 路由规则中间件（头部、重定向、代理、缓存、跨域）
+- `route-rule-handlers.ts` — 已编译匹配器的规则处理程序：h3-rules 内置功能（标头、重定向、代理、基本身份验证），以及绑定到 Nitro 缓存运行时的 `cache` 处理程序。规则匹配/规范化逻辑位于 [`h3-rules`](https://github.com/h3js/h3-rules) 包中。
 - `static.ts` — 静态文件服务
 - `task.ts` — 任务执行
-- `plugin.ts` — 插件辅助
+- `plugin.ts` — 插件辅助函数
 - `runtime-config.ts` — 配置获取器
 
 **公共导出**：`runtime/app.ts`（`defineConfig()`）、`runtime/nitro.ts`（`serverFetch()`）、`runtime/cache.ts`、`runtime/task.ts`、`runtime/storage.ts` 等。
@@ -99,12 +99,12 @@
 ## 开发服务器（`src/dev/`）
 
 - `dev/server.ts` — `NitroDevServer`: 通过 `env-runner` 管理 Worker，失败重启（最多 3 次重试），支持 WebSocket，VFS 调试端点（`/_vfs/**`）
-- `dev/app.ts` — `NitroDevApp`: 基于 H3 的应用，带错误处理、压缩的静态服务、开发代理
+- `dev/app.ts` — `NitroDevApp`: 基于 H3 的应用，带错误处理、压缩的静态服务、开发代理。
 
 ## 预渲染（`src/prerender/`）
 
 - `prerender/prerender.ts` — 主流程：解析路由 → 构建预渲染器（预设：`nitro-prerender`）→ 并行执行 → 链接爬取 → 写入磁盘 → 压缩
-- `prerender/utils.ts` — `extractLinks()`、`matchesIgnorePattern()`、`formatPrerenderRoute()`
+- `prerender/utils.ts` — `extractLinks()`、`matchesIgnorePattern()`、`formatPrerenderRoute()`。
 
 ## 路由与扫描（`src/routing.ts`，`src/scan.ts`）
 

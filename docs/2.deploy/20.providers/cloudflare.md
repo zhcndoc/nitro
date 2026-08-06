@@ -103,6 +103,33 @@ export default defineConfig({
 
 无需手动配置 Wrangler，Nitro 会为你处理。
 
+### 追踪
+
+**🧪 实验性功能！**
+
+启用实验性的 [`tracingChannel`](/config#tracingchannel) 选项后，Cloudflare 预设会将 Nitro 的追踪通道事件（h3 路由和中间件、srvx、unstorage 操作等）作为[自定义 span](https://developers.cloudflare.com/workers/observability/traces/custom-spans/)进行报告，同时还会包含 Cloudflare 的自动检测结果（fetch 调用、KV 读取、D1 查询等）——无需 OpenTelemetry SDK。
+
+```ts [nitro.config.ts]
+import { defineConfig } from "nitro";
+
+export default defineConfig({
+  preset: "cloudflare_module",
+  tracingChannel: true,
+});
+```
+
+必须在 Worker 上启用追踪，才能记录 span：
+
+```jsonc [wrangler.jsonc]
+{
+  "observability": {
+    "traces": {
+      "enabled": true
+    }
+  }
+}
+```
+
 ## Cloudflare Pages
 
 **预设：** `cloudflare_pages`
@@ -154,7 +181,7 @@ Nitro 自动生成一个 `_routes.json` 文件，用于控制哪些路由由文�
 
 ::note
 **注意：** 记得[指示 Nitro 使用正确的预设](/deploy#changing-the-deployment-preset)（注意，这对所有预设都是必需的，包括 `cloudflare_pages`）。
-::
+:::
 
 ## 环境变量
 

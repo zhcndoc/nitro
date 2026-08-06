@@ -114,10 +114,7 @@ describe("nitro:preset:vercel:web", async () => {
               },
               {
                 "headers": {
-                  "access-control-allow-headers": "*",
                   "access-control-allow-methods": "GET",
-                  "access-control-allow-origin": "*",
-                  "access-control-max-age": "0",
                 },
                 "src": "/rules/cors",
               },
@@ -142,6 +139,12 @@ describe("nitro:preset:vercel:web", async () => {
                 },
                 "src": "/rules/ba-redirect/(.*)",
                 "status": 307,
+              },
+              {
+                "headers": {
+                  "x-single": "single",
+                },
+                "src": "/single-headers/*",
               },
               {
                 "headers": {
@@ -286,6 +289,10 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "/imports",
               },
               {
+                "dest": "/import-attributes",
+                "src": "/import-attributes",
+              },
+              {
                 "dest": "/icon.png",
                 "src": "/icon.png",
               },
@@ -406,6 +413,14 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "/_openapi.json",
               },
               {
+                "dest": "/single-headers/[id]",
+                "src": "/single-headers/(?<id>[^/]+)",
+              },
+              {
+                "dest": "/ba-single/[id]",
+                "src": "/ba-single/(?<id>[^/]+)",
+              },
+              {
                 "dest": "/assets/[id]",
                 "src": "/assets/(?<id>[^/]+)",
               },
@@ -499,6 +514,7 @@ describe("nitro:preset:vercel:web", async () => {
             "functions/assets/[id].func (symlink)",
             "functions/assets/all.func (symlink)",
             "functions/assets/md.func (symlink)",
+            "functions/ba-single/[id].func (symlink)",
             "functions/config.func (symlink)",
             "functions/context.func (symlink)",
             "functions/env.func (symlink)",
@@ -508,6 +524,7 @@ describe("nitro:preset:vercel:web", async () => {
             "functions/fetch.func (symlink)",
             "functions/file.func (symlink)",
             "functions/icon.png.func (symlink)",
+            "functions/import-attributes.func (symlink)",
             "functions/imports.func (symlink)",
             "functions/json-string.func (symlink)",
             "functions/jsx.func (symlink)",
@@ -531,6 +548,7 @@ describe("nitro:preset:vercel:web", async () => {
             "functions/rules/swr-ttl/[...]-isr.prerender-config.json",
             "functions/rules/swr/[...]-isr.func (symlink)",
             "functions/rules/swr/[...]-isr.prerender-config.json",
+            "functions/single-headers/[id].func (symlink)",
             "functions/static-flags.func (symlink)",
             "functions/stream.func (symlink)",
             "functions/tasks/[...name].func (symlink)",
