@@ -34,14 +34,5 @@ function copyPrompt() {
     >
       Star on GitHub
     </Button>
-    <a
-      href="/llms.txt"
-      target="_blank"
-      class="basis-full text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center justify-center gap-1"
-      @click="copyPrompt"
-    >
-      <Icon :name="copied ? 'i-lucide-clipboard-check' : 'i-lucide-bot'" class="size-4" />
-      Docs for AI
-    </a>
   </div>
 </template>
