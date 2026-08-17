@@ -43,9 +43,6 @@ orientation: horizontal
   :::
 ::
 
-#top
-:hero-background
-
 #title
 Build [/Servers]{.text-primary}
 
