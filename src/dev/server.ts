@@ -16,6 +16,7 @@ import { serve } from "srvx/node";
 import { debounce } from "perfect-debounce";
 import { isTest, isCI } from "std-env";
 import { NitroDevApp } from "./app.ts";
+import { resolveRunnerDeps } from "./runner-deps.ts";
 import { writeDevBuildInfo } from "../build/info.ts";
 
 const SHUTDOWN_TIMEOUT = 5000;
@@ -189,9 +190,11 @@ export class NitroDevServer extends NitroDevApp implements RunnerRPCHooks {
 
   async #reload() {
     await this.#shutdownWorker();
-    const runnerName =
-      this.nitro.options.devServer.runner || process.env.NITRO_DEV_RUNNER || "node-worker";
-    const runner = await loadRunner(runnerName as RunnerName, {
+    const runnerName = (this.nitro.options.devServer.runner ||
+      process.env.NITRO_DEV_RUNNER ||
+      "node-worker") as RunnerName;
+    const runner = await loadRunner(runnerName, {
+      ...(await resolveRunnerDeps(this.nitro, runnerName)),
       name: `Nitro_${this.#workerIdCtr++}`,
       data: { entry: this.#entry, ...this.#workerData },
     });
