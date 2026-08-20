@@ -280,8 +280,8 @@ importers:
         specifier: ^1.7.0
         version: 1.7.0
       unctx:
-        specifier: ^3.0.0
-        version: 3.0.0(magic-string@1.2.1)(oxc-parser@shims+oxc-parser)(rolldown@1.2.4)(unplugin@3.3.0)
+        specifier: ^3.0.1
+        version: 3.0.1(magic-string@1.2.1)(oxc-parser@shims+oxc-parser)(rolldown@1.2.4)(unplugin@3.3.0)
       unimport:
         specifier: ^6.4.0
         version: 6.4.0(esbuild@0.28.2)(oxc-parser@shims+oxc-parser)(rolldown@1.2.4)(rollup@4.62.4)(vite@8.2.1)
@@ -6645,8 +6645,8 @@ packages:
   ultrahtml@1.7.0:
     resolution: {integrity: sha512-2xRd0VHoAQE4M+vF/DvFFB7pUV0ZxTW1TLi7lHQWnF/Sb5TPeEUV/l+hxcNnGO00ZXGnR0voCMmYRKQf+rvJ2g==}
 
-  unctx@3.0.0:
-    resolution: {integrity: sha512-DoXdZVeyi2jyEsn86i8MO5RTItm1kffUkH9/+DQORn3Q688AMOy2551CIl6AdGL2UpwD675wtbNOl75wIQN/uA==}
+  unctx@3.0.1:
+    resolution: {integrity: sha512-5RAt2etv7g362RXyd33R82gm9u/kbtQlpoaOs9Bgm4E32GRMJ0xjbZyvdxUTmiuHk3V1IQb1aUNrp5IWY+JaWw==}
     peerDependencies:
       magic-string: '>=0.30.21'
       oxc-parser: '>=0.140.0'
@@ -13395,7 +13395,7 @@ snapshots:
 
   ultrahtml@1.7.0: {}
 
-  unctx@3.0.0(magic-string@1.2.1)(oxc-parser@shims+oxc-parser)(rolldown@1.2.4)(unplugin@3.3.0):
+  unctx@3.0.1(magic-string@1.2.1)(oxc-parser@shims+oxc-parser)(rolldown@1.2.4)(unplugin@3.3.0):
     optionalDependencies:
       magic-string: 1.2.1
       oxc-parser: link:shims/oxc-parser
