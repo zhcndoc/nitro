@@ -53,10 +53,20 @@ export function serverFetch(
   }
 }
 
+// crossws' wire format for handing WebSocket hooks off on the *request*, written
+// by h3's `defineWebSocketHandler()`. Read as a bare registry symbol rather than
+// via `getWebSocketHooks()` so core runtime keeps no import of `crossws`.
+const kWebSocketHooks: unique symbol = /* @__PURE__ */ Symbol.for("crossws.hooks");
+
 export async function resolveWebsocketHooks(req: ServerRequest): Promise<Partial<WebSocketHooks>> {
-  // https://github.com/h3js/h3/blob/c11ca743d476e583b3b47de1717e6aae92114357/src/utils/ws.ts#L37
-  const hooks = ((await serverFetch(req)) as any).crossws as Partial<WebSocketHooks>;
-  return hooks || {};
+  // The `crossws` property on the response is best-effort only: any staged
+  // response header (a `headers` route rule, CORS, ...) makes h3 rebuild the
+  // response, and a rebuild carries none of the original's own properties.
+  const res = (await serverFetch(req)) as { crossws?: Partial<WebSocketHooks> };
+  const carrier = req as unknown as Record<symbol, Partial<WebSocketHooks> | undefined> & {
+    context?: Record<symbol, Partial<WebSocketHooks> | undefined>;
+  };
+  return res.crossws ?? carrier[kWebSocketHooks] ?? carrier.context?.[kWebSocketHooks] ?? {};
 }
 
 export function fetch(
