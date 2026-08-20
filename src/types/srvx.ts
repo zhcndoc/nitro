@@ -1,1 +1,5 @@
-export type { ServerRequest } from "srvx";
+export type {
+  ServerRequest,
+  ServerRequestContext,
+  ServerRuntimeContext,
+} from "srvx";
