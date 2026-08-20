@@ -1,9 +1,9 @@
-import type { MatchedRouteRules, NitroApp, NitroRuntimeHooks } from "nitro/types";
+import type { NitroApp, NitroRuntimeHooks, ResolvedRouteRules } from "nitro/types";
 import type { ServerRequest, ServerRequestContext } from "srvx";
 import type { H3EventContext, Middleware, WebSocketHooks } from "h3";
 import { toRequest } from "h3";
 import { HookableCore } from "hookable";
-import { createMatcherFromFind, memoizeRouteRulesMatcher } from "h3-rules";
+import { createMatcherFromFind, memoizeRouteRulesMatcher } from "h3/rules";
 
 // IMPORTANT: virtual imports and user code should be imported last to avoid initialization order issues
 import { findRouteRules } from "#nitro/virtual/routing";
@@ -77,7 +77,7 @@ export function getRouteRules(
   method: string,
   pathname: string
 ): {
-  routeRules: MatchedRouteRules;
+  routeRules: ResolvedRouteRules;
   routeRuleMiddleware: Middleware[];
 } {
   return (_matchRouteRules ??= memoizeRouteRulesMatcher(createMatcherFromFind(findRouteRules)))(

@@ -35,9 +35,6 @@ importers:
       h3:
         specifier: ^2.0.1-rc.28
         version: 2.0.1-rc.28(crossws@0.4.11)(ocache@0.3.0)
-      h3-rules:
-        specifier: ^0.1.0
-        version: 0.1.0(h3@2.0.1-rc.28)(ocache@0.3.0)
       hookable:
         specifier: ^6.1.1
         version: 6.1.1
@@ -4654,15 +4651,6 @@ packages:
   gzip-size@7.0.0:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-
-  h3-rules@0.1.0:
-    resolution: {integrity: sha512-MrUUH1E/yoM7hvpKVbLs/CFeindwiTn7Fcfo+zXDpfuRYbcpJDPkYGGttCSiHNJmjUQNYQ5yn9veUIqFonYXuw==}
-    peerDependencies:
-      h3: ^2.0.1-rc.25
-      ocache: '>=0.2.0'
-    peerDependenciesMeta:
-      ocache:
-        optional: true
 
   h3@2.0.1-rc.20:
     resolution: {integrity: sha512-28ljodXuUp0fZovdiSRq4G9OgrxCztrJe5VdYzXAB7ueRvI7pIUqLU14Xi3XqdYJ/khXjfpUOOD2EQa6CmBgsg==}
@@ -11127,14 +11115,6 @@ snapshots:
   gzip-size@7.0.0:
     dependencies:
       duplexer: 0.1.2
-
-  h3-rules@0.1.0(h3@2.0.1-rc.28)(ocache@0.3.0):
-    dependencies:
-      h3: 2.0.1-rc.28(crossws@0.4.11)(ocache@0.3.0)
-      rou3: 0.9.2
-      ufo: 1.6.4
-    optionalDependencies:
-      ocache: 0.3.0
 
   h3@2.0.1-rc.20(crossws@0.4.11):
     dependencies:

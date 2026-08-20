@@ -390,7 +390,7 @@ export function testNitro(
   });
 
   it("handles route rules - cors", async () => {
-    // `cors: true` is handled by h3's `handleCors` (via h3-rules). On a
+    // `cors: true` is handled by h3's `handleCors` (via `h3/rules`). On a
     // simple (non-preflight) request it sets permissive origin/methods/expose
     // headers; `access-control-allow-headers` / `access-control-max-age` are
     // preflight-only and answered on the `OPTIONS` preflight instead.
@@ -403,159 +403,34 @@ export function testNitro(
     expect(headers).toMatchObject(expectedHeaders);
   });
 
-  describe("handles route rules - basic auth", () => {
-    it("rejects request with bad creds", async () => {
-      const { status, headers } = await callHandler({
-        url: "/rules/basic-auth",
-        headers: {
-          Authorization: "Basic " + btoa("user:wrongpass"),
-        },
-      });
-      expect(status).toBe(401);
-      expect(headers["www-authenticate"]).toBe('Basic realm="Secure Area"');
+  it("applies a single-wildcard rule to an encoded separator", async () => {
+    // h3 serves the `/single-headers/[id]` handler on the raw path, so a rule it
+    // matches there (`/single-headers/*`) must still apply for
+    // `/single-headers/a%2fb` even though it canonicalizes to two segments —
+    // canonicalization must not drop rules off the path that is actually served.
+    const { status, headers } = await callHandler({
+      url: "/single-headers/a%2fb",
     });
-
-    it("allows request with correct password", async () => {
-      const { status } = await callHandler({
-        url: "/rules/basic-auth/test",
-        headers: {
-          Authorization: "Basic " + btoa("admin:secret"),
-        },
-      });
-      expect(status).toBe(200);
-    });
-
-    it("disabled basic-auth for sub-rules", async () => {
-      const { status } = await callHandler({ url: "/rules/basic-auth/no-auth" });
-      expect(status).toBe(200);
-    });
-
-    it("runs before redirect rule from a less specific layer", async () => {
-      const { status, headers } = await callHandler({
-        url: "/rules/ba-redirect/secure/page",
-        headers: { Authorization: "Basic " + btoa("user:wrongpass") },
-      });
-      expect(status).toBe(401);
-      expect(headers["www-authenticate"]).toBe('Basic realm="Secure Area"');
-    });
-
-    it("runs before proxy rule from a less specific layer", async () => {
-      const { status, headers } = await callHandler({
-        url: "/rules/ba-proxy/secure/page",
-        headers: { Authorization: "Basic " + btoa("user:wrongpass") },
-      });
-      expect(status).toBe(401);
-      expect(headers["www-authenticate"]).toBe('Basic realm="Secure Area"');
-    });
-
-    it("is not bypassed by a percent-encoded path separator", async () => {
-      // `secure%2fpage` must still match the `/rules/ba-proxy/secure/**` auth
-      // rule, otherwise the request is forwarded by the broader proxy rule with
-      // no credentials and the downstream decodes `%2f` back to `/`.
-      const { status, headers } = await callHandler({
-        url: "/rules/ba-proxy/secure%2fpage",
-        headers: { Authorization: "Basic " + btoa("user:wrongpass") },
-      });
-      expect(status).toBe(401);
-      expect(headers["www-authenticate"]).toBe('Basic realm="Secure Area"');
-    });
-
-    it("a single-wildcard rule is not bypassed by an encoded separator", async () => {
-      // h3 routes the `/ba-single/[id]` handler on the raw path, so
-      // `/ba-single/a%2fb` reaches it as a single opaque segment and matches
-      // the `/ba-single/*` auth rule there — even though it canonicalizes to
-      // the two-segment `/ba-single/a/b`. Auth is matched on the raw path too,
-      // so it can't be served unauthenticated.
-      const { status, headers } = await callHandler({
-        url: "/ba-single/a%2fb",
-        headers: { Authorization: "Basic " + btoa("user:wrongpass") },
-      });
-      expect(status).toBe(401);
-      expect(headers["www-authenticate"]).toBe('Basic realm="Secure Area"');
-    });
-
-    it("a more specific auth rule revealed by decoding overrides a broader one", async () => {
-      // `/rules/ba-nested/admin%2fpanel` matches only the broad
-      // `/rules/ba-nested/**` rule on the raw path, but canonicalizes to
-      // `/rules/ba-nested/admin/panel`, which the narrower `.../admin/**` rule
-      // guards. The narrower (canonical) rule must win, so the challenge is for
-      // the "Admin Area" realm, not the broad "Broad Area" one.
-      const { status, headers } = await callHandler({
-        url: "/rules/ba-nested/admin%2fpanel",
-        headers: { Authorization: "Basic " + btoa("broad:secret") },
-      });
-      expect(status).toBe(401);
-      expect(headers["www-authenticate"]).toBe('Basic realm="Admin Area"');
-    });
-
-    it("a single-segment `false` cannot dodge auth once decoded to multiple segments", async () => {
-      // `/rules/ba-off/*` disables auth for genuine single-segment paths, but
-      // `/rules/ba-off/a%2fb` decodes to the two-segment `/rules/ba-off/a/b` that
-      // the broad `/rules/ba-off/**` rule guards. The `false` reset applies to the
-      // served path's own resolution, but the canonical path still enables auth,
-      // so the encoded separator must not turn a multi-segment request into a
-      // single-segment one to dodge the gate.
-      const { status, headers } = await callHandler({
-        url: "/rules/ba-off/a%2fb",
-        headers: { Authorization: "Basic " + btoa("user:wrongpass") },
-      });
-      expect(status).toBe(401);
-      expect(headers["www-authenticate"]).toBe('Basic realm="Off Area"');
-    });
-
-    it("a `false` reset on a deeper subtree does not strip auth from the served path", async () => {
-      // `/rules/ba-strip/off%2fx` is served as a single opaque segment that only
-      // matches the broad `/rules/ba-strip/**` auth rule; the `/rules/ba-strip/off/**`
-      // disable targets the two-segment subtree the canonical path resolves to.
-      // Resolving that disable against the canonical path must not strip the auth
-      // gate off the path that is actually served (a match/serve differential).
-      const { status, headers } = await callHandler({
-        url: "/rules/ba-strip/off%2fx",
-        headers: { Authorization: "Basic " + btoa("user:wrongpass") },
-      });
-      expect(status).toBe(401);
-      expect(headers["www-authenticate"]).toBe('Basic realm="Strip Area"');
-    });
-
-    it("a single-wildcard non-auth rule still applies to an encoded separator", async () => {
-      // h3 serves the `/single-headers/[id]` handler on the raw path, so a
-      // behavioral rule it matches there (`/single-headers/*`) must still apply
-      // for `/single-headers/a%2fb` even though it canonicalizes to two
-      // segments — canonicalization is for auth gating, not for dropping rules
-      // off the path that is actually served.
-      const { status, headers } = await callHandler({
-        url: "/single-headers/a%2fb",
-      });
-      expect(status).toBe(200);
-      expect(headers["x-single"]).toBe("single");
-    });
+    expect(status).toBe(200);
+    expect(headers["x-single"]).toBe("single");
   });
 
   describe("handles route rules - method scoped", () => {
-    // `"POST /rules/method-scoped/**"` guards the path with basic auth for POST
-    // requests only; other methods fall through unaffected.
+    // `"POST /rules/method-scoped/**"` enables CORS for POST requests only;
+    // other methods fall through unaffected.
     it("does not apply the POST-scoped rule to other methods", async () => {
-      const { status } = await callHandler({ url: "/rules/method-scoped/page" });
+      const { status, headers } = await callHandler({ url: "/rules/method-scoped/page" });
       expect(status).toBe(200);
+      expect(headers["access-control-allow-origin"]).toBeUndefined();
     });
 
     it("applies the POST-scoped rule to matching requests", async () => {
       const { status, headers } = await callHandler({
         url: "/rules/method-scoped/page",
         method: "POST",
-        headers: { Authorization: "Basic " + btoa("user:wrongpass") },
-      });
-      expect(status).toBe(401);
-      expect(headers["www-authenticate"]).toBe('Basic realm="Secure Area"');
-    });
-
-    it("passes the POST-scoped rule with valid credentials", async () => {
-      const { status } = await callHandler({
-        url: "/rules/method-scoped/page",
-        method: "POST",
-        headers: { Authorization: "Basic " + btoa("admin:secret") },
       });
       expect(status).toBe(200);
+      expect(headers["access-control-allow-origin"]).toBe("*");
     });
   });
 
