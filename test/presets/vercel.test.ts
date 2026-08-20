@@ -21,7 +21,15 @@ describe("nitro:preset:vercel:web", async () => {
           route: "/_ws",
           handler: resolve(presetFixturesDir, "websocket.ts"),
         },
+        {
+          route: "/slash",
+          handler: resolve(presetFixturesDir, "slash.ts"),
+        },
       ],
+      prerender: {
+        // trailing slash on purpose (#4392)
+        routes: ["/slash/"],
+      },
       vercel: {
         queues: {
           triggers: [
@@ -64,17 +72,23 @@ describe("nitro:preset:vercel:web", async () => {
               "version": "3.x",
             },
             "overrides": {
-              "_scalar/index.html": {
-                "path": "_scalar",
+              "api/hello": {
+                "contentType": "application/json;charset=UTF-8",
               },
-              "_swagger/index.html": {
-                "path": "_swagger",
+              "api/param/hidden": {
+                "contentType": "text/plain; custom",
               },
-              "api/hey/index.html": {
-                "path": "api/hey",
+              "api/param/prerender1": {
+                "contentType": "text/plain; custom",
               },
-              "prerender/index.html": {
-                "path": "prerender",
+              "api/param/prerender3": {
+                "contentType": "text/plain; custom",
+              },
+              "api/param/prerender4": {
+                "contentType": "text/plain; custom",
+              },
+              "json-string": {
+                "contentType": "text/plain; charset=UTF-8",
               },
             },
             "routes": [
@@ -240,6 +254,10 @@ describe("nitro:preset:vercel:web", async () => {
               {
                 "dest": "/static-flags",
                 "src": "/static-flags",
+              },
+              {
+                "dest": "/slash",
+                "src": "/slash",
               },
               {
                 "dest": "/route-group",
@@ -537,6 +555,7 @@ describe("nitro:preset:vercel:web", async () => {
             "functions/rules/swr/[...]-isr.func (symlink)",
             "functions/rules/swr/[...]-isr.prerender-config.json",
             "functions/single-headers/[id].func (symlink)",
+            "functions/slash.func (symlink)",
             "functions/static-flags.func (symlink)",
             "functions/stream.func (symlink)",
             "functions/tasks/[...name].func (symlink)",
