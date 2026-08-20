@@ -82,7 +82,7 @@
     "rou3": "^0.9.2",
     "srvx": "^0.12.7",
     "unenv": "^2.0.0-rc.24",
-    "unstorage": "^2.0.0-alpha.7"
+    "unstorage": "^2.0.0-alpha.8"
   },
   "devDependencies": {
     "@apphosting/common": "^0.0.9",
