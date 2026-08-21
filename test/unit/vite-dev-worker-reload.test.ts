@@ -1,7 +1,13 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 
-const { importEntry } = vi.hoisted(() => ({
+const { importEntry, evaluatedModules } = vi.hoisted(() => ({
   importEntry: vi.fn(),
+  evaluatedModules: {
+    clear: vi.fn(),
+    invalidateModule: vi.fn(),
+    getModuleById: vi.fn((_id: string): any => undefined),
+    getModulesByFile: vi.fn((_file: string): any => undefined),
+  },
 }));
 
 // `vite` is resolved from the app: the generated entry injects the module runner (see
@@ -9,6 +15,10 @@ const { importEntry } = vi.hoisted(() => ({
 const moduleRunner = {
   ESModulesEvaluator: class {},
   ModuleRunner: class {
+    evaluatedModules = evaluatedModules;
+    isClosed() {
+      return false;
+    }
     import(...args: unknown[]) {
       return importEntry(...args);
     }
@@ -41,11 +51,15 @@ async function createWorker() {
     data: { name: "nitro", entry: "/entry.mjs" },
   });
   await vi.waitFor(() => expect(importEntry).toHaveBeenCalledTimes(1));
+  // The initial load is not scoped to a file and drops the (empty) graph.
+  evaluatedModules.clear.mockClear();
+  evaluatedModules.invalidateModule.mockClear();
   return worker;
 }
 
 describe("Vite dev worker reloads", () => {
   afterEach(() => {
+    evaluatedModules.getModulesByFile.mockReturnValue(undefined);
     vi.useRealTimers();
     vi.restoreAllMocks();
     vi.resetAllMocks();
@@ -147,6 +161,58 @@ describe("Vite dev worker reloads", () => {
     expect(await (await worker.fetch(ssrRequest)).text()).toBe("ssr-v2");
     expect(await (await worker.fetch(new Request("http://localhost"))).text()).toBe("v1");
     expect(importEntry).toHaveBeenCalledTimes(3);
+  });
+
+  test("invalidates the changed file and its importers, not the whole graph", async () => {
+    const worker = await createWorker();
+    const dep = { id: "/dep.ts", importers: new Set(["/route.ts"]) };
+    const route = { id: "/route.ts", importers: new Set<string>() };
+    evaluatedModules.getModulesByFile.mockImplementation((file: string) =>
+      file === "/dep.ts" ? new Set([dep]) : undefined
+    );
+    evaluatedModules.getModuleById.mockImplementation((id: string) =>
+      id === "/route.ts" ? route : undefined
+    );
+
+    importEntry.mockResolvedValueOnce(entry("v2"));
+    worker.ipc.onMessage({ type: "full-reload", viteEnv: "nitro", triggeredBy: "/dep.ts" });
+    await vi.waitFor(() => expect(importEntry).toHaveBeenCalledTimes(2));
+
+    expect(evaluatedModules.clear).not.toHaveBeenCalled();
+    expect(evaluatedModules.invalidateModule).toHaveBeenCalledWith(dep);
+    expect(evaluatedModules.invalidateModule).toHaveBeenCalledWith(route);
+  });
+
+  test("drops every evaluation when the reload is not scoped to a file", async () => {
+    const worker = await createWorker();
+
+    importEntry.mockResolvedValueOnce(entry("v2"));
+    worker.ipc.onMessage({ type: "full-reload", viteEnv: "nitro" });
+    await vi.waitFor(() => expect(importEntry).toHaveBeenCalledTimes(2));
+
+    expect(evaluatedModules.clear).toHaveBeenCalledOnce();
+  });
+
+  test("invalidates every file collected while a reload was in flight", async () => {
+    const worker = await createWorker();
+    const first = { id: "/a.ts", importers: new Set<string>() };
+    const second = { id: "/b.ts", importers: new Set<string>() };
+    evaluatedModules.getModulesByFile.mockImplementation((file: string) =>
+      file === "/a.ts" ? new Set([first]) : file === "/b.ts" ? new Set([second]) : undefined
+    );
+
+    const inFlight = deferred<ReturnType<typeof entry>>();
+    importEntry.mockReturnValueOnce(inFlight.promise).mockResolvedValueOnce(entry("v3"));
+
+    worker.ipc.onMessage({ type: "full-reload", viteEnv: "nitro", triggeredBy: "/a.ts" });
+    await vi.waitFor(() => expect(importEntry).toHaveBeenCalledTimes(2));
+    worker.ipc.onMessage({ type: "full-reload", viteEnv: "nitro", triggeredBy: "/b.ts" });
+    inFlight.resolve(entry("v2"));
+
+    await vi.waitFor(() => expect(importEntry).toHaveBeenCalledTimes(3));
+    expect(evaluatedModules.invalidateModule).toHaveBeenCalledWith(first);
+    expect(evaluatedModules.invalidateModule).toHaveBeenCalledWith(second);
+    expect(evaluatedModules.clear).not.toHaveBeenCalled();
   });
 
   test("falls back to the previous entry when a reload never settles", async () => {

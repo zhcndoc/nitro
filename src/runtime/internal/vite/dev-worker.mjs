@@ -51,6 +51,10 @@ class ViteEnvRunner {
     this.entry = undefined;
     this.entryError = undefined;
 
+    // Files whose evaluations the next reload has to drop, collected while a
+    // reload is in flight. `all` re-evaluates the whole graph.
+    this.pendingReload = undefined;
+
     // Reloads are serialized so the newest import is always the last one to
     // apply its entry (and its side effects). `reloadPromise` is the tail of
     // the chain and never rejects: failures are captured into `entryError`.
@@ -75,13 +79,38 @@ class ViteEnvRunner {
     this.reload();
   }
 
-  reload() {
+  // Reloads are scoped to the changed file when one is known: `file` and its
+  // importers are dropped so the re-import re-evaluates them, and everything
+  // else keeps its evaluation (and its module state). Requests arriving while
+  // a reload is in flight coalesce into the queued one, which then handles
+  // every file collected meanwhile.
+  reload(file) {
+    const pending = (this.pendingReload ??= { files: new Set(), all: false });
+    if (file) {
+      pending.files.add(file);
+    } else {
+      pending.all = true;
+    }
     if (this.queuedReload) {
       return this.queuedReload;
     }
     const queuedReload = this.reloadPromise.then(async () => {
       this.queuedReload = undefined;
+      const { files, all } = this.pendingReload;
+      this.pendingReload = undefined;
+      if (this.runner.isClosed()) {
+        return;
+      }
       try {
+        if (all) {
+          // Nothing to scope the reload to (added or removed handlers): drop
+          // every evaluation, the same way Vite's own full-reload handler does.
+          this.runner.evaluatedModules.clear();
+        } else {
+          for (const file of files) {
+            this.invalidateFile(file);
+          }
+        }
         this.entry = await this.runner.import(this.entryPath);
         this.entryError = undefined;
       } catch (error) {
@@ -92,6 +121,35 @@ class ViteEnvRunner {
     this.queuedReload = queuedReload;
     this.reloadPromise = queuedReload;
     return queuedReload;
+  }
+
+  // Drops the evaluations of `file` and of everything importing it, so the next
+  // import re-evaluates them. Vite already invalidates them on the server, but
+  // a plugin that crawls (and re-transforms) a module's dependencies can
+  // repopulate their transform result before the runner re-fetches them, and
+  // `fetchModule` then answers `{cache: true}` and the stale evaluation is kept.
+  // Modules the change cannot affect keep their state (and their singletons).
+  invalidateFile(file) {
+    const { evaluatedModules } = this.runner;
+    const seen = new Set();
+    const invalidate = (mod) => {
+      if (!mod || seen.has(mod.id)) {
+        return;
+      }
+      seen.add(mod.id);
+      for (const importer of mod.importers) {
+        invalidate(evaluatedModules.getModuleById(importer));
+      }
+      evaluatedModules.invalidateModule(mod);
+    };
+    for (const mod of evaluatedModules.getModulesByFile(file) || []) {
+      invalidate(mod);
+    }
+  }
+
+  // Whether `file` is part of this environment's evaluated module graph.
+  hasEvaluated(file) {
+    return !!file && !!this.runner.evaluatedModules.getModulesByFile(file)?.size;
   }
 
   // Errors are intentionally not caught here: like production services,
@@ -162,13 +220,19 @@ globalThis.__VITE_ENVIRONMENT_RUNNER_IMPORT__ = async function (environmentName,
 
 // ----- Reload -----
 
-// Vite tags hot messages with the environment they came from. Reload only that
-// environment when it is known, so a change picked up by several server
-// environments does not re-import every entry once per message.
-async function reload(envName) {
-  const targets = envName && envs[envName] ? [envs[envName]] : Object.values(envs);
+// Reloads the environment the `full-reload` was sent for. Other environments
+// are only reloaded when they evaluated the changed file themselves: Vite does
+// not always associate a file with the module graph of every environment that
+// uses it, so their own `full-reload` can be missing.
+async function reload(payload) {
   try {
-    await Promise.all(targets.map((env) => env?.reload()));
+    const viteEnv = payload?.viteEnv;
+    // Vite sends platform paths, the evaluated modules are keyed by posix ones.
+    const triggeredBy = payload?.triggeredBy?.replace(/\\/g, "/");
+    const targets = Object.values(envs).filter(
+      (env) => env && (!viteEnv || env.name === viteEnv || env.hasEvaluated(triggeredBy))
+    );
+    await Promise.all(targets.map((env) => env.reload(triggeredBy)));
   } catch (error) {
     console.error(error);
   }
@@ -237,7 +301,7 @@ export const ipc = {
       }
     }
     if (message?.type === "full-reload") {
-      reload(message.viteEnv);
+      reload(message);
       return;
     }
     for (const listener of messageListeners) {
