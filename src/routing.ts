@@ -6,7 +6,7 @@ import { join } from "pathe";
 import { runtimeDir } from "nitro/meta";
 import { addRoute, createRouter, findRoute, findAllRoutes } from "rou3";
 import { compileRouterToString } from "rou3/compiler";
-import { hash } from "ohash";
+import { hash } from "./utils/hash.ts";
 
 const isGlobalMiddleware = (h: NitroEventHandler) => !h.method && (!h.route || h.route === "/**");
 
@@ -122,7 +122,7 @@ export function initNitroRouting(nitro: Nitro) {
 }
 
 function handlerWithImportHash(h: NitroEventHandler) {
-  const id = (h.lazy ? "_lazy_" : "_") + hash(h.handler).replace(/-/g, "").slice(0, 6);
+  const id = (h.lazy ? "_lazy_" : "_") + hash(h.handler);
   return { ...h, _importHash: id };
 }
 
@@ -137,7 +137,15 @@ export interface Route<T = unknown> {
 export class Router<T> {
   _routes?: Route<T>[];
   _router?: RouterContext<T>;
-  _compiled?: Record<string, string>;
+  /**
+   * Cached output of {@link compileToString}, invalidated by {@link _update}.
+   *
+   * Only one result is cached: each Router instance must always be compiled with
+   * the same `opts`. Compiling one instance with differing `opts` would silently
+   * return the first result, since `opts` holds a `serialize` closure and is
+   * therefore not hashable into a cache key.
+   */
+  _compiled?: string;
   _baseURL: string;
 
   constructor(baseURL?: string) {
@@ -169,12 +177,10 @@ export class Router<T> {
   }
 
   compileToString(opts?: RouterCompilerOptions<T>) {
-    const key = opts ? hash(opts) : "";
-    this._compiled ||= {};
-    if (this._compiled[key]) {
-      return this._compiled[key];
+    if (this._compiled) {
+      return this._compiled;
     }
-    this._compiled[key] = compileRouterToString(this._router!, undefined, opts);
+    this._compiled = compileRouterToString(this._router!, undefined, opts);
 
     // TODO: Upstream to rou3 compiler
     const onlyWildcard =
@@ -190,11 +196,10 @@ export class Router<T> {
       const guardCode = base
         ? `if(p!==${JSON.stringify(base)}&&!p.startsWith(${JSON.stringify(base + "/")})){return ${opts?.matchAll ? "[]" : "undefined"};}`
         : "";
-      this._compiled[key] =
-        /* js */ `/* @__PURE__ */ (() => {const data=${data};return ((_m, p)=>{${guardCode}return ${retCode};})})()`;
+      this._compiled = /* js */ `/* @__PURE__ */ (() => {const data=${data};return ((_m, p)=>{${guardCode}return ${retCode};})})()`;
     }
 
-    return this._compiled[key];
+    return this._compiled;
   }
 
   match(method: string, path: string): undefined | T {
