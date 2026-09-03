@@ -48,7 +48,7 @@ function genConnectorOptions(nitro: Nitro, connection: DatabaseConnection) {
         connection.options[dep.option] === undefined &&
         isDepInstalled(dep.name, nitro.options.rootDir)
     )
-    .map((dep) => `${dep.option}: () => import(${JSON.stringify(dep.name)})`);
+    .map((dep) => `${dep.option}: () => import(${JSON.stringify(dep.import || dep.name)})`);
 
   const options = JSON.stringify(connection.options);
   return libs.length > 0 ? `{ ...${options}, ${libs.join(", ")} }` : options;

@@ -71,7 +71,7 @@
   "dependencies": {
     "consola": "^3.4.2",
     "crossws": "^0.4.12",
-    "db0": "^0.4.0",
+    "db0": "^0.4.1",
     "env-runner": "^0.2.1",
     "h3": "^2.0.1-rc.30",
     "hookable": "^6.1.1",
@@ -81,7 +81,7 @@
     "rou3": "^0.9.2",
     "srvx": "^1.0.2",
     "unenv": "^2.0.0-rc.24",
-    "unstorage": "^2.0.0-alpha.9"
+    "unstorage": "^2.0.0-alpha.10"
   },
   "devDependencies": {
     "@apphosting/common": "^0.0.9",

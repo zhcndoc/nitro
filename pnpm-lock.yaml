@@ -24,8 +24,8 @@ importers:
         specifier: ^0.4.12
         version: 0.4.12(srvx@1.0.2)
       db0:
-        specifier: ^0.4.0
-        version: 0.4.0
+        specifier: ^0.4.1
+        version: 0.4.1
       env-runner:
         specifier: ^0.2.1
         version: 0.2.1
@@ -54,8 +54,8 @@ importers:
         specifier: ^2.0.0-rc.24
         version: 2.0.0-rc.24
       unstorage:
-        specifier: ^2.0.0-alpha.9
-        version: 2.0.0-alpha.9
+        specifier: ^2.0.0-alpha.10
+        version: 2.0.0-alpha.10
     devDependencies:
       '@apphosting/common':
         specifier: ^0.0.9
@@ -4056,8 +4056,8 @@ packages:
     resolution: {integrity: sha512-fnULvOpxnC5/Vg3NCiWelDsLiUc9bRwAPs/+LfTLNvetFCtCTN+yQz15C/fs4AwX1R9K5GLtLfn8QW+dWisaAw==}
     engines: {node: '>=0.11'}
 
-  db0@0.4.0:
-    resolution: {integrity: sha512-2aitWuWdOGUGQdO8oiSdQIRXpiQmYt6CnB1WoAQ1HtBkk26JyvUnSFnT477fG/8n6+QabQUKJDP3KH8njHoocw==}
+  db0@0.4.1:
+    resolution: {integrity: sha512-6RBY/bSn42UrqATwsiULj2uYFyEykB3XeA/NLIVQeHNXlYV6D4Idxx3/aa6k5Y45Dwzx7sygeLotnqHWSeURYA==}
 
   debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
@@ -6698,8 +6698,8 @@ packages:
       webpack:
         optional: true
 
-  unstorage@2.0.0-alpha.9:
-    resolution: {integrity: sha512-zUVLVO5Vci1vu1aTYkopEUgKhnemAvH3qv7PuNIxFtA8jGaCTVp+AbRwrVyldo81WIK7EU/bXB/cJWVJtJ7//A==}
+  unstorage@2.0.0-alpha.10:
+    resolution: {integrity: sha512-6h1veZp8gnp4dGllf0tDijoXxDYymJu251IpKKkrSVH+QHL6tXFbwG85KM+CBHSgpkkgtPuIiZ9oLCLP5+1Evw==}
 
   untyped@2.0.0:
     resolution: {integrity: sha512-nwNCjxJTjNuLCgFr42fEak5OcLuB3ecca+9ksPFNvtfYSLpjf+iJqSIaSnIile6ZPbKYxI5k2AfXqeopGudK/g==}
@@ -10359,7 +10359,7 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.29.7
 
-  db0@0.4.0: {}
+  db0@0.4.1: {}
 
   debug@2.6.9(supports-color@10.2.2):
     dependencies:
@@ -13329,7 +13329,7 @@ snapshots:
       rollup: 4.63.1
       vite: 8.2.2(@types/node@26.4.1)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0)
 
-  unstorage@2.0.0-alpha.9: {}
+  unstorage@2.0.0-alpha.10: {}
 
   untyped@2.0.0:
     dependencies:

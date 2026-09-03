@@ -86,6 +86,8 @@ export interface LibDep {
   option: string;
   /** Package name. */
   name: string;
+  /** Import specifier, if it differs from the package name (e.g. `mysql2/promise`). */
+  import?: string;
   /** Supported version range. */
   version?: string;
   /** Only required for some of the features. */

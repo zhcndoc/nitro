@@ -1,7 +1,18 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { Nitro } from "nitro/types";
 
-import storage from "../../src/build/virtual/storage.ts";
+const mockedDeps = new Set<string>();
+
+vi.mock("../../src/utils/dep.ts", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../../src/utils/dep.ts")>();
+  return {
+    ...original,
+    isDepInstalled: (id: string, dir: string) =>
+      mockedDeps.has(id) || original.isDepInstalled(id, dir),
+  };
+});
+
+const { default: storage } = await import("../../src/build/virtual/storage.ts");
 
 function createNitroStub(
   tracingChannel: Nitro["options"]["tracingChannel"],
@@ -47,6 +58,18 @@ describe("virtual/storage template", () => {
     expect(template).toContain(
       `storage.mount('/data', unstorage_47drivers_47fs({ ...{"base":"./data"}, lib: () => import("chokidar") }))`
     );
+  });
+
+  it("uses the driver import specifier when it differs from the package name", () => {
+    mockedDeps.add("uploadthing");
+    try {
+      const template = storage(
+        createNitroStub(undefined, { "/files": { driver: "uploadthing", token: "x" } })
+      ).template();
+      expect(template).toContain(`lib: () => import("uploadthing/server")`);
+    } finally {
+      mockedDeps.clear();
+    }
   });
 
   it("does not provide `lib` for dependencies that are not installed", () => {
