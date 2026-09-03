@@ -79,7 +79,7 @@ export async function writeTypes(nitro: Nitro) {
         verbatimModuleSyntax: true,
         allowImportingTsExtensions: true,
         /* Strictness */
-        strict: nitro.options.typescript.strict,
+        strict: nitro.options.typescript.strict ?? true,
         noUncheckedIndexedAccess: true,
         noImplicitOverride: true,
         forceConsistentCasingInFileNames: true,
