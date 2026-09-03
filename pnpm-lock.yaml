@@ -22,7 +22,7 @@ importers:
         version: 3.4.2
       crossws:
         specifier: ^0.4.12
-        version: 0.4.12(srvx@1.0.2)
+        version: 0.4.12(srvx@1.0.3)
       db0:
         specifier: ^0.4.1
         version: 0.4.1
@@ -48,8 +48,8 @@ importers:
         specifier: ^0.9.2
         version: 0.9.2
       srvx:
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.0.3
+        version: 1.0.3
       unenv:
         specifier: ^2.0.0-rc.24
         version: 2.0.0-rc.24
@@ -6339,8 +6339,8 @@ packages:
     engines: {node: '>=20.16.0'}
     hasBin: true
 
-  srvx@1.0.2:
-    resolution: {integrity: sha512-K4wqSN8sF8aJSng0kvGaTYuD6JGD97YW0RlWFhXUfrSBBmE8dUkLOwf3e5OxipPRnLwGWTlaldgFFhAQ2ue/2Q==}
+  srvx@1.0.3:
+    resolution: {integrity: sha512-aOuk+yNJA61yA6eJJvQJxpJLIxz090hKMqDGzd35tGsvwaodi1RPuYSFUp5EINaJp7snjVwLkO2RXVMPZBYnnA==}
     engines: {node: '>=20.16.0'}
     hasBin: true
 
@@ -10331,9 +10331,9 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
-  crossws@0.4.12(srvx@1.0.2):
+  crossws@0.4.12(srvx@1.0.3):
     optionalDependencies:
-      srvx: 1.0.2
+      srvx: 1.0.3
 
   crypt@0.0.2: {}
 
@@ -10555,10 +10555,10 @@ snapshots:
 
   env-runner@0.2.1:
     dependencies:
-      crossws: 0.4.12(srvx@1.0.2)
+      crossws: 0.4.12(srvx@1.0.3)
       exsolve: 1.1.1
       httpxy: 0.5.5
-      srvx: 1.0.2
+      srvx: 1.0.3
 
   eol@0.9.1: {}
 
@@ -10977,14 +10977,14 @@ snapshots:
       rou3: 0.8.1
       srvx: 0.11.22
     optionalDependencies:
-      crossws: 0.4.12(srvx@1.0.2)
+      crossws: 0.4.12(srvx@1.0.3)
 
   h3@2.0.1-rc.31(crossws@0.4.12)(ocache@0.3.0):
     dependencies:
       rou3: 0.9.2
-      srvx: 1.0.2
+      srvx: 1.0.3
     optionalDependencies:
-      crossws: 0.4.12(srvx@1.0.2)
+      crossws: 0.4.12(srvx@1.0.3)
       ocache: 0.3.0
 
   has-flag@4.0.0: {}
@@ -12635,7 +12635,7 @@ snapshots:
 
   rendu@0.1.0:
     dependencies:
-      srvx: 1.0.2
+      srvx: 1.0.3
 
   require-directory@2.1.1: {}
 
@@ -13003,7 +13003,7 @@ snapshots:
 
   srvx@0.9.8: {}
 
-  srvx@1.0.2: {}
+  srvx@1.0.3: {}
 
   stack-trace@1.0.0: {}
 
