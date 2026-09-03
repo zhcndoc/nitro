@@ -42,7 +42,7 @@ ${allHandlers
   .filter((h) => h.lazy)
   .map(
     (h) =>
-      /* js */ `const ${h._importHash} = h3.defineLazyEventHandler(() => import("${h.handler}")${h.format === "node" ? ".then(m => srvxNode.toFetchHandler(m.default))" : ""});`
+      /* js */ `const ${h._importHash} = h3.defineLazyEventHandler(() => import("${h.handler}")${h.format === "node" ? ".then(m => ({ fetch: srvxNode.toFetchHandler(m.default) }))" : ""});`
   )
   .join("\n")}
 
@@ -89,7 +89,7 @@ function serializeHandlerFn(h: NitroEventHandler & { _importHash: string }): str
   let code = h._importHash;
   if (!h.lazy) {
     if (h.format === "node") {
-      code = `srvxNode.toFetchHandler(${code})`;
+      code = `{ fetch: srvxNode.toFetchHandler(${code}) }`;
     }
     code = `h3.toEventHandler(${code})`;
   }
