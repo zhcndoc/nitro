@@ -340,6 +340,10 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "/env",
               },
               {
+                "dest": "/embedded-kit",
+                "src": "/embedded-kit",
+              },
+              {
                 "dest": "/context",
                 "src": "/context",
               },
@@ -532,6 +536,7 @@ describe("nitro:preset:vercel:web", async () => {
             "functions/assets/md.func (symlink)",
             "functions/config.func (symlink)",
             "functions/context.func (symlink)",
+            "functions/embedded-kit.func (symlink)",
             "functions/env.func (symlink)",
             "functions/errors/captured.func (symlink)",
             "functions/errors/stack.func (symlink)",
