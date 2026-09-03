@@ -76,7 +76,7 @@ async function _loadUserConfig(
   const { resolvePreset } = await import("../presets/index.ts");
 
   // prettier-ignore
-  let preset: string | undefined = (configOverrides.preset as string) || process.env.NITRO_PRESET || process.env.SERVER_PRESET
+  let preset: string | undefined = (configOverrides.preset as string) || process.env.NITRO_PRESET || process.env.SERVER_PRESET;
 
   // Inline `defaultPreset` object resolved during auto-detection (injected via `resolve`)
   let inlineDefaultPreset: (NitroConfig & { _meta?: NitroPresetMeta }) | undefined;
@@ -103,7 +103,7 @@ async function _loadUserConfig(
       }
 
       // prettier-ignore
-      const framework = getConf("framework")
+      const framework = getConf("framework");
       const isCustomFramework = framework?.name && framework.name !== "nitro";
 
       if (!preset) {
