@@ -125,6 +125,13 @@ describe("nitro:preset:vercel:web", async () => {
               },
               {
                 "headers": {
+                  "Location": "/target?param=$1",
+                },
+                "src": "/rules/redirect/wildcard-query/(.*)",
+                "status": 301,
+              },
+              {
+                "headers": {
                   "Location": "/$1",
                 },
                 "src": "/rules/redirect/legacy/(.*)",
