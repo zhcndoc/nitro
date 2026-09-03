@@ -194,14 +194,15 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "/cdn/(.*)",
               },
               {
-                "continue": true,
-                "headers": {
-                  "cache-control": "public,max-age=31536000,immutable",
-                },
-                "src": "/build(.*)",
+                "handle": "filesystem",
               },
               {
-                "handle": "filesystem",
+                "continue": false,
+                "headers": {
+                  "cache-control": "no-store",
+                },
+                "src": "/build/(.*)",
+                "status": 404,
               },
               {
                 "dest": "/rules/_/noncached/cached-isr?__isr_route=$__isr_route",
@@ -475,6 +476,47 @@ describe("nitro:preset:vercel:web", async () => {
           .then((r) => JSON.parse(r));
         expect(manifest.version).toBe(1);
         expect(manifest.hashes).toBeTypeOf("object");
+      });
+
+      it("should not cache missing immutable public assets", async () => {
+        const config = await fsp
+          .readFile(resolve(ctx.outDir, "config.json"), "utf8")
+          .then((r) => JSON.parse(r));
+        const filesystemIndex = config.routes.findIndex(
+          (route: { handle?: string }) => route.handle === "filesystem"
+        );
+
+        expect(config.routes[filesystemIndex + 1]).toEqual({
+          src: "/build/(.*)",
+          status: 404,
+          headers: {
+            "cache-control": "no-store",
+          },
+          continue: false,
+        });
+      });
+
+      it("should not duplicate the public asset cache-control rule", async () => {
+        const config = await fsp
+          .readFile(resolve(ctx.outDir, "config.json"), "utf8")
+          .then((r) => JSON.parse(r));
+        const filesystemIndex = config.routes.findIndex(
+          (route: { handle?: string }) => route.handle === "filesystem"
+        );
+
+        // `/build` has a `maxAge`, so its header comes from the route rule
+        const cacheRules = config.routes
+          .slice(0, filesystemIndex)
+          .filter(
+            (route: { src?: string; headers?: Record<string, string> }) =>
+              route.src === "/build/(.*)" && route.headers?.["cache-control"]
+          );
+        expect(cacheRules).toEqual([
+          {
+            src: "/build/(.*)",
+            headers: { "cache-control": "public, max-age=3600, immutable" },
+          },
+        ]);
       });
 
       it("should generate prerender config", async () => {

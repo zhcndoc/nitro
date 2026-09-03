@@ -3,9 +3,16 @@ import { constants } from "node:fs";
 import { defu } from "defu";
 import mime from "mime";
 import { writeFile } from "../_utils/fs.ts";
-import type { Nitro, NitroRouteRules, PrerenderRoute, ProxyRuleOptions } from "nitro/types";
+import type {
+  Nitro,
+  NitroRouteRules,
+  PrerenderRoute,
+  ProxyRuleOptions,
+  PublicAssetDir,
+} from "nitro/types";
 import { basename, dirname, relative, resolve } from "pathe";
 import { Router } from "../../routing.ts";
+import { escapeRegExp } from "../../utils/regex.ts";
 import { joinURL, withLeadingSlash, withoutLeadingSlash } from "ufo";
 import type {
   PrerenderFunctionConfig,
@@ -43,6 +50,12 @@ const SAFE_FS_CHAR_RE = /[^a-zA-Z0-9_.[\]/]/g;
 const INDEX_FILE_RE = /(^|\/)index(\.html)?$/;
 
 const SURROUNDING_SLASH_RE = /^\/+|\/+$/g;
+
+// `Cache-Control: max-age` for a non-fallthrough public asset directory that
+// does not set its own `maxAge`. Such assets are assumed to be immutable, since
+// a missing one 404s rather than reaching the server. Opt out with `maxAge: 0`,
+// or set a custom header with a `cache-control` route rule for the base.
+const DEFAULT_PUBLIC_ASSET_MAX_AGE = 31_536_000; // 1 year
 
 function getSystemNodeVersion() {
   const systemNodeVersion = Number.parseInt(process.versions.node.split(".")[0]);
@@ -230,6 +243,11 @@ function generateBuildConfig(nitro: Nitro, o11Routes?: ObservabilityRoute[]) {
       .map(([path]) => path)
   );
 
+  const publicAssetRoutes = getPublicAssetRoutes(nitro.options.publicAssets, {
+    baseURL: nitro.options.baseURL,
+    routeRules: nitro.options.routeRules,
+  });
+
   const config = defu(nitro.options.vercel?.config, {
     version: 3,
     framework: {
@@ -298,17 +316,27 @@ function generateBuildConfig(nitro: Nitro, o11Routes?: ObservabilityRoute[]) {
           ]
         : []),
       // Public asset rules
-      ...nitro.options.publicAssets
-        .filter((asset) => !asset.fallthrough)
-        .map((asset) => joinURL(nitro.options.baseURL, asset.baseURL || "/"))
-        .map((baseURL) => ({
-          src: baseURL + "(.*)",
+      ...publicAssetRoutes
+        .filter((route) => route.cacheControl)
+        .map(({ src, cacheControl }) => ({
+          src,
           headers: {
-            "cache-control": "public,max-age=31536000,immutable",
+            "cache-control": cacheControl!,
           },
           continue: true,
         })),
       { handle: "filesystem" },
+      // Missing public assets must not fall through to the server function,
+      // which would serve dynamic content under the immutable header above.
+      // `no-store` keeps that header off this 404.
+      ...publicAssetRoutes.map(({ src }) => ({
+        src,
+        status: 404,
+        headers: {
+          "cache-control": "no-store",
+        },
+        continue: false,
+      })),
     ],
   } as VercelBuildConfigV3);
 
@@ -385,6 +413,49 @@ function generateBuildConfig(nitro: Nitro, o11Routes?: ObservabilityRoute[]) {
   );
 
   return config;
+}
+
+/**
+ * Routes matching every public asset directory that Vercel serves from the
+ * filesystem instead of falling through to the server function.
+ *
+ * The root base is excluded to mirror the runtime, which never treats `/` as a
+ * public asset base (see `publicAssetBases`): a `/(.*)` source would otherwise
+ * cache-control every response and, worse, 404 every dynamic route.
+ *
+ * Sources are joined with a slash (`/build/(.*)`, not `/build(.*)`) so a
+ * sibling path such as `/buildings` is not matched, and escaped so that a base
+ * containing regular expression characters stays literal.
+ *
+ * `cacheControl` is unset when a route rule already sets the header for the
+ * base, which is the case for any directory with a positive `maxAge` (see
+ * `resolveAssetsOptions`). Emitting it again would duplicate the rule that is
+ * generated from route rules earlier in the routes array, and setting it here
+ * would have no effect anyway: the first match wins.
+ *
+ * It is also unset for an explicit `maxAge: 0`, which opts the directory out of
+ * the one-year default. Only a directory that never set a `maxAge` gets it.
+ */
+export function getPublicAssetRoutes(
+  publicAssets: PublicAssetDir[],
+  opts: { baseURL: string; routeRules: Record<string, NitroRouteRules> }
+): { src: string; cacheControl?: string }[] {
+  const routes: { src: string; cacheControl?: string }[] = [];
+  for (const asset of publicAssets) {
+    const assetBase = asset.baseURL || "/";
+    if (asset.fallthrough || assetBase === "/") {
+      continue;
+    }
+    const maxAge = asset.maxAge ?? DEFAULT_PUBLIC_ASSET_MAX_AGE;
+    routes.push({
+      src: joinURL(escapeRegExp(joinURL(opts.baseURL, assetBase)), "(.*)"),
+      cacheControl:
+        maxAge > 0 && !hasCacheControl(opts.routeRules[`${assetBase}/**`])
+          ? `public, max-age=${maxAge}, immutable`
+          : undefined,
+    });
+  }
+  return routes;
 }
 
 /**
@@ -743,4 +814,10 @@ async function writePrerenderConfig(
   }
 
   await writeFile(filename, JSON.stringify(prerenderConfig, null, 2));
+}
+
+function hasCacheControl(routeRules: NitroRouteRules | undefined): boolean {
+  return Object.keys(routeRules?.headers || {}).some(
+    (header) => header.toLowerCase() === "cache-control"
+  );
 }

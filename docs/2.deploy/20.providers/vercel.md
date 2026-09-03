@@ -235,6 +235,56 @@ If your hook throws, the message is retried locally. Retries honor `retryAfterSe
 
 You can provide additional [build output configuration](https://vercel.com/docs/build-output-api/v3) using the `vercel.config` key inside `nitro.config`. It will be merged with the built-in auto-generated config.
 
+## Public asset caching
+
+Public asset directories that do not fall through (the default for any non-root `baseURL`) are served by Vercel's CDN straight from the filesystem, with a `Cache-Control` header built from the directory's `maxAge`. Directories without an explicit `maxAge` are cached for one year, which is a Vercel-specific default kept for backwards compatibility.
+
+```ts [nitro.config.ts]
+import { defineConfig } from "nitro";
+
+export default defineConfig({
+  publicAssets: [
+    {
+      baseURL: "build",
+      dir: "public/build",
+      maxAge: 3600,
+    },
+  ],
+})
+```
+
+A request under such a base that does not match a file returns `404` with `Cache-Control: no-store` instead of reaching the server function. This mirrors the Nitro runtime, which also responds `404` for a missing asset under a non-fallthrough base, and it keeps dynamic content from being served — and then cached for the lifetime of the `max-age` — under an asset URL.
+
+Set `maxAge: 0` to opt out of the one-year default. No `Cache-Control` header is then generated for the base:
+
+```ts [nitro.config.ts]
+export default defineConfig({
+  publicAssets: [
+    {
+      baseURL: "build",
+      dir: "public/build",
+      maxAge: 0,
+    },
+  ],
+})
+```
+
+A `cache-control` route rule for the base takes precedence over both, so a directory can be served with a custom header instead:
+
+```ts [nitro.config.ts]
+export default defineConfig({
+  routeRules: {
+    "/build/**": { headers: { "cache-control": "no-cache" } },
+  },
+})
+```
+
+::note
+Falling-through directories are unaffected, including the top-level `public/` directory, which defaults to `fallthrough: true`. A missing file there still reaches your application handlers.
+::
+
+:read-more{to="/docs/assets"}
+
 ## Immutable static files
 
 ::important
