@@ -3,7 +3,7 @@ import { pathToFileURL } from "node:url";
 import { consola } from "consola";
 import { resolveModulePath } from "exsolve";
 import { dirname, join } from "pathe";
-import { isCI, isTest } from "std-env";
+import { hasTTY, isAgent, isCI, isTest } from "std-env";
 
 export interface DepOptions {
   /** Package name to resolve and install. */
@@ -41,11 +41,12 @@ export async function ensureDep(opts: DepOptions, _retry?: boolean): Promise<str
   let shouldInstall: boolean | undefined;
   if (_retry || isTest) {
     shouldInstall = false; // Do not install dependencies in test mode
-  } else if (isCI) {
+  } else if (isCI || isAgent || !hasTTY) {
+    const env = isCI ? "CI" : isAgent ? "agent" : "non-interactive";
     consola.info(
-      `\`${opts.id}\` is required for ${opts.reason}. Installing automatically in CI environment...`
+      `\`${opts.id}\` is required for ${opts.reason}. Installing automatically in ${env} environment...`
     );
-    shouldInstall = true; // Auto install in CI environments
+    shouldInstall = true; // Auto install in non-interactive environments (CI, AI agents, no TTY)
   } else {
     shouldInstall = await consola.prompt(
       `\`${opts.id}\` is required for ${opts.reason}, but it is not installed. Would you like to install it?`,
