@@ -1,16 +1,16 @@
-Set up server-side rendering (SSR) with Vue, Vue Router, Vite, and Nitro. This setup enables per-route code splitting, head management with unhead, and client hydration.
+使用 Vue、Vue Router、Vite 和 Nitro 设置服务器端渲染（SSR）。此设置支持按路由进行代码拆分、使用 unhead 管理 head，以及客户端 hydration。
 
-## Overview
+## 概述
 
-1. Add the Nitro Vite plugin to your Vite config
-2. Define routes with lazy-loaded components
-3. Create a server entry that renders your app with router support
-4. Create a client entry that hydrates and takes over routing
-5. Create page components
+1. 将 Nitro Vite 插件添加到 Vite 配置中
+2. 使用延迟加载组件定义路由
+3. 创建支持路由器的服务器入口以渲染应用
+4. 创建用于 hydration 并接管路由的客户端入口
+5. 创建页面组件
 
-## 1. Configure Vite
+## 1. 配置 Vite
 
-Add the Nitro and Vue plugins to your Vite config. Define both `client` and `ssr` environments:
+将 Nitro 和 Vue 插件添加到 Vite 配置中。定义 `client` 和 `ssr` 两个环境：
 
 ```js [vite.config.mjs]
 import vue from "@vitejs/plugin-vue";
@@ -37,11 +37,11 @@ function patchVueExclude(plugin, exclude) {
 }
 ```
 
-The `patchVueExclude` helper prevents the Vue plugin from processing asset imports (files with `?assets` query parameter).
+`patchVueExclude` 辅助函数会阻止 Vue 插件处理资源导入（带有 `?assets` 查询参数的文件）。
 
-## 2. Define Routes
+## 2. 定义路由
 
-Create route definitions with lazy-loaded components and asset metadata:
+使用延迟加载的组件和资源元数据创建路由定义：
 
 ```ts [app/routes.ts]
 import type { RouteRecordRaw } from "vue-router";
@@ -84,11 +84,11 @@ export const routes: RouteRecordRaw[] = [
 ];
 ```
 
-Use dynamic imports for lazy-loaded components to enable code splitting. The `meta.assets` function loads route-specific CSS and JS chunks. Define child routes under a root layout component for nested routing.
+使用动态导入来延迟加载组件，从而启用代码拆分。`meta.assets` 函数会加载特定路由的 CSS 和 JS 代码块。在根布局组件下定义子路由，以实现嵌套路由。
 
-## 3. Create the Server Entry
+## 3. 创建服务器入口
 
-The server entry renders your Vue app with router support and head management:
+服务器入口会使用路由器支持和 head 管理来渲染 Vue 应用：
 
 ```ts [app/entry-server.ts]
 import { createSSRApp } from "vue";
@@ -158,11 +158,11 @@ export default {
 };
 ```
 
-The server uses `createMemoryHistory()` since there's no browser URL bar—the router navigates to the requested URL before rendering. Assets are loaded dynamically based on matched routes, ensuring only the CSS and JS needed for the current page are included. The `unhead` library manages `<head>` elements, injecting stylesheets and scripts via `transformHtmlTemplate`.
+服务器使用 `createMemoryHistory()`，因为不存在浏览器地址栏——路由器会先导航到请求的 URL，然后再进行渲染。资源会根据匹配的路由动态加载，从而确保仅包含当前页面所需的 CSS 和 JS。`unhead` 库负责管理 `<head>` 元素，并通过 `transformHtmlTemplate` 注入样式表和脚本。
 
-## 4. Create the Client Entry
+## 4. 创建客户端入口
 
-The client entry hydrates the server-rendered HTML and takes over routing:
+客户端入口会对服务器渲染的 HTML 进行 hydration，并接管路由：
 
 ```ts [app/entry-client.ts]
 import { createSSRApp } from "vue";
@@ -182,11 +182,11 @@ async function main() {
 main();
 ```
 
-The client entry creates a Vue app with `createWebHistory()` for browser-based routing. After the router is ready, it mounts to the `#root` element and hydrates the server-rendered HTML.
+客户端入口使用 `createWebHistory()` 创建支持浏览器路由的 Vue 应用。路由器就绪后，它会挂载到 `#root` 元素，并对服务器渲染的 HTML 进行 hydration。
 
-## 5. Create the Root Component
+## 5. 创建根组件
 
-The root component provides navigation and renders child routes:
+根组件提供导航并渲染子路由：
 
 ```vue [app/app.vue]
 <script setup lang="ts">

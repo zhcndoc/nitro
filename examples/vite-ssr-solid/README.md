@@ -1,15 +1,15 @@
-Set up server-side rendering (SSR) with SolidJS, Vite, and Nitro. This setup uses `renderToStringAsync` for HTML generation and supports client hydration.
+使用 SolidJS、Vite 和 Nitro 设置服务器端渲染（SSR）。此设置使用 `renderToStringAsync` 生成 HTML，并支持客户端 hydration
 
-## Overview
+## 概述
 
-1. Add the Nitro Vite plugin to your Vite config
-2. Configure client and server entry points
-3. Create a server entry that renders your app to HTML
-4. Create a client entry that hydrates the server-rendered HTML
+1. 将 Nitro Vite 插件添加到 Vite 配置中
+2. 配置客户端和服务器入口点
+3. 创建将应用渲染为 HTML 的服务器入口
+4. 创建对服务器渲染的 HTML 执行 hydration 的客户端入口
 
-## 1. Configure Vite
+## 1. 配置 Vite
 
-Add the Nitro and SolidJS plugins to your Vite config. SolidJS requires explicit JSX configuration and both `ssr` and `client` environments:
+将 Nitro 和 SolidJS 插件添加到 Vite 配置中。SolidJS 要求显式配置 JSX，以及 `ssr` 和 `client` 环境：
 
 ```js [vite.config.mjs]
 import solid from "vite-plugin-solid";
@@ -30,11 +30,11 @@ export default defineConfig({
 });
 ```
 
-Enable SSR mode in the Solid plugin with `solid({ ssr: true })`. Configure esbuild to preserve JSX for Solid's compiler and use Solid's JSX runtime. SolidJS requires explicit `ssr` and `client` environment configuration in Vite.
+通过 `solid({ ssr: true })` 在 Solid 插件中启用 SSR 模式。配置 esbuild 以保留 JSX，供 Solid 的编译器使用，并使用 Solid 的 JSX runtime。SolidJS 要求在 Vite 中显式配置 `ssr` 和 `client` 环境
 
-## 2. Create the App Component
+## 2. 创建 App 组件
 
-Create a shared SolidJS component using reactive signals:
+使用响应式 signals 创建共享的 SolidJS 组件：
 
 ```tsx [src/app.tsx]
 import { createSignal } from "solid-js";
@@ -51,11 +51,11 @@ export function App() {
 }
 ```
 
-SolidJS uses signals (`createSignal`) for state management. Unlike React's `useState`, signals are getter functions that you call to read the value.
+SolidJS 使用 signals（`createSignal`）进行状态管理。与 React 的 `useState` 不同，signals 是 getter 函数，你需要调用它们来读取值
 
-## 3. Create the Server Entry
+## 3. 创建服务器入口
 
-The server entry renders your SolidJS app to HTML using `renderToStringAsync` and includes the `HydrationScript` for client-side hydration:
+服务器入口使用 `renderToStringAsync` 将 SolidJS 应用渲染为 HTML，并包含用于客户端 hydration 的 `HydrationScript`：
 
 ```tsx [src/entry-server.tsx]
 import { renderToStringAsync, HydrationScript } from "solid-js/web";
@@ -97,11 +97,11 @@ function Root(props: { appHTML?: string }) {
 }
 ```
 
-SolidJS requires rendering the app separately from the shell (two-phase rendering). The app HTML is injected via `innerHTML` to preserve hydration markers. Include the `HydrationScript` component to inject the script Solid needs to rehydrate on the client. Import assets using the `?assets=client` and `?assets=ssr` query parameters to collect CSS and JS from each entry point.
+SolidJS 要求将应用与外壳分开渲染（两阶段渲染）。应用 HTML 通过 `innerHTML` 注入，以保留 hydration 标记。包含 `HydrationScript` 组件，以注入 Solid 在客户端执行 rehydrate 所需的脚本。使用 `?assets=client` 和 `?assets=ssr` 查询参数导入资源，以收集每个入口点中的 CSS 和 JS
 
-## 4. Create the Client Entry
+## 4. 创建客户端入口
 
-The client entry hydrates the server-rendered HTML, restoring Solid's reactivity:
+客户端入口对服务器渲染的 HTML 执行 hydration，恢复 Solid 的响应性：
 
 ```tsx [src/entry-client.tsx]
 import { hydrate } from "solid-js/web";
@@ -111,4 +111,4 @@ import { App } from "./app.jsx";
 hydrate(() => <App />, document.querySelector("#app")!);
 ```
 
-The `hydrate` function attaches Solid's reactive system to the existing server-rendered DOM inside `#app`. The component is wrapped in a function `() => <App />` as required by Solid's API.
+`hydrate` 函数将 Solid 的响应式系统附加到 `#app` 内现有的服务器渲染 DOM 上。按照 Solid API 的要求，组件被包装在函数 `() => <App />` 中

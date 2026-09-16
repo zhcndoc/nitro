@@ -1,7 +1,7 @@
-The simplest Nitro server. Export an object with a `fetch` method that receives a standard `Request` and returns a `Response`. No frameworks, no abstractions, just the web platform.
+最简单的 Nitro 服务器。导出一个带有 `fetch` 方法的对象，该方法接收标准的 `Request` 并返回 `Response`。没有框架，没有抽象，只有 Web 平台。
 
 
-## Server Entry
+## 服务器入口
 
 ```ts [server.ts]
 export default {
@@ -11,6 +11,6 @@ export default {
 };
 ```
 
-The `fetch` method follows the same signature as Service Workers and Cloudflare Workers. This pattern works across all deployment targets because it uses web standards.
+`fetch` 方法遵循与 Service Workers 和 Cloudflare Workers 相同的签名。由于使用了 Web 标准，此模式适用于所有部署目标。
 
-Add the Nitro plugin to Vite and it handles the rest: dev server, hot reloading, and production builds.
+将 Nitro 插件添加到 Vite，它会处理其余工作：开发服务器、热重载和生产构建。

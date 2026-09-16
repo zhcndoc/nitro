@@ -1,6 +1,6 @@
-Import aliases like `~` and `#` let you reference modules with shorter paths instead of relative imports.
+导入别名（如 `~` 和 `#`）让你可以使用更短的路径引用模块，而不是使用相对导入
 
-## Importing Using Aliases
+## 使用别名导入
 
 ```ts [server/routes/index.ts]
 import { sum } from "~server/utils/math.ts";
@@ -14,8 +14,8 @@ export default () => {
 };
 ```
 
-The route imports the `sum` function using `~server/` and `rand` using `#server/`. Both resolve to the same `server/utils/math.ts` file. The handler generates two random numbers and returns their sum.
+该路由使用 `~server/` 导入 `sum` 函数，并使用 `#server/` 导入 `rand` 函数。两者都会解析到同一个 `server/utils/math.ts` 文件。处理程序生成两个随机数并返回它们的和。
 
-## Configuration
+## 配置
 
-Aliases can be configured in `package.json` imports field or `nitro.config.ts`.
+可以在 `package.json` 的 imports 字段或 `nitro.config.ts` 中配置别名。

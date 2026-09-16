@@ -1,16 +1,16 @@
-Set up React Router framework mode with Vite and Nitro. This setup uses Nitro to run the React Router server build in development and production.
+使用 Vite 和 Nitro 设置 React Router 框架模式。此设置使用 Nitro 在开发和生产环境中运行 React Router 服务端构建。
 
-## Overview
+## 概述
 
-1. Add the React Router and Nitro plugins to your Vite config
-2. Configure Nitro to emit its server alongside React Router's client build
-3. Create an SSR handler using React Router's request handler
-4. Add Nitro server routes
-5. Define routes using React Router's route configuration
+1. 将 React Router 和 Nitro 插件添加到 Vite 配置中
+2. 配置 Nitro，使其与 React Router 的客户端构建一起输出服务端构建
+3. 使用 React Router 的请求处理程序创建 SSR 处理程序
+4. 添加 Nitro 服务端路由
+5. 使用 React Router 的路由配置定义路由
 
-## 1. Configure Vite
+## 1. 配置 Vite
 
-Add the React Router, Tailwind CSS, and Nitro plugins to your Vite config:
+将 React Router、Tailwind CSS 和 Nitro 插件添加到 Vite 配置中：
 
 ```ts [vite.config.ts]
 import { reactRouter } from "@react-router/dev/vite";
@@ -42,11 +42,11 @@ export default defineConfig({
 });
 ```
 
-React Router creates the `ssr` environment and builds browser assets into `build/client`. The custom input points to the fetch-compatible handler in `server/ssr.ts`. Nitro scans `server/` for its own routes, then emits the production server into `build/server`.
+React Router 会创建 `ssr` 环境，并将浏览器资源构建到 `build/client` 中。自定义输入指向 `server/ssr.ts` 中兼容 fetch 的处理程序。Nitro 会扫描 `server/` 中的路由，然后将生产服务端输出到 `build/server` 中。
 
-## 2. Configure React Router
+## 2. 配置 React Router
 
-Enable SSR and keep the build directory in sync with the Nitro output configuration:
+启用 SSR，并使构建目录与 Nitro 输出配置保持同步：
 
 ```ts [react-router.config.ts]
 import type { Config } from "@react-router/dev/config";
@@ -57,11 +57,11 @@ export default {
 } satisfies Config;
 ```
 
-React Router generates the server build exposed by `virtual:react-router/server-build` and the client assets required for hydration.
+React Router 会生成通过 `virtual:react-router/server-build` 暴露的服务端构建，以及水合所需的客户端资源。
 
-## 3. Create the SSR Handler
+## 3. 创建 SSR 处理程序
 
-Create an SSR handler that delegates incoming requests to React Router:
+创建一个将传入请求委托给 React Router 的 SSR 处理程序：
 
 ```ts [server/ssr.ts]
 import { createRequestHandler } from "react-router";
@@ -74,11 +74,11 @@ export default {
 };
 ```
 
-Nitro invokes the exported Web `fetch` handler through the Vite `ssr` service in development and production. The request handler loads React Router's generated server build and renders the matched route.
+Nitro 会在开发和生产环境中通过 Vite `ssr` 服务调用导出的 Web `fetch` 处理程序。请求处理程序会加载 React Router 生成的服务端构建，并渲染匹配的路由。
 
-## 4. Add Nitro Server Routes
+## 4. 添加 Nitro 服务端路由
 
-Add API and other server routes under `server/routes/`:
+在 `server/routes/` 下添加 API 和其他服务端路由：
 
 ```ts [server/routes/health.get.ts]
 import { defineHandler } from "nitro";
@@ -88,11 +88,11 @@ export default defineHandler(() => {
 });
 ```
 
-This route is available at `/health` and is handled by Nitro before requests fall through to the React Router SSR service.
+此路由可通过 `/health` 访问，并由 Nitro 处理；如果请求未匹配，该请求才会继续传递给 React Router SSR 服务。
 
-## 5. Define React Router Routes
+## 5. 定义 React Router 路由
 
-Declare the application's route modules in `app/routes.ts`:
+在 `app/routes.ts` 中声明应用的路由模块：
 
 ```ts [app/routes.ts]
 import { type RouteConfig, index } from "@react-router/dev/routes";
@@ -100,4 +100,4 @@ import { type RouteConfig, index } from "@react-router/dev/routes";
 export default [index("routes/home.tsx")] satisfies RouteConfig;
 ```
 
-The index route renders the home page at `/`.
+索引路由会在 `/` 渲染主页。

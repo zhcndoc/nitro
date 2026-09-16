@@ -1,6 +1,6 @@
-Virtual routes let you define handlers as strings in your config instead of creating separate files. This is useful when generating routes dynamically, building plugins, or keeping simple routes inline.
+Virtual routes 允许你在配置中将处理程序定义为字符串，而无需创建单独的文件。这在动态生成路由、构建插件或将简单路由内联时非常有用
 
-## Configuration
+## 配置
 
 ```ts [nitro.config.ts]
 import { defineConfig } from "nitro";
@@ -16,6 +16,6 @@ export default defineConfig({
 });
 ```
 
-The `routes` option maps URL paths to virtual module identifiers (prefixed with `#`). The `virtual` option defines the module content as a string or function returning a string. At build time, Nitro resolves these virtual modules to actual handlers.
+`routes` 选项将 URL 路径映射到虚拟模块标识符（以 `#` 为前缀）。`virtual` 选项将模块内容定义为字符串，或返回字符串的函数。在构建时，Nitro 会将这些虚拟模块解析为实际的处理程序。
 
-There are no route files in this project. The entire handler is defined inline in the config, and Nitro generates the route at build time.
+此项目中没有路由文件。整个处理程序都以内联方式定义在配置中，Nitro 会在构建时生成该路由。

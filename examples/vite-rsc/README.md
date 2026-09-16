@@ -1,12 +1,12 @@
-This example demonstrates React Server Components (RSC) using Vite's experimental RSC plugin with Nitro. It includes server components, client components, server actions, and streaming SSR.
+此示例演示了使用 Vite 的实验性 RSC 插件和 Nitro 实现的 React Server Components（RSC）。其中包括服务器组件、客户端组件、服务器操作和流式 SSR。
 
-## Overview
+## 概览
 
-1. **SSR Entry** handles incoming requests and renders React components to HTML
-2. **Root Component** defines the page structure as a server component
-3. **Client Components** use the `"use client"` directive for interactive parts
+1. **SSR 入口**处理传入的请求，并将 React 组件渲染为 HTML
+2. **根组件**定义页面结构，作为服务器组件
+3. **客户端组件**使用 `"use client"` 指令实现交互部分
 
-## 1. SSR Entry
+## 1. SSR 入口
 
 ```tsx [app/framework/entry.ssr.tsx]
 import { createFromReadableStream } from "@vitejs/plugin-rsc/ssr";
@@ -93,9 +93,9 @@ export async function renderHTML(
 }
 ```
 
-The SSR entry handles the rendering pipeline. It loads the RSC entry module, duplicates the RSC stream (one for SSR, one for hydration), deserializes the stream back to React VDOM, and renders it to HTML. The RSC payload is injected into the HTML for client hydration.
+SSR 入口负责处理渲染流程。它会加载 RSC 入口模块，复制 RSC 流（一个用于 SSR，另一个用于 hydration），将流反序列化回 React VDOM，并将其渲染为 HTML。RSC 负载会被注入 HTML，以便客户端进行 hydration。
 
-## 2. Root Server Component
+## 2. 根服务器组件
 
 ```tsx [app/root.tsx]
 import "./index.css"; // css import is automatically injected in exported server components
@@ -174,9 +174,9 @@ function App(props: { url: URL }) {
 }
 ```
 
-Server components run only on the server. They can import CSS directly, use server-side data, and call server actions. The `ClientCounter` component is imported but runs on the client because it has the `"use client"` directive.
+服务器组件只在服务器上运行。它们可以直接导入 CSS、使用服务器端数据并调用服务器操作。`ClientCounter` 组件虽然被导入，但由于它包含 `"use client"` 指令，因此会在客户端运行。
 
-## 3. Client Component
+## 3. 客户端组件
 
 ```tsx [app/client.tsx]
 "use client";
@@ -190,4 +190,4 @@ export function ClientCounter() {
 }
 ```
 
-The `"use client"` directive marks this as a client component. It hydrates on the browser and handles interactive state. Server components can import and render client components, but client components cannot import server components.
+`"use client"` 指令将此组件标记为客户端组件。它会在浏览器上进行 hydration，并处理交互状态。服务器组件可以导入并渲染客户端组件，但客户端组件不能导入服务器组件。

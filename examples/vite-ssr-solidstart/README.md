@@ -1,14 +1,14 @@
-Set up server-side rendering (SSR) with Solid, Vite, and Nitro. This setup enables streaming HTML responses, automatic asset management, and client hydration.
+使用 Solid、Vite 和 Nitro 设置服务端渲染（SSR）。此设置支持流式 HTML 响应、自动资源管理和客户端水合。
 
-## Overview
+## 概述
 
-1. Add the Nitro Vite plugin to your Vite config
-2. Create a server entry that renders your app to HTML
-3. Create a client entry that hydrates the server-rendered HTML
+1. 将 Nitro Vite 插件添加到 Vite 配置中
+2. 创建一个将应用渲染为 HTML 的服务端入口
+3. 创建一个对服务端渲染的 HTML 进行水合的客户端入口
 
-## 1. Configure Vite
+## 1. 配置 Vite
 
-Add the SolidStart and Nitro plugins to your Vite config.
+将 SolidStart 和 Nitro 插件添加到 Vite 配置中。
 
 ```js [vite.config.ts]
 import { defineConfig } from "vite";
@@ -20,9 +20,9 @@ export default defineConfig({
 });
 ```
 
-## 2. Create the App Component
+## 2. 创建应用组件
 
-Create a shared Solid component that runs on both server and client:
+创建一个同时在服务端和客户端运行的共享 Solid 组件：
 
 ```tsx [src/app.tsx]
 import { MetaProvider, Title } from "@solidjs/meta";
@@ -46,9 +46,9 @@ export default function App() {
 }
 ```
 
-## 3. Create the Server Entry
+## 3. 创建服务端入口
 
-The server entry renders your Solid app to a streaming HTML response:
+服务端入口会将 Solid 应用渲染为流式 HTML 响应：
 
 ```tsx [src/entry-server.tsx]
 // @refresh reload
@@ -73,9 +73,9 @@ export default createHandler(() => (
 ));
 ```
 
-## 4. Create the Client Entry
+## 4. 创建客户端入口
 
-The client entry hydrates the server-rendered HTML, attaching Solid's event handlers:
+客户端入口会对服务端渲染的 HTML 进行水合，并附加 Solid 的事件处理器：
 
 ```tsx [src/entry-client.tsx]
 // @refresh reload

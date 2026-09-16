@@ -1,15 +1,15 @@
-Set up TanStack Start with Nitro for a full-stack React framework experience with server-side rendering, file-based routing, and integrated API routes.
+使用 Nitro 设置 TanStack Start，获得具备服务器端渲染、基于文件的路由和集成 API 路由的全栈 React 框架体验
 
-## Overview
+## 概述
 
-1. Add the Nitro Vite plugin to your Vite config
-2. Create a server entry using TanStack Start's server handler
-3. Configure the router with default components
-4. Define routes and API endpoints using file-based routing
+1. 将 Nitro Vite 插件添加到 Vite 配置中
+2. 使用 TanStack Start 的服务器处理程序创建服务器入口
+3. 使用默认组件配置路由器
+4. 使用基于文件的路由定义路由和 API 端点
 
-## 1. Configure Vite
+## 1. 配置 Vite
 
-Add the Nitro, React, TanStack Start, and Tailwind plugins to your Vite config:
+将 Nitro、React、TanStack Start 和 Tailwind 插件添加到 Vite 配置中：
 
 ```js [vite.config.mjs]
 import { defineConfig } from "vite";
@@ -27,11 +27,11 @@ export default defineConfig({
 });
 ```
 
-The `tanstackStart()` plugin provides full SSR integration with automatic client entry handling. The `environments.ssr` option points to the server entry file.
+`tanstackStart()` 插件提供完整的 SSR 集成，并自动处理客户端入口。`environments.ssr` 选项指向服务器入口文件。
 
-## 2. Create the Server Entry
+## 2. 创建服务器入口
 
-Create a server entry that uses TanStack Start's handler:
+创建一个使用 TanStack Start 处理程序的服务器入口：
 
 ```ts [server.ts]
 import handler, { createServerEntry } from "@tanstack/react-start/server-entry";
@@ -43,11 +43,11 @@ export default createServerEntry({
 });
 ```
 
-TanStack Start handles SSR automatically. The `createServerEntry` wrapper integrates with Nitro's server entry format, and the `handler.fetch` processes all incoming requests.
+TanStack Start 会自动处理 SSR。`createServerEntry` 包装器与 Nitro 的服务器入口格式集成，而 `handler.fetch` 则处理所有传入的请求。
 
-## 3. Configure the Router
+## 3. 配置路由器
 
-Create a router factory function with default error and not-found components:
+创建一个带有默认错误组件和未找到组件的路由器工厂函数：
 
 ```tsx [src/router.tsx]
 import { createRouter } from "@tanstack/react-router";
@@ -65,11 +65,11 @@ export function getRouter() {
 }
 ```
 
-The router factory configures preloading behavior, scroll restoration, and default error/not-found components.
+路由器工厂配置预加载行为、滚动恢复以及默认错误和未找到组件。
 
-## 4. Create the Root Route
+## 4. 创建根路由
 
-The root route defines your HTML shell with head management and scripts:
+根路由使用头部管理和脚本定义 HTML 外壳：
 
 ```tsx [src/routes/__root.tsx]
 /// <reference types="vite/client" />
@@ -121,11 +121,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 }
 ```
 
-Define meta tags, stylesheets, and scripts in the `head()` function. The `shellComponent` provides the HTML document shell that wraps all pages. Use `HeadContent` to render the head configuration and `Scripts` to inject the client-side JavaScript for hydration.
+在 `head()` 函数中定义元标签、样式表和脚本。`shellComponent` 提供包裹所有页面的 HTML 文档外壳。使用 `HeadContent` 渲染头部配置，并使用 `Scripts` 注入用于水合的客户端 JavaScript。
 
-## 5. Create Page Routes
+## 5. 创建页面路由
 
-Page routes define your application pages:
+页面路由定义应用程序页面：
 
 ```tsx [src/routes/index.tsx]
 import { createFileRoute } from "@tanstack/react-router";
@@ -142,6 +142,6 @@ function Home() {
 }
 ```
 
-## API Routes
+## API 路由
 
-TanStack Start supports API routes alongside page routes. Create files in `src/routes/api/` to define server endpoints that Nitro serves automatically.
+TanStack Start 支持与页面路由并存的 API 路由。在 `src/routes/api/` 中创建文件，以定义 Nitro 自动提供服务的服务器端点。

@@ -1,4 +1,4 @@
-## Server Entry
+## 服务器入口
 
 ```tsx [server.tsx]
 export default () => (
@@ -8,4 +8,4 @@ export default () => (
 );
 ```
 
-Nitro auto-detects `server.tsx` and uses mono-jsx to transform JSX into HTML. Export a function that returns JSX, and Nitro sends the rendered HTML as the response.
+Nitro 会自动检测 `server.tsx`，并使用 mono-jsx 将 JSX 转换为 HTML。导出一个返回 JSX 的函数，Nitro 会将渲染后的 HTML 作为响应发送出去。

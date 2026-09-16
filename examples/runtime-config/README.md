@@ -1,8 +1,8 @@
-Runtime config lets you define configuration values that can be overridden by environment variables at runtime.
+运行时配置允许你定义可在运行时通过环境变量覆盖的配置值。
 
-## Define Config Schema
+## 定义配置架构
 
-Declare your runtime config with default values in `nitro.config.ts`:
+在 `nitro.config.ts` 中使用默认值声明运行时配置：
 
 ```ts [nitro.config.ts]
 import { defineConfig } from "nitro";
@@ -15,9 +15,9 @@ export default defineConfig({
 });
 ```
 
-## Access at Runtime
+## 在运行时访问
 
-Use `useRuntimeConfig` to access configuration values in your handlers:
+在处理程序中使用 `useRuntimeConfig` 访问配置值：
 
 ```ts [server.ts]
 import { defineHandler } from "nitro";
@@ -29,9 +29,9 @@ export default defineHandler((event) => {
 });
 ```
 
-## Environment Variables
+## 环境变量
 
-Override config values via environment variables prefixed with `NITRO_`:
+通过添加 `NITRO_` 前缀的环境变量覆盖配置值：
 
 ```sh [.env]
 # NEVER COMMIT SENSITIVE DATA. THIS IS ONLY FOR DEMO PURPOSES.

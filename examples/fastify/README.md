@@ -1,4 +1,4 @@
-## Server Entry
+## 服务器入口
 
 ```ts [server.node.ts]
 import Fastify from "fastify";
@@ -12,10 +12,10 @@ await app.ready();
 export default app.routing;
 ```
 
-Nitro auto-detects `server.node.ts` in your project root and uses it as the server entry.
+Nitro 会自动检测项目根目录中的 `server.node.ts`，并将其用作服务器入口
 
-Call `await app.ready()` to initialize all registered plugins before exporting. Export `app.routing` (not `app`) to provide Nitro with the request handler function.
+在导出之前调用 `await app.ready()`，以初始化所有已注册的插件。导出 `app.routing`（而不是 `app`），为 Nitro 提供请求处理函数
 
 ::note
-The `.node.ts` suffix indicates this entry is Node.js specific and won't work in other runtimes like Cloudflare Workers or Deno.
+`.node.ts` 后缀表示此入口专用于 Node.js，无法在 Cloudflare Workers 或 Deno 等其他运行时中运行
 ::

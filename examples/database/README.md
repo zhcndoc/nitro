@@ -1,6 +1,6 @@
-Nitro provides a built-in database layer that uses SQL template literals for safe, parameterized queries. This example creates a users table, inserts a record, and queries it back.
+Nitro 提供了一个内置数据库层，该数据库层使用 SQL 模板字面量来执行安全的参数化查询。此示例创建一个 users 表，插入一条记录，然后查询该记录。
 
-## Querying the Database
+## 查询数据库
 
 ```ts [server.ts]
 import { defineHandler } from "nitro";
@@ -26,11 +26,11 @@ export default defineHandler(async () => {
 });
 ```
 
-Retrieve the database instance using `useDatabase()`. The database can be queried using `db.sql`, and variables like `${userId}` are automatically escaped to prevent SQL injection.
+使用 `useDatabase()` 获取数据库实例。可以使用 `db.sql` 查询数据库，`${userId}` 之类的变量会自动进行转义，以防止 SQL 注入。
 
-## Running Migrations with Tasks
+## 使用 Tasks 运行迁移
 
-Nitro tasks let you run operations outside of request handlers. For database migrations, create a task file in `tasks/` and run it via the CLI. This keeps schema changes separate from your application code.
+Nitro tasks 允许你在请求处理程序之外运行操作。对于数据库迁移，请在 `tasks/` 中创建任务文件，然后通过 CLI 运行它。这样可以将架构变更与应用代码分离。
 
 ```ts [tasks/db/migrate.ts]
 import { defineTask } from "nitro/task";

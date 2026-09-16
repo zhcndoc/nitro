@@ -1,8 +1,6 @@
-This example implements a simple chat room using WebSockets. Clients connect, send messages, and receive messages from other users in real-time. The server broadcasts messages to all connected clients using pub/sub channels.
+## WebSocket 处理器
 
-## WebSocket Handler
-
-Create a WebSocket route using `defineWebSocketHandler`.
+使用 `defineWebSocketHandler` 创建一个 WebSocket 路由。
 
 ```ts [routes/_ws.ts]
 import { defineWebSocketHandler } from "nitro";
@@ -31,4 +29,4 @@ export default defineWebSocketHandler({
 });
 ```
 
-Different hooks are exposed by `defineWebSocketHandler()` to integrate with different parts of the websocket lifecycle.
+`defineWebSocketHandler()` 会暴露不同的钩子，以便集成到 WebSocket 生命周期的不同部分。

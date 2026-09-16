@@ -1,4 +1,4 @@
-## Server Entry
+## 服务器入口
 
 ```tsx [server.tsx]
 import { defineHandler, html } from "nitro";
@@ -9,4 +9,4 @@ export default defineHandler(() => {
 });
 ```
 
-Nitro auto-detects `server.tsx` and uses it as the server entry. Use `renderSSR` from nano-jsx to convert JSX into an HTML string. The `html` helper from H3 sets the correct content type header.
+Nitro 会自动检测 `server.tsx` 并将其用作服务器入口。使用 nano-jsx 中的 `renderSSR` 将 JSX 转换为 HTML 字符串。H3 中的 `html` 辅助函数会设置正确的内容类型标头。

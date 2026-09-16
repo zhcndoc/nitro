@@ -1,15 +1,15 @@
-Set up server-side rendering (SSR) with React, Vite, and Nitro. This setup enables streaming HTML responses, automatic asset management, and client hydration.
+使用 React、Vite 和 Nitro 设置服务端渲染（SSR）。此设置支持流式 HTML 响应、自动资源管理和客户端水合。
 
-## Overview
+## 概述
 
-1. Add the Nitro Vite plugin to your Vite config
-2. Configure client and server entry points
-3. Create a server entry that renders your app to HTML
-4. Create a client entry that hydrates the server-rendered HTML
+1. 将 Nitro Vite 插件添加到 Vite 配置中
+2. 配置客户端和服务端入口
+3. 创建将应用渲染为 HTML 的服务端入口
+4. 创建对服务端渲染 HTML 进行水合的客户端入口
 
-## 1. Configure Vite
+## 1. 配置 Vite
 
-Add the Nitro and React plugins to your Vite config. Define the `client` environment with your client entry point:
+将 Nitro 和 React 插件添加到 Vite 配置中。使用客户端入口点定义 `client` 环境：
 
 ```js [vite.config.mjs]
 import { defineConfig } from "vite";
@@ -26,11 +26,11 @@ export default defineConfig({
 });
 ```
 
-The `environments.client` configuration tells Vite which file to use as the browser entry point. Nitro automatically detects the SSR entry from a file named `entry-server` in `app/`, `src/`, or the project root.
+`environments.client` 配置告知 Vite 将哪个文件用作浏览器入口点。Nitro 会自动从 `app/`、`src/` 或项目根目录中名为 `entry-server` 的文件检测 SSR 入口。
 
-## 2. Create the App Component
+## 2. 创建 App 组件
 
-Create a shared React component that runs on both server and client:
+创建一个同时在服务端和客户端运行的共享 React 组件：
 
 ```tsx [src/app.tsx]
 import { useState } from "react";
@@ -46,9 +46,9 @@ export function App() {
 }
 ```
 
-## 3. Create the Server Entry
+## 3. 创建服务端入口
 
-The server entry renders your React app to a streaming HTML response. It uses `react-dom/server.edge` for edge-compatible streaming:
+服务端入口会将你的 React 应用渲染为流式 HTML 响应。它使用 `react-dom/server.edge` 进行兼容边缘环境的流式渲染：
 
 ```tsx [src/entry-server.tsx]
 import "./styles.css";
@@ -85,11 +85,11 @@ export default {
 };
 ```
 
-Import assets using the `?assets=client` and `?assets=ssr` query parameters. Nitro collects CSS and JS assets from each entry point, and `merge()` combines them into a single manifest. The `assets` object provides arrays of stylesheet and script attributes, plus the client entry URL. Use `renderToReadableStream` to stream HTML as React renders, improving time-to-first-byte.
+使用 `?assets=client` 和 `?assets=ssr` 查询参数导入资源。Nitro 会从每个入口点收集 CSS 和 JS 资源，`merge()` 会将它们合并到单个清单中。`assets` 对象提供样式表和脚本属性数组，以及客户端入口 URL。使用 `renderToReadableStream` 在 React 渲染 HTML 时对其进行流式传输，从而缩短首字节时间。
 
-## 4. Create the Client Entry
+## 4. 创建客户端入口
 
-The client entry hydrates the server-rendered HTML, attaching React's event handlers:
+客户端入口会对服务端渲染的 HTML 进行水合，并附加 React 的事件处理程序：
 
 ```tsx [src/entry-client.tsx]
 import "@vitejs/plugin-react/preamble";
@@ -99,4 +99,4 @@ import { App } from "./app.tsx";
 hydrateRoot(document.querySelector("#app")!, <App />);
 ```
 
-The `@vitejs/plugin-react/preamble` import is required for React Fast Refresh during development. The `hydrateRoot` function attaches React to the existing server-rendered DOM without re-rendering it.
+在开发期间，必须导入 `@vitejs/plugin-react/preamble` 才能使用 React Fast Refresh。`hydrateRoot` 函数会将 React 附加到现有的服务端渲染 DOM，而无需重新渲染它。

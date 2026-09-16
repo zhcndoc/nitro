@@ -1,16 +1,16 @@
-This example renders an HTML template with server-side data and streams the response word by word. It demonstrates how to use Nitro's Vite SSR integration without a framework.
+此示例使用服务器端数据渲染 HTML 模板，并逐字流式传输响应。它演示了如何在不使用框架的情况下使用 Nitro 的 Vite SSR 集成。
 
-## Overview
+## 概述
 
-1. **Add the Nitro Vite plugin** to enable SSR
-2. **Create an HTML template** with a `<!--ssr-outlet-->` comment where server content goes
-3. **Create a server entry** that fetches data and returns a stream
-4. **Add API routes** for server-side data
+1. **添加 Nitro Vite 插件**以启用 SSR
+2. **创建 HTML 模板**，并在服务器内容插入的位置添加 `<!--ssr-outlet-->` 注释
+3. **创建服务器入口**，用于获取数据并返回流
+4. **添加 API 路由**以提供服务器端数据
 
-## How It Works
+## 工作原理
 
-The `index.html` file contains an `<!--ssr-outlet-->` comment that marks where server-rendered content will be inserted. Nitro replaces this comment with the output from your server entry.
+`index.html` 文件包含一个 `<!--ssr-outlet-->` 注释，用于标记插入服务器渲染内容的位置。Nitro 会将此注释替换为服务器入口的输出内容。
 
-The server entry exports an object with a `fetch` method. It calls the `/quote` API route using Nitro's internal fetch, then returns a `ReadableStream` that emits the quote text word by word with a 50ms delay between each word.
+服务器入口导出一个包含 `fetch` 方法的对象。它使用 Nitro 的内部 fetch 调用 `/quote` API 路由，然后返回一个 `ReadableStream`，以每个单词之间间隔 50ms 的速度逐字发出名言文本。
 
-The quote route fetches a JSON file of quotes from GitHub, caches the result, and returns a random quote. The server entry calls this route to get content for the page.
+名言路由从 GitHub 获取名言 JSON 文件，缓存结果，然后返回一条随机名言。服务器入口调用此路由来获取页面内容。

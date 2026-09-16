@@ -344,7 +344,7 @@ Nitro 为 [KV Storage](/docs/storage) 和 [Database](/docs/database) 等基础�
 
 :read-more{title="KV 存储" to="/docs/storage"}
 
-在运行时，你可以通过 `event.req.runtime.cloudflare.env` 从请求事件中访问绑定。例如，以下是访问 D1 绑定的方式：
+你可以通过 `event.req.runtime.cloudflare.env` 从请求事件中访问绑定。例如，以下是访问 D1 绑定的方式：
 
 ```ts
 import { defineHandler } from "nitro";
@@ -358,11 +358,11 @@ defineHandler(async (event) => {
 
 ### 在本地开发中访问绑定
 
-在开发模式下，Nitro 使用 [Miniflare](https://miniflare.dev/) 模拟 Cloudflare 环境（这是 Wrangler 和 Cloudflare Workers 在生产环境中使用的同一个 [`workerd`](https://github.com/cloudflare/workerd) 运行时）。这意味着绑定可以原生地从请求事件中获取，无需单独的代理或安装 `wrangler`。
+在开发模式下，Nitro 使用 [Miniflare](https://miniflare.dev/) 模拟 Cloudflare 环境（这是 Wrangler 和生产环境中的 Cloudflare Workers 使用的相同 [`workerd`](https://github.com/cloudflare/workerd) 运行时）。这意味着绑定可以直接从请求事件中原生访问，无需单独的代理。
 
 [`miniflare`](https://www.npmjs.com/package/miniflare) 软件包由你的项目负责管理：Nitro 会从你的 `node_modules` 中解析它，并在首次使用时提供安装选项。
 
-要在开发模式下访问绑定，请先定义它们。你可以在 `wrangler.jsonc`/`wrangler.json`/`wrangler.toml` 文件中完成此操作：
+要在开发模式下访问绑定，请先定义绑定。你可以在 `wrangler.jsonc`/`wrangler.json`/`wrangler.toml` 文件中完成此操作（读取 `wrangler.jsonc`、`wrangler.toml` 和 `.dev.vars` 需要安装 `wrangler` 软件包）：
 
 ::code-group
 
@@ -415,7 +415,14 @@ export default defineConfig({
 
 时，你可以按照上面的示例从请求事件中访问 `MY_VARIABLE` 和 `MY_KV`。
 
-#### Wrangler 环境
+与 `wrangler dev` 相比，有以下几点不同：
+
+- 绑定（KV、D1、R2 等）的本地数据会持久化到 `.wrangler/state/v3`，并与 `wrangler dev` 共享
+- 无论 `compatibility_date` 如何设置，都会使用已安装的 `miniflare` 所支持的最新兼容性日期
+- 静态资源由 Nitro 提供服务，并且无法使用指向其他 Worker 的绑定（`services`、`tail_consumers`）以及指向类或处理程序的绑定（`durable_objects`、`workflows`、队列使用者）
+- 设置 `cloudflare.wrangler` 后，它会与最近的 Wrangler 配置文件合并
+
+#### Wrangler environments
 
 如果你有多个 Wrangler 环境，你可以使用 `cloudflare.wranglerEnv` 选项指定在本地开发模拟时要使用的环境：
 

@@ -1,6 +1,6 @@
-Use Shiki for syntax highlighting with TextMate grammars. This example highlights code on the server using Nitro's server scripts feature, which runs JavaScript inside HTML files before sending the response.
+使用 Shiki 和 TextMate 语法进行语法高亮。此示例使用 Nitro 的 server scripts 功能在服务器上对代码进行高亮，该功能会在发送响应之前运行 HTML 文件中的 JavaScript
 
-## API Route
+## API 路由
 
 ```ts [api/highlight.ts]
 import { createHighlighterCore } from "shiki/core";
@@ -24,9 +24,9 @@ export default async ({ req }: { req: Request }) => {
 };
 ```
 
-Create a Shiki highlighter with the Vitesse Dark theme and TypeScript language support. When the API receives a POST request, it reads the code from the request body and returns highlighted HTML.
+创建一个使用 Vitesse Dark 主题并支持 TypeScript 语言的 Shiki 高亮器。当 API 收到 POST 请求时，它会从请求正文中读取代码，并返回高亮后的 HTML
 
-## Server-Side Rendering
+## 服务端渲染
 
 ```html [index.html]
 <!doctype html>
@@ -53,4 +53,4 @@ Create a Shiki highlighter with the Vitesse Dark theme and TypeScript language s
 </html>
 ```
 
-The `<script server>` tag runs on the server before the HTML is sent. It defines a helper function that calls the highlight API using `serverFetch`. The triple-brace syntax `{{{ }}}` outputs the result without escaping, so the highlighted HTML renders correctly.
+`<script server>` 标签会在发送 HTML 之前在服务器上运行。它定义了一个使用 `serverFetch` 调用高亮 API 的辅助函数。三重花括号语法 `{{{ }}}` 会在不进行转义的情况下输出结果，因此高亮后的 HTML 可以正确渲染。

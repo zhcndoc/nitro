@@ -1,14 +1,14 @@
-Set up tRPC with Vite and Nitro for end-to-end typesafe APIs without code generation. This example builds a counter with server-side rendering for the initial value and client-side updates.
+使用 Vite 和 Nitro 设置 tRPC，以实现无需代码生成的端到端类型安全 API。此示例构建了一个计数器，初始值使用服务器端渲染，客户端负责后续更新。
 
-## Overview
+## 概述
 
-1. Configure Vite with the Nitro plugin and route tRPC requests
-2. Create a tRPC router with procedures
-3. Create an HTML page with server-side rendering and client interactivity
+1. 使用 Nitro 插件配置 Vite，并路由 tRPC 请求
+2. 创建包含过程的 tRPC 路由器
+3. 创建带有服务器端渲染和客户端交互功能的 HTML 页面
 
-## 1. Configure Vite
+## 1. 配置 Vite
 
-Add the Nitro plugin and configure the `/trpc/**` route to point to your tRPC handler:
+添加 Nitro 插件，并将 `/trpc/**` 路由配置为指向你的 tRPC 处理程序：
 
 ```ts [vite.config.ts]
 import { defineConfig } from "vite";
@@ -25,11 +25,11 @@ export default defineConfig({
 });
 ```
 
-The `routes` option maps URL patterns to handler files. All requests to `/trpc/*` are handled by the tRPC router.
+`routes` 选项将 URL 模式映射到处理程序文件。所有对 `/trpc/*` 的请求都由 tRPC 路由器处理。
 
-## 2. Create the tRPC Router
+## 2. 创建 tRPC 路由器
 
-Define your tRPC router with procedures and export it as a fetch handler:
+使用过程定义你的 tRPC 路由器，并将其导出为 fetch 处理程序：
 
 ```ts [server/trpc.ts]
 import { initTRPC } from "@trpc/server";
@@ -63,11 +63,11 @@ export default {
 };
 ```
 
-Define procedures using `t.procedure.query()` for read operations and `t.procedure.mutation()` for write operations. Export the `AppRouter` type so clients get full type inference. The default export uses tRPC's fetch adapter to handle incoming requests.
+使用 `t.procedure.query()` 定义读取操作，使用 `t.procedure.mutation()` 定义写入操作。导出 `AppRouter` 类型，以便客户端获得完整的类型推断。默认导出使用 tRPC 的 fetch 适配器处理传入请求。
 
-## 3. Create the HTML Page
+## 3. 创建 HTML 页面
 
-Create an HTML page with server-side rendering and client-side interactivity:
+创建一个带有服务器端渲染和客户端交互功能的 HTML 页面：
 
 ```html [index.html]
 <!doctype html>
@@ -159,4 +159,4 @@ Create an HTML page with server-side rendering and client-side interactivity:
 </html>
 ```
 
-The `<script server>` block runs on the server before sending the response, fetching the initial counter value via `serverFetch`. The `<script setup>` block runs in the browser and handles the increment button click.
+`<script server>` 代码块会在发送响应之前于服务器上运行，通过 `serverFetch` 获取初始计数器值。`<script setup>` 代码块会在浏览器中运行，并处理递增按钮的点击事件。

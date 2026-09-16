@@ -1,6 +1,6 @@
-Create a custom renderer that generates HTML responses with data from API routes. Use Nitro's internal `fetch` to call routes without network overhead.
+创建一个自定义渲染器，使用 API 路由中的数据生成 HTML 响应。使用 Nitro 的内部 `fetch` 调用路由，无需网络开销。
 
-## Renderer
+## 渲染器
 
 ```ts [renderer.ts]
 import { fetch } from "nitro";
@@ -24,11 +24,11 @@ export default async function renderer({ url }: { req: Request; url: URL }) {
 }
 ```
 
-Configure the renderer with `renderer: { handler: "./renderer" }` in `nitro.config.ts`, and Nitro uses it for all non-API routes. The renderer function receives the request URL and returns a `Response`. (Alternatively, if an `index.html` exists in your project root, Nitro auto-detects it as a renderer template.)
+在 `nitro.config.ts` 中使用 `renderer: { handler: "./renderer" }` 配置渲染器，Nitro 会将其用于所有非 API 路由。渲染器函数接收请求 URL 并返回一个 `Response`。（或者，如果项目根目录中存在 `index.html`，Nitro 会自动将其检测为渲染器模板。）
 
-Use `fetch` from `nitro` to call API routes without network overhead—these requests stay in-process.
+使用来自 `nitro` 的 `fetch` 调用 API 路由，无需网络开销——这些请求会在进程内完成。
 
-## API Route
+## API 路由
 
 ```ts [api/hello.ts]
 import { defineHandler } from "nitro";
@@ -36,4 +36,4 @@ import { defineHandler } from "nitro";
 export default defineHandler(() => "Nitro is amazing!");
 ```
 
-Define API routes in the `api/` directory. When the renderer calls `fetch("/api/hello")`, this handler runs and returns its response.
+在 `api/` 目录中定义 API 路由。当渲染器调用 `fetch("/api/hello")` 时，此处理程序会运行并返回其响应。
