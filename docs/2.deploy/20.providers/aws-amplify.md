@@ -9,19 +9,19 @@
 ## 部署到 AWS Amplify Hosting
 
 ::tip
-使用[零配置](/deploy/#zero-config-providers)即可与提供程序集成。
+与此提供商集成时无需进行[零配置](/deploy#zero-config-providers)
 ::
 
-1. 登录到 [AWS Amplify Hosting 控制台](https://console.aws.amazon.com/amplify/)
-2. 点击“开始使用” > Amplify Hosting（托管您的 Web 应用）
-3. 选择并授权访问您的 Git 仓库提供程序，然后选择主分支
-4. 为您的应用选择一个名称，确保构建设置已自动检测，并在高级部分下可选地设置所需的环境变量
-5. （可选）选择启用 SSR 日志记录，以将服务端日志记录到您的 Amazon CloudWatch 账户
-6. 确认配置，然后点击“保存并部署”
+1. 登录 [AWS Amplify Hosting 控制台](https://console.aws.amazon.com/amplify/)
+2. 点击“Get Started” > Amplify Hosting（Host your web app）
+3. 选择并授权访问您的 Git 仓库提供商，然后选择主分支
+4. 为您的应用选择名称，确保自动检测构建设置，并可选地在高级部分设置所需的环境变量
+5. 可选地，选择 Enable SSR logging，以启用将服务器端日志记录到您的 Amazon CloudWatch 账户
+6. 确认配置并点击“Save and Deploy”
 
 ## 高级配置
 
-您可以使用 `awsAmplify` 选项配置此预设的高级选项。
+You can configure advanced options of this preset using the `awsAmplify` option.
 
 ```ts [nitro.config.ts]
 import { defineConfig } from "nitro";

@@ -1,5 +1,6 @@
 ---
-category: features
+navigation:
+  category: features
 icon: i-lucide-alert-circle
 ---
 
@@ -28,7 +29,7 @@ import { defineConfig } from "nitro";
 
 export default defineConfig({
   errorHandler: "./error.ts",
-  // devErrorHandler: errorHandler,
+  // devErrorHandler: errorHandler
 });
 ```
 
@@ -109,4 +110,4 @@ export default defineHandler(() => {
 
 ## 了解更多
 
-- [服务器入口](/docs/server-entry)
+- [服务器入口](/docs/server-entry)。

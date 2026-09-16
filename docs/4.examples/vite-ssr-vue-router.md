@@ -1,5 +1,6 @@
 ---
-category: server side rendering
+navigation:
+  category: 服务端渲染
 icon: i-logos-vue
 ---
 
@@ -419,7 +420,7 @@ function patchVueExclude(plugin, exclude) {
 }
 ```
 
-`patchVueExclude` 辅助函数防止 Vue 插件处理资源导入（带有 `?assets` 查询参数的文件）。
+`patchVueExclude` 辅助函数可防止 Vue 插件处理资源导入（带有 `?assets` 查询参数的文件）。
 
 ## 2. 定义路由
 

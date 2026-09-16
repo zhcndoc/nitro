@@ -1,8 +1,8 @@
 Middleware functions run before route handlers on every request. They can modify the request, add context, or return early responses.
 
-## 定义中间件
+## Defining Middleware
 
-在 `server/middleware/` 目录下创建文件。它们将按字母顺序执行：
+Create files in `server/middleware/`. They run in alphabetical order:
 
 ```ts [server/middleware/auth.ts]
 import { defineMiddleware } from "nitro";
@@ -12,14 +12,14 @@ export default defineMiddleware((event) => {
 });
 ```
 
-中间件可以：
-- 向 `event.context` 添加数据，以便处理器使用
-- 提前返回响应以短路请求
-- 修改请求头或其他属性
+Middleware can:
+- Add data to `event.context` for use in handlers
+- Return a response early to short-circuit the request
+- Modify request headers or other properties
 
-## 在处理器中访问上下文
+## Accessing Context in Handlers
 
-中间件中添加到 `event.context` 的数据，在所有后续处理器中可用：
+Data added to `event.context` in middleware is available in all subsequent handlers:
 
 ```ts [server.ts]
 import { defineHandler } from "nitro";

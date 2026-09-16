@@ -68,7 +68,7 @@ zerops:
     build:
       base: nodejs@22
       envVariables:
-        NITRO_PRESET: zerops-static
+        NITRO_PRESET: zerops_static
       buildCommands:
         - pnpm i
         - pnpm build
@@ -80,7 +80,7 @@ zerops:
 
 ::
 
-现在你可以通过[使用 Zerops CLI 构建和部署流水线](#building-deploying-your-app)来触发部署，或者通过在服务详情中连接你的 [GitHub](https://docs.zerops.io/references/github-integration/) / [GitLab](https://docs.zerops.io/references/gitlab-integration) 仓库来部署。
+现在，你可以[使用 Zerops CLI 触发构建和部署流水线](#build-and-deploy)，或者在服务详情中将应用服务连接到你的 [GitHub](https://docs.zerops.io/references/github-integration/) / [GitLab](https://docs.zerops.io/references/gitlab-integration) 仓库。
 
 ## 构建和部署
 

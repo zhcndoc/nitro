@@ -1,14 +1,14 @@
-## 项目标识
+## Project Identity
 
 Nitro is a framework-agnostic and deployment-agnostic server framework powered by [H3](https://github.com/h3js/h3) (v2), [UnJS] (https://github.com/unjs), and Vite | Rolldown | Rollup.
 
-## 第一次开发环境搭建
+## First-time Setup for Development
 
-- 运行 `corepack enable` 以确保 `pnpm` 可用。
-- 运行 `pnpm install` 安装依赖。
-- 运行 `pnpm build --stub` 准备开发模式。
+- Run `corepack enable` to ensure `pnpm` is available.
+- Run `pnpm install` to install dependencies.
+- Run `pnpm build --stub` to prepare development mode.
 
-## 关键脚本
+## Key Scripts
 
 - `pnpm build --stub` — Fast stub build (`obuild --stub`) for development.
 - `pnpm build` — Full build (`pnpm gen-presets && obuild`).
@@ -20,7 +20,7 @@ Nitro is a framework-agnostic and deployment-agnostic server framework powered b
 
 **Always run** `pnpm fmt` and `pnpm typecheck` after making changes.
 
-## 仓库结构
+## Repository Structure
 
 - `.github/` — GitHub Actions workflows.
 - `docs/` — Documentation site built with [UnDocs](https://github.com/unjs/undocs).
@@ -60,6 +60,23 @@ Review these changes carefully for backwards compatibility, bundle size, and cro
 - `consola` — Logging in build/dev code (use `nitro.logger` when available).
 - `unstorage` — Storage abstraction.
 
+### Optional Dependencies
+
+Packages that are only needed by some presets, builders, or opt-in features are imported on demand
+from the user project via `src/utils/dep.ts` (`ensureDep` / `importDep` / `isDepInstalled`), which
+resolves from `nitro.options.rootDir` and offers to install what is missing.
+
+- Don't add a `peerDependencies` entry. Add the package to `devDependencies` (for tests and types)
+  and import it with `importDep({ id, dir: nitro.options.rootDir, reason })`.
+- Keep the package listed in `optionalDeps` in `build.config.ts` so it stays external.
+- `import type` from such a package is fine; only value imports must go through `utils/dep.ts`.
+- Optional dependencies of the libraries Nitro *bundles* (e.g. `jiti` for `c12`) cannot resolve from
+  `dist/`. Those get a bundle-time alias to a shim in `src/shims/` (see `shimmedDeps` in
+  `build.config.ts`).
+- Nitro has no peer dependencies at all: `vite` is imported from the user project too
+  (`src/build/vite/_import.ts`). Its `DevEnvironment` subclass is therefore defined lazily, against
+  the class of the resolved instance (see `src/build/vite/dev.ts`).
+
 ### Runtime Constraints
 
 Code in `src/runtime/` must be runtime-agnostic:
@@ -93,9 +110,9 @@ Each preset in `src/presets/` defines deployment target behavior:
 - Runtime logic and entry is in `src/presets/<name>/runtime`
 - Preset config and utils (build time) are in `src/presets/<name>/*.ts`.
 
-## 开发工作流程
+## Development Workflow
 
-### 进行更改
+### Making Changes
 
 1. Make changes in `src/`.
 2. Run `pnpm stub` if you changed build logic.
@@ -121,6 +138,7 @@ Each preset in `src/presets/` defines deployment target behavior:
 - **CLI commands** are in `src/cli/commands/` — Each file exports a command definition.
 - **Runtime size matters** — Check bundle impact with `pnpm build`.
 - **Use `pathe` not `node:path`** — Ensures cross-platform compatibility.
+- **No peer dependencies** — Optional packages are imported on demand via `src/utils/dep.ts`.
 
 ## Error & Logging Guidelines
 
@@ -165,6 +183,6 @@ For deeper context, see `.agents/`:
 - [`.agents/presets.md`](.agents/presets.md) — All presets (multiple deployment targets + internal `_nitro`/`_static`), preset structure, how to create presets, resolution logic.
 - [`.agents/testing.md`](.agents/testing.md) — Test structure, how tests work, adding regression tests, running tests.
 - [`.agents/vite.md`](.agents/vite.md) — Vite build system: plugin architecture (6 sub-plugins), environments API, dev server integration, production build stages, bundler config, HMR, runtime worker.
-- [`.agents/docs.md`](.agents/docs.md) — Documentation conventions: structure, preset naming (underscore), H3 v2 API patterns, import paths, common mistakes.
+- [`.agents/docs.md`](.agents/docs.md) — Docs site: UnDocs structure, the `.docs/` theme layer (imports, styling tokens, content queries), MDC blocks, and content conventions (preset naming, import paths, H3 v2 patterns, common mistakes).
 
 H3 v2 updated docs is at `node_modules/h3/dist/docs/README.md`

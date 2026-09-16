@@ -1,5 +1,6 @@
 ---
-category: 服务端渲染
+navigation:
+  category: 服务端渲染
 icon: i-simple-icons-tanstack
 ---
 

@@ -1,5 +1,6 @@
 ---
-category: config
+navigation:
+  category: config
 icon: i-lucide-settings
 ---
 
@@ -108,4 +109,4 @@ NITRO_API_KEY=secret-api-key
 
 ## 了解更多
 
-- [配置](/docs/configuration)
+- [配置](/docs/configuration)。

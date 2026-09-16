@@ -1,6 +1,6 @@
 Use Shiki for syntax highlighting with TextMate grammars. This example highlights code on the server using Nitro's server scripts feature, which runs JavaScript inside HTML files before sending the response.
 
-## API 路由
+## API Route
 
 ```ts [api/highlight.ts]
 import { createHighlighterCore } from "shiki/core";
@@ -24,9 +24,9 @@ export default async ({ req }: { req: Request }) => {
 };
 ```
 
-创建一个带有 Vitesse Dark 主题和 TypeScript 支持的 Shiki 高亮器。当 API 收到 POST 请求时，从请求体读取代码并返回高亮后的 HTML。
+Create a Shiki highlighter with the Vitesse Dark theme and TypeScript language support. When the API receives a POST request, it reads the code from the request body and returns highlighted HTML.
 
-## 服务器端渲染
+## Server-Side Rendering
 
 ```html [index.html]
 <!doctype html>
@@ -38,7 +38,7 @@ export default async ({ req }: { req: Request }) => {
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="card" role="region" aria-label="代码片段">
+    <div class="card" role="region" aria-label="Code snippet">
       <div class="label">JavaScript</div>
       <script server>
         const hl = (code) =>

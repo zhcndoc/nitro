@@ -8,9 +8,9 @@ icon: simple-icons:bun
 
 **预设：** `bun`
 
-Nitro 的输出与 Bun 运行时兼容。虽然使用默认的 [Node.js](/deploy/runtimes/node) 也可以在 bun 中运行输出，但使用 `bun` 预设具有更好优化的优势。
+Nitro 输出与 Bun 运行时兼容。虽然默认的 [Node.js](/deploy/runtimes/node) 输出也可以在 Bun 中运行，但使用 `bun` 预设进行构建可以启用 Bun 特定的优化。
 
-在使用 `bun` 作为预设进行构建后，你可以在生产环境中使用以下命令运行服务器：
+使用 `bun` 预设构建后，使用以下命令启动生产服务器：
 
 ```bash
 bun run ./.output/server/index.mjs

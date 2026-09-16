@@ -1,5 +1,6 @@
 ---
-category: features
+navigation:
+  category: features
 icon: i-lucide-database
 ---
 
@@ -168,4 +169,4 @@ export default defineTask({
 ## 了解更多
 
 - [数据库](/docs/database)
-- [任务](/docs/tasks)
+- [任务](/docs/tasks)。

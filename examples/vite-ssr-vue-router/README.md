@@ -26,7 +26,7 @@ export default defineConfig((_env) => ({
   },
 }));
 
-// 解决方案：https://github.com/vitejs/vite-plugin-vue/issues/677
+// Workaround https://github.com/vitejs/vite-plugin-vue/issues/677
 function patchVueExclude(plugin, exclude) {
   const original = plugin.transform.handler;
   plugin.transform.handler = function (...args) {
@@ -141,11 +141,11 @@ async function handler(request: Request): Promise<Response> {
 
 function htmlTemplate(body: string): string {
   return /* html */ `<!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vue Router 定制框架</title>
+  <title>Vue Router Custom Framework</title>
 </head>
 <body>
   <div id="root">${body}</div>

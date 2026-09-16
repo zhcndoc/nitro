@@ -32,7 +32,7 @@ export default defineConfig({
 
 ### 手动部署
 
-构建完应用后，你可以使用 Wrangler 手动部署它。
+构建应用后，你可以使用 Wrangler 手动部署。
 
 首先确保你已登录到你的 Cloudflare 账户：
 
@@ -44,7 +44,7 @@ export default defineConfig({
 
 ### 运行时钩子
 
-你可以使用下面的[运行时钩子](/docs/plugins#nitro-runtime-hooks)来扩展 [Worker 处理器](https://developers.cloudflare.com/workers/runtime-apis/handlers/)。
+你可以使用下面的[运行时钩子](/docs/plugins#nitro-runtime-hooks)来扩展 [Worker 处理程序](https://developers.cloudflare.com/workers/runtime-apis/handlers/)。
 
 :read-more{to="/docs/plugins#nitro-runtime-hooks"}
 
@@ -53,10 +53,16 @@ export default defineConfig({
 - [`cloudflare:queue`](https://developers.cloudflare.com/queues/configuration/javascript-apis/#consumer)
 - [`cloudflare:tail`](https://developers.cloudflare.com/workers/runtime-apis/handlers/tail/)
 - `cloudflare:trace`
+- `cloudflare:durable:init`（仅适用于 [`cloudflare_durable`](#cloudflare-workers-with-durable-objects) 预设）
+- [`cloudflare:durable:alarm`](https://developers.cloudflare.com/durable-objects/api/alarms/)（仅适用于 [`cloudflare_durable`](#cloudflare-workers-with-durable-objects) 预设）
+
+::note
+`cloudflare:queue` 钩子会将消息批次作为 `batch` 接收，而 `cloudflare:email` 钩子会将收到的消息作为 `message` 接收。较旧的 `event` 字段已弃用，不再适用于这两个钩子。
+::
 
 ### 额外导出
 
-你可以在项目根目录添加一个 `exports.cloudflare.ts` 文件，以向 Cloudflare Worker 入口点导出额外的处理器或属性。
+你可以将 `exports.cloudflare.ts` 文件添加到项目根目录，以从 Cloudflare Worker 入口点导出其他处理程序或属性。
 
 ```ts [exports.cloudflare.ts]
 export class MyWorkflow extends WorkflowEntrypoint {
@@ -75,6 +81,8 @@ Nitro 将自动检测此文件并将其导出包含在最终构建中。
 你还可以使用 `nitro.config.ts` 中的 `cloudflare.exports` 选项来自定义入口点文件位置：
 
 ```ts [nitro.config.ts]
+import { defineConfig } from "nitro";
+
 export default defineConfig({
   cloudflare: {
     exports: "custom-exports-entry.ts"
@@ -103,11 +111,50 @@ export default defineConfig({
 
 无需手动配置 Wrangler，Nitro 会为你处理。
 
+## Cloudflare Workers with Durable Objects
+
+**预设：** `cloudflare_durable`
+
+:read-more{title="Durable Objects" to="https://developers.cloudflare.com/durable-objects/"}
+
+此预设扩展了 `cloudflare_module`，并通过 [Durable Object](https://developers.cloudflare.com/durable-objects/) 实例路由请求，从而支持有状态功能，例如 WebSocket 支持（通过 [CrossWS](https://crossws.h3.dev/adapters/cloudflare#durable-objects)）以及可跨请求持久存在的内存状态。
+
+```ts [nitro.config.ts]
+import { defineConfig } from "nitro";
+
+export default defineConfig({
+  preset: "cloudflare_durable"
+})
+```
+
+该预设入口会导出一个 `$DurableObject` 类。你需要在 wrangler 配置中声明 Durable Object 绑定和迁移：
+
+```json [wrangler.json]
+{
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "$DurableObject",
+        "class_name": "$DurableObject"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_classes": ["$DurableObject"]
+    }
+  ]
+}
+```
+
+你可以使用 `cloudflare:durable:init` 运行时钩子，在 Durable Object 初始化时运行代码，并使用 `cloudflare:durable:alarm` 钩子处理 [alarms](https://developers.cloudflare.com/durable-objects/api/alarms/)。
+
 ### 追踪
 
 **🧪 实验性功能！**
 
-启用实验性的 [`tracingChannel`](/config#tracingchannel) 选项后，Cloudflare 预设会将 Nitro 的追踪通道事件（h3 路由和中间件、srvx、unstorage 操作等）作为[自定义 span](https://developers.cloudflare.com/workers/observability/traces/custom-spans/)进行报告，同时还会包含 Cloudflare 的自动检测结果（fetch 调用、KV 读取、D1 查询等）——无需 OpenTelemetry SDK。
+启用实验性的 [`tracingChannel`](/config#tracingchannel) 选项后，Cloudflare 预设会将 Nitro 的追踪通道事件（h3 路由和中间件、srvx、unstorage 操作等）作为[自定义 span](https://developers.cloudflare.com/workers/observability/traces/custom-spans/)进行报告，同时还会报告 Cloudflare 的自动插桩事件（fetch 调用、KV 读取、D1 查询等），无需 OpenTelemetry SDK。
 
 ```ts [nitro.config.ts]
 import { defineConfig } from "nitro";
@@ -141,7 +188,7 @@ export default defineConfig({
 ::
 
 ::warning
-Cloudflare [Workers Module](#cloudflare-workers) 是现在推荐的部署预设。请仅在需要特定功能时才考虑使用 Pages。
+Cloudflare [Workers](#cloudflare-workers) 是目前推荐用于部署的新预设。如果你需要 Pages 特有的功能，请考虑使用 Cloudflare Pages。
 ::
 
 以下展示了用于将 Nitro 应用部署到 Cloudflare Pages 的示例 `nitro.config.ts` 文件。
@@ -166,7 +213,9 @@ Nitro 自动生成一个 `_routes.json` 文件，用于控制哪些路由由文�
 
 ### 手动部署
 
-构建完应用后，你可以使用 Wrangler 手动部署它，为此首先确保你已登录到你的 Cloudflare 账户：
+构建应用后，你可以使用 Wrangler 手动部署。
+
+首先确保你已登录到你的 Cloudflare 账户：
 
 :pm-x{command="wrangler login"}
 
@@ -177,21 +226,21 @@ Nitro 自动生成一个 `_routes.json` 文件，用于控制哪些路由由文�
 
 ## 使用 GitHub Actions 在 CI/CD 中部署
 
-无论你使用的是 Cloudflare Pages 还是 Cloudflare Workers，都可以使用 [Wrangler GitHub Actions](https://github.com/marketplace/actions/deploy-to-cloudflare-workers-with-wrangler) 来部署你的应用。
+无论你使用的是 Cloudflare Pages 还是 Cloudflare Workers，都可以使用 [Wrangler GitHub actions](https://github.com/marketplace/actions/deploy-to-cloudflare-workers-with-wrangler) 来部署应用。
 
 ::note
-**注意：** 记得[指示 Nitro 使用正确的预设](/deploy#changing-the-deployment-preset)（注意，这对所有预设都是必需的，包括 `cloudflare_pages`）。
-:::
+请记得[指示 Nitro 使用正确的预设](/deploy#changing-the-deployment-preset)。所有预设都需要这样做，包括 `cloudflare_pages`。
+::
 
 ## 环境变量
 
-Nitro 允许你使用 `process.env`、`import.meta.env` 或运行时配置来统一访问环境变量。
+Nitro 允许你通过 `process.env`、`import.meta.env` 或运行时配置，以统一的方式访问环境变量。
 
 ::note
-确保仅在**事件生命周期内**访问环境变量，而不是在全局上下文中，因为 Cloudflare 仅在请求生命周期期间提供这些变量，而不是在此之前。
+请确保只在**事件生命周期内**访问环境变量，而不要在全局上下文中访问，因为 Cloudflare 只会在请求生命周期内提供这些变量，而不会在此之前提供。
 ::
 
-**示例：** 如果你已设置 `SECRET` 和 `NITRO_HELLO_THERE` 环境变量，你可以通过以下方式访问它们：
+**示例：**如果你已设置 `SECRET` 和 `NITRO_HELLO_THERE` 环境变量，可以通过以下方式访问它们：
 
 ```ts
 import { defineHandler } from "nitro";
@@ -218,17 +267,17 @@ SECRET="top-secret"
 ```
 
 ::note
-**注意：** 确保将 `.env` 和 `.env.local` 添加到 `.gitignore` 文件中，以免误提交这些可能包含敏感信息的文件。
+请确保将 `.env` 和 `.env.local` 添加到 `.gitignore` 文件中，以免提交它们，因为其中可能包含敏感信息。
 ::
 
 ### 为本地预览指定变量
 
-构建后，当你使用 `wrangler dev` 或 `wrangler pages dev` 在本地试用项目时，为了能够访问环境变量，你需要在项目根目录的 `.dev.vars` 文件中指定它们（如 [Pages](https://developers.cloudflare.com/pages/functions/bindings/#interact-with-your-environment-variables-locally) 和 [Workers](https://developers.cloudflare.com/workers/configuration/environment-variables/#interact-with-environment-variables-locally) 文档中所述）。
+构建完成后，当你使用 `wrangler dev` 或 `wrangler pages dev` 在本地试用项目时，请在项目根目录的 `.dev.vars` 文件中指定环境变量（如 [Pages](https://developers.cloudflare.com/pages/functions/bindings/#interact-with-your-environment-variables-locally) 和 [Workers](https://developers.cloudflare.com/workers/configuration/environment-variables/#interact-with-environment-variables-locally) 文档中所述）。
 
 如果你在开发时使用 `.env` 或 `.env.local` 文件，你的 `.dev.vars` 应该与之一致。
 
 ::note
-**注意：** 确保将 `.dev.vars` 添加到 `.gitignore` 文件中，以免误提交其中可能包含的敏感信息。
+请确保将 `.dev.vars` 添加到 `.gitignore` 文件中，以免提交它，因为其中可能包含敏感信息。
 ::
 
 ### 为生产环境指定变量
@@ -240,7 +289,7 @@ SECRET="top-secret"
 你可以指定自定义的 `wrangler.toml`/`wrangler.json` 文件并在其中定义变量。
 
 ::warning
-注意，这不建议用于 secrets 之类的敏感数据。
+不建议使用此方式存储密钥等敏感数据。
 ::
 
 **示例：**
@@ -281,20 +330,21 @@ SECRET="top-secret"
 
 ## 直接访问 Cloudflare 绑定
 
-绑定允许你与 Cloudflare 平台的资源进行交互，此类资源的例子包括键值数据存储（[KVs](https://developers.cloudflare.com/kv/)）和无服务器 SQL 数据库（[D1s](https://developers.cloudflare.com/d1/)）。
+绑定允许你与 Cloudflare 平台中的资源进行交互，例如键值数据存储（[KV](https://developers.cloudflare.com/kv/)）和无服务器 SQL 数据库（[D1](https://developers.cloudflare.com/d1/)）。
 
 ::read-more
-有关绑定及其使用方法的更多详情，请参阅 Cloudflare [Pages](https://developers.cloudflare.com/pages/functions/bindings/) 和 [Workers](https://developers.cloudflare.com/workers/configuration/bindings/#bindings) 文档。
+有关绑定及其使用方式的更多详细信息，请参阅 Cloudflare 的 [Pages](https://developers.cloudflare.com/pages/functions/bindings/) 和 [Workers](https://developers.cloudflare.com/workers/configuration/bindings/#bindings) 文档。
 ::
 
-> [!TIP]
-> Nitro 提供了高级 API 来与诸如 [KV 存储](/docs/storage) 和 [数据库](/docs/database) 之类的原语进行交互，强烈建议你优先使用它们，而不是直接依赖低级别 API 以确保使用稳定性。
+::tip
+Nitro 为 [KV Storage](/docs/storage) 和 [Database](/docs/database) 等基础功能提供了高级 API。为了保持使用稳定性，优先使用这些 API，而不是直接依赖底层平台 API。
+::
 
 :read-more{title="数据库层" to="/docs/database"}
 
 :read-more{title="KV 存储" to="/docs/storage"}
 
-在运行时，你可以通过 `event.req.runtime.cloudflare.env` 从请求事件中访问绑定。例如，以下是你如何访问 D1 绑定的方式：
+在运行时，你可以通过 `event.req.runtime.cloudflare.env` 从请求事件中访问绑定。例如，以下是访问 D1 绑定的方式：
 
 ```ts
 import { defineHandler } from "nitro";
@@ -308,9 +358,11 @@ defineHandler(async (event) => {
 
 ### 在本地开发中访问绑定
 
-在开发模式下，Nitro 使用 [Miniflare](https://miniflare.dev/) 模拟 Cloudflare 环境（与生产环境中 Wrangler 和 cloudflare workers 使用的相同 [`workerd`](https://github.com/cloudflare/workerd) 运行时）。这意味着可以直接从请求事件中原生访问绑定——无需单独的代理或 `wrangler` 安装。
+在开发模式下，Nitro 使用 [Miniflare](https://miniflare.dev/) 模拟 Cloudflare 环境（这是 Wrangler 和 Cloudflare Workers 在生产环境中使用的同一个 [`workerd`](https://github.com/cloudflare/workerd) 运行时）。这意味着绑定可以原生地从请求事件中获取，无需单独的代理或安装 `wrangler`。
 
-要在开发模式中访问绑定，我们首先需要定义它们。你可以在 `wrangler.jsonc`/`wrangler.json`/`wrangler.toml` 文件中进行定义：
+[`miniflare`](https://www.npmjs.com/package/miniflare) 软件包由你的项目负责管理：Nitro 会从你的 `node_modules` 中解析它，并在首次使用时提供安装选项。
+
+要在开发模式下访问绑定，请先定义它们。你可以在 `wrangler.jsonc`/`wrangler.json`/`wrangler.toml` 文件中完成此操作：
 
 ::code-group
 
@@ -357,11 +409,11 @@ export default defineConfig({
 })
 ```
 
-从此时起，当运行
+从现在开始，运行
 
 :pm-run{script="dev"}
 
-你将能够像上面所示那样，从请求事件中访问 `MY_VARIABLE` 和 `MY_KV`。
+时，你可以按照上面的示例从请求事件中访问 `MY_VARIABLE` 和 `MY_KV`。
 
 #### Wrangler 环境
 

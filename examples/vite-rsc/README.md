@@ -34,21 +34,21 @@ export async function renderHTML(
     debugNoJS?: boolean;
   }
 ): Promise<{ stream: ReadableStream<Uint8Array>; status?: number }> {
-  // 复制一份 RSC 流为两份
-  // - 一份用于 SSR (ReactClient.createFromReadableStream 使用)
-  // - 另一份用于通过注入 <script>...FLIGHT_DATA...</script> 实现浏览器水合负载
+  // Duplicate one RSC stream into two.
+  // - one for SSR (ReactClient.createFromReadableStream below)
+  // - another for browser hydration payload by injecting <script>...FLIGHT_DATA...</script>.
   const [rscStream1, rscStream2] = rscStream.tee();
 
-  // 反序列化 RSC 流回 React 虚拟 DOM
+  // Deserialize RSC stream back to React VDOM
   let payload: Promise<RscPayload> | undefined;
   function SsrRoot() {
-    // 反序列化需在 ReactDOMServer 环境中启动
-    // 以支持 ReactDOMServer 的预初始化/预加载
+    // Deserialization needs to be kicked off inside ReactDOMServer context
+    // for ReactDOMServer preinit/preloading to work
     payload ??= createFromReadableStream<RscPayload>(rscStream1);
     return React.use(payload).root;
   }
 
-  // 渲染 HTML (传统 SSR)
+  // Render HTML (traditional SSR)
   const bootstrapScriptContent = await import.meta.viteRsc.loadBootstrapScriptContent("index");
 
   let htmlStream: ReadableStream<Uint8Array>;
@@ -61,8 +61,8 @@ export async function renderHTML(
       formState: options?.formState,
     });
   } catch {
-    // 回退渲染空壳，浏览器采用纯 CSR，
-    // 可重演服务端组件错误并触发错误边界
+    // fallback to render an empty shell and run pure CSR on browser,
+    // which can replay server component error and trigger error boundary.
     status = 500;
     htmlStream = await renderToReadableStream(
       <html>
@@ -80,8 +80,8 @@ export async function renderHTML(
 
   let responseStream: ReadableStream<Uint8Array> = htmlStream;
   if (!options?.debugNoJS) {
-    // 初始 RSC 流注入 HTML 流作为 <script>...FLIGHT_DATA...</script>
-    // 使用 devongovett 开发的实用工具 https://github.com/devongovett/rsc-html-stream
+    // Initial RSC stream is injected in HTML stream as <script>...FLIGHT_DATA...</script>
+    // using utility made by devongovett https://github.com/devongovett/rsc-html-stream
     responseStream = responseStream.pipeThrough(
       injectRSCPayload(rscStream2, {
         nonce: options?.nonce,

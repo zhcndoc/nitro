@@ -13,7 +13,7 @@
 登录 [Deno Deploy](https://dash.deno.com/account#access-tokens) 以获取 `DENO_DEPLOY_TOKEN` 访问令牌，并将其设置为环境变量。
 
 ```bash
-# 使用 deno_deploy NITRO 预设进行构建
+# Build with the deno_deploy preset
 NITRO_PRESET=deno_deploy npm run build
 
 # 确保从输出目录运行 deployctl 命令
@@ -21,11 +21,11 @@ cd .output
 deployctl deploy --project=my-project server/index.ts
 ```
 
-## 在 CI/CD 中使用 GitHub Actions 部署
+## 使用 GitHub Actions 在 CI/CD 中部署
 
-你只需要将 deployctl GitHub Action 作为步骤包含在你的工作流中。
+将 deployctl GitHub Action 作为一个步骤包含在工作流中。
 
-你不需要为此设置任何 secrets 即可工作。你确实需要将你的 GitHub 仓库链接到你的 Deno Deploy 项目并选择 "GitHub Actions" 部署模式。你可以在 [Deno Deploy](https://dash.deno.com) 的项目设置中执行此操作。
+无需任何密钥，但你需要将 GitHub 仓库关联到 Deno Deploy 项目，并在 [Deno Deploy](https://dash.deno.com) 的项目设置中选择“GitHub Actions”部署模式。
 
 在你的 `.github/workflows` 目录中创建以下工作流文件：
 
@@ -42,12 +42,13 @@ on:
 
 jobs:
   deploy:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - run: corepack enable
       - uses: actions/setup-node@v6
         with:
-          node-version: 18
+          node-version: 20
           cache: pnpm
       - run: pnpm install
       - run: pnpm build

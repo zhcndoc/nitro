@@ -1,15 +1,15 @@
 Set up TanStack Router with React, Vite, and Nitro. This setup provides file-based routing with type-safe navigation and automatic code splitting.
 
-## 概览
+## Overview
 
-1. 在 Vite 配置中添加 Nitro 插件
-2. 创建包含应用入口的 HTML 模板
-3. 创建初始化路由器的主入口文件
-4. 使用基于文件的路由定义路由
+1. Add the Nitro Vite plugin to your Vite config
+2. Create an HTML template with your app entry
+3. Create a main entry that initializes the router
+4. Define routes using file-based routing
 
-## 1. 配置 Vite
+## 1. Configure Vite
 
-向 Vite 配置中添加 Nitro、React 及 TanStack Router 插件：
+Add the Nitro, React, and TanStack Router plugins to your Vite config:
 
 ```js [vite.config.mjs]
 import { defineConfig } from "vite";
@@ -22,11 +22,11 @@ export default defineConfig({
 });
 ```
 
-`tanstackRouter` 插件会根据你的 `routes/` 目录结构生成路由树。启用 `autoCodeSplitting` 可自动拆分路由到不同代码块。请确保将 TanStack Router 插件放在 React 插件之前。
+The `tanstackRouter` plugin generates a route tree from your `routes/` directory structure. Enable `autoCodeSplitting` to automatically split routes into separate chunks. Place the TanStack Router plugin before the React plugin in the array.
 
-## 2. 创建 HTML 模板
+## 2. Create the HTML Template
 
-创建 HTML 文件作为应用壳：
+Create an HTML file that serves as your app shell:
 
 ```html [index.html]
 <!doctype html>
@@ -44,29 +44,29 @@ export default defineConfig({
 </html>
 ```
 
-## 3. 创建应用入口
+## 3. Create the App Entry
 
-创建初始化 TanStack Router 的主入口：
+Create the main entry that initializes TanStack Router:
 
 ```tsx [src/main.tsx]
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 
-// 导入自动生成的路由树
+// Import the generated route tree
 import { routeTree } from "./routeTree.gen.ts";
 
-// 创建新的路由实例
+// Create a new router instance
 const router = createRouter({ routeTree });
 
-// 为类型安全注册路由实例
+// Register the router instance for type safety
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
   }
 }
 
-// 渲染应用
+// Render the app
 const rootElement = document.querySelector("#root")!;
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
@@ -78,11 +78,11 @@ if (!rootElement.innerHTML) {
 }
 ```
 
-`routeTree.gen.ts` 文件是根据你的 `routes/` 目录结构自动生成的。`Register` 接口声明为路由路径和参数提供了完整的类型推断。通过检查 `!rootElement.innerHTML` 避免在热模块替换时重复渲染。
+The `routeTree.gen.ts` file is auto-generated from your `routes/` directory structure. The `Register` interface declaration provides full type inference for route paths and params. The `!rootElement.innerHTML` check prevents re-rendering during hot module replacement.
 
-## 4. 创建根路由
+## 4. Create the Root Route
 
-根路由 (`__root.tsx`) 定义了应用的布局：
+The root route (`__root.tsx`) defines your app's layout:
 
 ```tsx [src/routes/__root.tsx]
 import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
@@ -92,7 +92,7 @@ const RootLayout = () => (
   <>
     <div className="p-2 flex gap-2">
       <Link to="/" className="[&.active]:font-bold">
-        首页
+        Home
       </Link>
     </div>
     <hr />
@@ -104,11 +104,11 @@ const RootLayout = () => (
 export const Route = createRootRoute({ component: RootLayout });
 ```
 
-使用 `Link` 实现类型安全的导航及活跃状态样式。`Outlet` 组件用于渲染子路由。开发时引入 `TanStackRouterDevtools` 调试工具（生产环境会自动移除）。
+Use `Link` for type-safe navigation with active state styling. The `Outlet` component renders child routes. Include `TanStackRouterDevtools` for development tools (automatically removed in production).
 
-## 5. 创建页面路由
+## 5. Create Page Routes
 
-页面路由使用 `createFileRoute`，且支持加载器：
+Page routes use `createFileRoute` and can include loaders:
 
 ```tsx [src/routes/index.tsx]
 import { createFileRoute } from "@tanstack/react-router";

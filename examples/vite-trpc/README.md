@@ -25,11 +25,11 @@ export default defineConfig({
 });
 ```
 
-`routes` 选项用于将 URL 模式映射到处理文件，所有指向 `/trpc/*` 的请求都由 tRPC 路由器处理。
+The `routes` option maps URL patterns to handler files. All requests to `/trpc/*` are handled by the tRPC router.
 
-## 2. 创建 tRPC 路由器
+## 2. Create the tRPC Router
 
-定义你的 tRPC 路由器及其 procedure，并导出为 fetch 处理程序：
+Define your tRPC router with procedures and export it as a fetch handler:
 
 ```ts [server/trpc.ts]
 import { initTRPC } from "@trpc/server";
@@ -63,18 +63,18 @@ export default {
 };
 ```
 
-使用 `t.procedure.query()` 定义读取操作，使用 `t.procedure.mutation()` 定义写入操作。导出 `AppRouter` 类型，使客户端可以获得完整的类型推断。默认导出使用 tRPC 的 fetch 适配器处理传入请求。
+Define procedures using `t.procedure.query()` for read operations and `t.procedure.mutation()` for write operations. Export the `AppRouter` type so clients get full type inference. The default export uses tRPC's fetch adapter to handle incoming requests.
 
-## 3. 创建 HTML 页面
+## 3. Create the HTML Page
 
-创建带有服务器端渲染和客户端交互的 HTML 页面：
+Create an HTML page with server-side rendering and client-side interactivity:
 
 ```html [index.html]
 <!doctype html>
-<html lang="zh">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>tRPC 计数器</title>
+    <title>tRPC Counter</title>
     <style>
       body {
         font-family: system-ui, sans-serif;
@@ -117,15 +117,15 @@ export default {
   </head>
   <body>
     <div class="box">
-      <div>计数器</div>
+      <div>Counter</div>
       <div class="value" id="value">
         <script server>
-          // 服务器端渲染
+          // Server-side Rendering
           const { result } = await serverFetch("/trpc/get").then(r => r.json())
           echo(result?.data?.value)
         </script>
       </div>
-      <button id="inc">增加</button>
+      <button id="inc">Increment</button>
     </div>
 
     <script setup>

@@ -7,20 +7,29 @@
 :read-more{title="cleavr.io" to="https://cleavr.io"}
 
 ::note
-与此提供方的集成可以通过[零配置](/deploy/#zero-config-providers)实现。
+与此提供商集成时无需进行[零配置](/deploy#zero-config-providers)
 ::
 
 ## 设置你的 Web 应用
 
 在你的项目中，将 Nitro 预设设置为 `cleavr`。
 
-```js
-export default {
-  nitro: {
-    preset: 'cleavr'
-  }
-}
+::code-group
+```ts [nitro.config.ts]
+import { defineConfig } from "nitro";
+
+export default defineConfig({
+  preset: "cleavr",
+});
 ```
+```ts [nuxt.config.ts]
+export default defineNuxtConfig({
+  nitro: {
+    preset: "cleavr",
+  },
+});
+```
+::
 
 将更改推送到你的代码仓库。
 

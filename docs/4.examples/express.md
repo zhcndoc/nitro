@@ -1,5 +1,6 @@
 ---
-category: 后端框架
+navigation:
+  category: 后端框架
 icon: i-simple-icons-express
 ---
 
@@ -88,4 +89,4 @@ Nitro 会在你的项目根目录自动检测 `server.node.ts` 并将其用作�
 ## 了解更多
 
 - [服务端入口](/docs/server-entry)
-- [Express 文档](https://expressjs.com/)
+- [Express 文档](https://expressjs.com/)。

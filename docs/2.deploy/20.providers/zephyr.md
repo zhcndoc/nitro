@@ -6,9 +6,7 @@
 
 :read-more{title="Zephyr Cloud 文档" to="https://docs.zephyr-cloud.io"}
 
-Zephyr 支持通过 `zephyr` 预设内置于 Nitro 中。
-
-对于大多数 Zephyr 特定的主题，例如 BYOC、云集成、环境和 CI/CD 认证，请参阅 [Zephyr Cloud 文档](https://docs.zephyr-cloud.io)。
+对于大多数 Zephyr 特定主题，例如 BYOC、云集成、环境和 CI/CD 认证，请参阅 [Zephyr Cloud 文档](https://docs.zephyr-cloud.io)。
 
 ::note
 Zephyr 与大多数 Nitro 部署提供商有所不同。它不是直接面向单一托管供应商，而是作为部署控制平面，运行在 Zephyr 管理的基础设施或你自己的云集成之上。
@@ -32,7 +30,7 @@ Nitro 将使用 `zephyr-agent` 上传生成的输出。如果缺少 `zephyr-agen
 
 ## 构建时部署
 
-在这一方面，Zephyr 与大多数 Nitro 提供商有所不同：我们建议启用 `nitro build` 期间的部署，并将构建视为主要的部署步骤。
+对于 Zephyr，推荐的工作流程是在 `nitro build` 期间进行部署，并将构建视为主要部署步骤。
 
 如果你的 CI 流水线已经运行 `nitro build`，请在构建步骤期间启用部署：
 
@@ -64,7 +62,7 @@ ZEPHYR   https://my-app.zephyrcloud.app
 
 ## CI 认证
 
-Zephyr 需要 API 令牌才能进行非交互式部署。以下示例使用更简单的个人令牌样式设置，使用 `ZE_SECRET_TOKEN` 并结合 `zephyr.deployOnBuild`。
+Zephyr 要求非交互式部署使用 API 令牌。下面的示例使用更简单的个人令牌设置，将 `ZE_SECRET_TOKEN` 与 `zephyr.deployOnBuild` 配合使用。
 
 ```yaml [.github/workflows/deploy.yml]
 name: Deploy with Zephyr

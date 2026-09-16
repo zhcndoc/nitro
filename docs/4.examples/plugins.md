@@ -1,5 +1,6 @@
 ---
-category: features
+navigation:
+  category: features
 icon: i-lucide-plug
 ---
 
@@ -55,10 +56,10 @@ export default defineConfig({ plugins: [nitro()] });
 import { definePlugin } from "nitro";
 import { useNitroHooks } from "nitro/app";
 
-export default definePlugin((nitroApp) => {
+export default definePlugin(() => {
   const hooks = useNitroHooks();
-  hooks.hook("response", (event) => {
-    event.headers.set("content-type", "html; charset=utf-8");
+  hooks.hook("response", (res) => {
+    res.headers.set("content-type", "html; charset=utf-8");
   });
 });
 ```
@@ -77,15 +78,15 @@ export default definePlugin((nitroApp) => {
 import { definePlugin } from "nitro";
 import { useNitroHooks } from "nitro/app";
 
-export default definePlugin((nitroApp) => {
+export default definePlugin(() => {
   const hooks = useNitroHooks();
-  hooks.hook("response", (event) => {
-    event.headers.set("content-type", "html; charset=utf-8");
+  hooks.hook("response", (res) => {
+    res.headers.set("content-type", "html; charset=utf-8");
   });
 });
 ```
 
-该插件使用 `useNitroHooks()` 来访问钩子系统，然后注册一个在每次请求后运行的 `response` 钩子。这里它将内容类型设置为 HTML，但你可以记录请求、添加安全标头或以任何方式修改响应。
+该插件使用 `useNitroHooks()` 访问钩子系统，然后注册一个 `response` 钩子，该钩子在每次请求后运行，并接收传出的 `Response`。这里它将内容类型设置为 HTML，但你也可以记录请求、添加安全标头，或以任何方式修改响应。
 
 ## 主处理器
 

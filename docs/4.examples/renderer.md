@@ -1,5 +1,6 @@
 ---
-category: 服务端渲染
+navigation:
+  category: 服务端渲染
 icon: i-lucide-code
 ---
 
@@ -106,7 +107,7 @@ export default async function renderer({ url }: { req: Request; url: URL }) {
 }
 ```
 
-Nitro 会自动检测项目根目录中的 `renderer.ts` 文件，并将其用于所有非 API 路由。渲染器函数接收请求 URL 并返回一个 `Response`。
+在 `nitro.config.ts` 中使用 `renderer: { handler: "./renderer" }` 配置渲染器，Nitro 会将其用于所有非 API 路由。渲染器函数接收请求 URL 并返回一个 `Response`。（或者，如果项目根目录中存在 `index.html`，Nitro 会自动将其检测为渲染器模板。）
 
 使用 `nitro` 中的 `fetch` 来调用 API 路由，无需网络开销——这些请求在进程内完成。
 

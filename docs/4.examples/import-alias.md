@@ -1,5 +1,6 @@
 ---
-category: config
+navigation:
+  category: config
 icon: i-lucide-at-sign
 ---
 
@@ -108,4 +109,4 @@ export default () => {
 
 ## 了解更多
 
-- [配置](/docs/configuration)
+- [配置](/docs/configuration)。

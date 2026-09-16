@@ -1,5 +1,6 @@
 ---
-category: backend frameworks
+navigation:
+  category: 后端框架
 icon: i-skill-icons-elysia-dark
 ---
 

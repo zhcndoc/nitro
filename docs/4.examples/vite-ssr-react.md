@@ -1,5 +1,6 @@
 ---
-category: server side rendering
+navigation:
+  category: server side rendering
 icon: i-logos-react
 ---
 
@@ -99,7 +100,7 @@ export default {
               <link key={attr.href} rel="stylesheet" {...attr} />
             ))}
             {assets.js.map((attr: any) => (
-              <link key={attr.href} type="modulepreload" {...attr} />
+              <link key={attr.href} rel="modulepreload" {...attr} />
             ))}
             <script type="module" src={assets.entry} />
           </head>
@@ -158,7 +159,7 @@ export default defineConfig({
 });
 ```
 
-`environments.client` 配置告诉 Vite 使用哪个文件作为浏览器入口点。Nitro 会自动从常用目录中名为 `entry-server` 或 `server` 的文件中检测服务端入口。
+`environments.client` 配置告诉 Vite 使用哪个文件作为浏览器入口点。Nitro 会自动从 `app/`、`src/` 或项目根目录中名为 `entry-server` 的文件检测 SSR 入口。
 
 ## 2. 创建 App 组件
 
@@ -202,7 +203,7 @@ export default {
               <link key={attr.href} rel="stylesheet" {...attr} />
             ))}
             {assets.js.map((attr: any) => (
-              <link key={attr.href} type="modulepreload" {...attr} />
+              <link key={attr.href} rel="modulepreload" {...attr} />
             ))}
             <script type="module" src={assets.entry} />
           </head>

@@ -1,5 +1,6 @@
 ---
-category: 后端框架
+navigation:
+  category: 后端框架
 icon: i-logos-hono
 ---
 
@@ -85,4 +86,4 @@ Hono 具有跨运行时兼容性，因此该服务端入口可在所有 Nitro �
 ## 了解更多
 
 - [服务端入口](/docs/server-entry)
-- [Hono 文档](https://hono.dev/)
+- [Hono 文档](https://hono.dev/)。

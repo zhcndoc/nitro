@@ -1,5 +1,6 @@
 ---
-category: features
+navigation:
+  category: features
 icon: i-lucide-arrow-right-left
 ---
 
@@ -98,4 +99,4 @@ export default defineHandler(() => "Hello!");
 
 ## 了解更多
 
-- [路由](/docs/routing)
+- [路由](/docs/routing)。

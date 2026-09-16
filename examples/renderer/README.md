@@ -1,6 +1,6 @@
 Create a custom renderer that generates HTML responses with data from API routes. Use Nitro's internal `fetch` to call routes without network overhead.
 
-## 渲染器
+## Renderer
 
 ```ts [renderer.ts]
 import { fetch } from "nitro";
@@ -15,8 +15,8 @@ export default async function renderer({ url }: { req: Request; url: URL }) {
     </head>
     <body>
       <h1>Hello from custom renderer!</h1>
-      <p>当前路径: ${url.pathname}</p>
-      <p>API 返回: ${apiRes}</p>
+      <p>Current path: ${url.pathname}</p>
+      <p>API says: ${apiRes}</p>
     </body>
     </html>`,
     { headers: { "content-type": "text/html; charset=utf-8" } }
@@ -24,16 +24,16 @@ export default async function renderer({ url }: { req: Request; url: URL }) {
 }
 ```
 
-Nitro 会自动检测项目根目录中的 `renderer.ts` 并将其用于所有非 API 路由。渲染器函数接收请求的 URL 并返回一个 `Response`。
+Configure the renderer with `renderer: { handler: "./renderer" }` in `nitro.config.ts`, and Nitro uses it for all non-API routes. The renderer function receives the request URL and returns a `Response`. (Alternatively, if an `index.html` exists in your project root, Nitro auto-detects it as a renderer template.)
 
-使用 Nitro 中的 `fetch` 调用 API 路由时不会产生网络开销——请求仍在进程内执行。
+Use `fetch` from `nitro` to call API routes without network overhead—these requests stay in-process.
 
-## API 路由
+## API Route
 
 ```ts [api/hello.ts]
 import { defineHandler } from "nitro";
 
-export default defineHandler(() => "Nitro 太棒了！");
+export default defineHandler(() => "Nitro is amazing!");
 ```
 
 Define API routes in the `api/` directory. When the renderer calls `fetch("/api/hello")`, this handler runs and returns its response.

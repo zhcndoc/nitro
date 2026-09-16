@@ -1,5 +1,6 @@
 ---
-category: integrations
+navigation:
+  category: integrations
 icon: i-lucide-image
 ---
 
@@ -559,4 +560,4 @@ Takumi 会根据部署目标选择渲染后端：Node 预设使用原生绑定�
 
 ## 了解更多
 
-- [Takumi](https://takumi.kane.tw)
+- [Takumi](https://takumi.kane.tw)。

@@ -1,5 +1,6 @@
 ---
-category: 服务端渲染
+navigation:
+  category: 服务端渲染
 icon: i-logos-solidjs-icon
 ---
 
@@ -106,7 +107,7 @@ function Root(props: { appHTML?: string }) {
           <link key={attr.href} rel="stylesheet" {...attr} />
         ))}
         {assets.js.map((attr: any) => (
-          <link key={attr.href} type="modulepreload" {...attr} />
+          <link key={attr.href} rel="modulepreload" {...attr} />
         ))}
       </head>
       <body>
@@ -233,7 +234,7 @@ function Root(props: { appHTML?: string }) {
           <link key={attr.href} rel="stylesheet" {...attr} />
         ))}
         {assets.js.map((attr: any) => (
-          <link key={attr.href} type="modulepreload" {...attr} />
+          <link key={attr.href} rel="modulepreload" {...attr} />
         ))}
       </head>
       <body>

@@ -6,12 +6,13 @@
 
 :read-more{title="Genezio" to="https://genezio.com"}
 
-> [!IMPORTANT]
-> 🚧 此预设目前处于实验阶段。
+::warning
+此预设目前处于实验阶段。
+::
 
 ## 1. 项目设置
 
-创建 `genezio.yaml` 文件：
+创建一个 `genezio.yaml` 文件：
 
 ```yaml
 # 项目的名称。
@@ -47,22 +48,21 @@ backend:
 
 ## 2. 部署您的项目
 
-使用 genezio nitro 预设进行构建：
+使用 `genezio` 预设进行构建：
 
 ```bash
 NITRO_PRESET=genezio npm run build
 ```
-
 
 使用 [`genezio`](https://npmjs.com/package/genezio) CLI 进行部署：
 
 :pm-x{command="genezio deploy"}
 
 ::read-more{title="后端环境变量" to="https://genezio.com/docs/project-structure/backend-environment-variables"}
-要设置环境变量，请查看 [Genezio - 环境变量](https://genezio.com/docs/project-structure/backend-environment-variables)。
+如需设置环境变量，请参阅 [Genezio - 环境变量](https://genezio.com/docs/project-structure/backend-environment-variables)。
 ::
 
-
 ## 3. 监控您的项目
-您可以通过 [Genezio 应用仪表板](https://app.genez.io/dashboard) 监控和管理您的应用程序。仪表板 URL 也会在部署后提供，让您可以全面查看项目的状态和日志。
+
+您可以通过 [Genezio 应用控制面板](https://app.genez.io/dashboard) 监控和管理您的应用。控制面板 URL 也会在部署完成后显示，您可以通过它查看项目的状态和日志。
 

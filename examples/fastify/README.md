@@ -12,10 +12,10 @@ await app.ready();
 export default app.routing;
 ```
 
-Nitro 会自动检测项目根目录中的 `server.node.ts` 并将其用作服务器入口。
+Nitro auto-detects `server.node.ts` in your project root and uses it as the server entry.
 
-调用 `await app.ready()` 以初始化所有已注册的插件，然后再导出。导出 `app.routing`（而非 `app`）以向 Nitro 提供请求处理函数。
+Call `await app.ready()` to initialize all registered plugins before exporting. Export `app.routing` (not `app`) to provide Nitro with the request handler function.
 
 ::note
-`.node.ts` 后缀表明此入口文件是针对 Node.js 的，不能在 Cloudflare Workers、Deno 等其他运行时中使用。
+The `.node.ts` suffix indicates this entry is Node.js specific and won't work in other runtimes like Cloudflare Workers or Deno.
 ::

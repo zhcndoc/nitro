@@ -1,6 +1,6 @@
 Instead of using a separate `nitro.config.ts`, you can configure Nitro directly in your Vite config. This gives you access to Nitro's setup hook where you can register routes and virtual modules programmatically.
 
-## Vite 配置
+## Vite Configuration
 
 ```js [vite.config.mjs]
 import { defineConfig } from "vite";

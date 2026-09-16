@@ -57,8 +57,8 @@ export function getRouter() {
   const router = createRouter({
     routeTree,
     defaultPreload: "intent",
-    defaultErrorComponent: () => <div>内部服务器错误</div>,
-    defaultNotFoundComponent: () => <div>未找到页面</div>,
+    defaultErrorComponent: () => <div>Internal Server Error</div>,
+    defaultNotFoundComponent: () => <div>Not Found</div>,
     scrollRestoration: true,
   });
   return router;
@@ -87,8 +87,8 @@ export const Route = createRootRoute({
     links: [{ rel: "stylesheet", href: appCss }],
     scripts: [{ src: "/customScript.js", type: "text/javascript" }],
   }),
-  errorComponent: () => <h1>500：内部服务器错误</h1>,
-  notFoundComponent: () => <h1>404：页面未找到</h1>,
+  errorComponent: () => <h1>500: Internal Server Error</h1>,
+  notFoundComponent: () => <h1>404: Page Not Found</h1>,
   shellComponent: RootDocument,
 });
 
@@ -101,7 +101,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <div className="p-2 flex gap-2 text-lg">
           <Link to="/" activeProps={{ className: "font-bold" }} activeOptions={{ exact: true }}>
-            首页
+            Home
           </Link>{" "}
           <Link
             // @ts-ignore
@@ -135,7 +135,7 @@ export const Route = createFileRoute("/")({ component: Home });
 function Home() {
   return (
     <div className="p-2">
-      <h3>欢迎回家！</h3>
+      <h3>Welcome Home!</h3>
       <a href="/api/test">/api/test</a>
     </div>
   );

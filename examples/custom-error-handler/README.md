@@ -1,31 +1,31 @@
 This example shows how to intercept all errors and return a custom response format. When any route throws an error, Nitro calls your error handler instead of returning the default error page.
 
-## 错误处理器
+## Error Handler
 
-在项目根目录创建一个 `error.ts` 文件，定义全局错误处理器：
+Create an `error.ts` file in your project root to define the global error handler:
 
 ```ts [error.ts]
 import { defineErrorHandler } from "nitro";
 
 export default defineErrorHandler((error, _event) => {
-  return new Response(`自定义错误处理器: ${error.message}`, {
+  return new Response(`Custom Error Handler: ${error.message}`, {
     status: 500,
     headers: { "Content-Type": "text/plain" },
   });
 });
 ```
 
-该处理器接收抛出的错误和 H3 事件对象。你可以使用事件对象访问请求的详细信息，如头信息、cookie 或 URL 路径，以便针对不同路由定制响应。
+The handler receives the thrown error and the H3 event object. You can use the event to access request details like headers, cookies, or the URL path to customize responses per route.
 
-## 触发错误
+## Triggering an Error
 
-主处理器抛出一个错误，用以演示自定义错误处理器的作用：
+The main handler throws an error to demonstrate the custom error handler:
 
 ```ts [server.ts]
 import { defineHandler, HTTPError } from "nitro";
 
 export default defineHandler(() => {
-  throw new HTTPError("示例错误！", { status: 500 });
+  throw new HTTPError("Example Error!", { status: 500 });
 });
 ```
 

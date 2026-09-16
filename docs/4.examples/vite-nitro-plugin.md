@@ -1,5 +1,6 @@
 ---
-category: vite
+navigation:
+  category: vite
 icon: i-logos-vitejs
 ---
 
@@ -90,4 +91,4 @@ export default defineConfig({
 
 ## 了解更多
 
-- [配置](/docs/configuration)
+- [配置](/docs/configuration)。

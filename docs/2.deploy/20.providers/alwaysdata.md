@@ -8,18 +8,19 @@
 
 ## 设置应用
 
-### 前置条件
+### 先决条件
 
-1. 如果你还没有账号，请在 alwaysdata 平台上[注册一个新账户](https://www.alwaysdata.com/en/register/)。
+1. 如果你还没有 alwaysdata 平台的个人资料，请[注册一个新的个人资料](https://www.alwaysdata.com/en/register/)。
 
 2. 获取免费的 100MB 套餐来托管你的应用。
 
-> [!NOTE]
-> 请记住，你的*账户名称*将被用于提供默认 URL，格式为 `account_name.alwaysdata.net`，因此请明智选择。你也可以稍后将现有域名链接到你的账户，或根据需要在你的资料下注册任意数量的账户。
+::note
+你的*账户名称*将用于生成默认 URL，格式为 `account_name.alwaysdata.net`，因此请谨慎选择。你也可以稍后将已有域名关联到你的账户，或者根据需要在个人资料下注册任意数量的账户。
+::
 
 ### 本地部署
 
-1. 使用 `npm run build -- preset alwaysdata` 在本地构建你的项目
+1. 使用 `npm run build -- --preset alwaysdata` 在本地构建你的项目。
 
 2. 将[你的应用上传](https://help.alwaysdata.com/en/remote-access/)到你账户中的独立目录（例如 `$HOME/www/my-app`）。你可以使用任何你喜欢的协议（SSH/FTP/WebDAV…）来完成此操作。
 

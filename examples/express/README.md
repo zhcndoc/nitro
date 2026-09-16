@@ -12,8 +12,8 @@ app.use("/", (_req, res) => {
 export default app;
 ```
 
-Nitro 会自动检测项目根目录下的 `server.node.ts` 并将其作为服务器入口。Express 应用处理所有传入请求，让你完全控制路由和中间件。
+Nitro auto-detects `server.node.ts` in your project root and uses it as the server entry. The Express app handles all incoming requests, giving you full control over routing and middleware.
 
 ::note
-`.node.ts` 后缀表示该入口仅限于 Node.js 使用，无法在 Cloudflare Workers 或 Deno 等其他运行时环境中运行。
+The `.node.ts` suffix indicates this entry is Node.js specific and won't work in other runtimes like Cloudflare Workers or Deno.
 ::

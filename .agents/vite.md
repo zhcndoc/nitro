@@ -1,241 +1,259 @@
-# Nitro Vite 构建系统
+# Nitro Vite Build System
 
-## 概览
+## Overview
 
-`src/build/vite/` 是 Nitro 基于 Vite 的构建系统，使用了 Vite 6+ 的多环境 API。它以 Vite 插件（`nitro()`）的形式集成，负责管理服务器构建、服务环境、开发服务器和生产输出。
+`src/build/vite/` is Nitro's Vite-based build system using Vite 6+ multi-environment API. It integrates as a Vite plugin (`nitro()`) that manages server builds, service environments, dev server, and production output.
 
-## 文件映射
+## File Map
 
-| 文件 | 作用 |
+| File | Purpose |
 |------|---------|
-| `plugin.ts` | 主插件 — 由 6 个子插件协调构建 |
-| `env.ts` | Vite 环境创建（nitro、services、env-runner） |
-| `dev.ts` | 开发服务器集成，`FetchableDevEnvironment`，中间件 |
-| `prod.ts` | 生产多环境构建，资源管理，虚拟设置模块 |
-| `bundler.ts` | Rollup / Rolldown 配置生成 |
-| `build.ts` | `nitro build` 的 CLI 构建入口（`viteBuild()`） |
-| `preview.ts` | 预览服务器插件 |
-| `types.ts` | 类型定义（`NitroPluginConfig`，`NitroPluginContext`） |
+| `plugin.ts` | Main plugin — 6 sub-plugins orchestrating the build |
+| `env.ts` | Vite environment creation (nitro, services, env-runner) |
+| `dev.ts` | Dev server integration, `FetchableDevEnvironment`, middleware |
+| `prod.ts` | Production multi-env build, asset management, virtual setup module |
+| `bundler.ts` | Rollup/Rolldown config generation |
+| `build.ts` | CLI build entry for `nitro build` (`viteBuild()`) |
+| `preview.ts` | Preview server plugin |
+| `types.ts` | Type definitions (`NitroPluginConfig`, `NitroPluginContext`) |
+| `_import.ts` | On demand `vite` import from the user project (`importVite()`) |
+| `_dev-worker.ts` | Generated dev worker entry, injecting the app's Vite module runner |
 
-## 插件架构（`plugin.ts`）
+## Plugin Architecture (`plugin.ts`)
 
-`nitro(config?)` 返回由 6 个子插件组成的数组：
+`nitro(config?)` returns an array of 6 sub-plugins:
 
-### 1. `nitroInit` — 上下文设置
-- 在第一次 `config` 钩子中调用 `setupNitroContext()`
-- 通过 `createNitro()` 创建 Nitro 实例
-- 检测 Rolldown 与 Rollup（`_isRolldown`）
-- 通过 `getBundlerConfig()` 解析打包器配置
-- 在开发模式下初始化 env-runner
-- 附加用于开发环境的 Rollup 插件
+### 1. `nitroInit` — Context Setup
+- Calls `setupNitroContext()` on first `config` hook
+- Creates Nitro instance via `createNitro()`
+- Detects Rolldown vs Rollup (`_isRolldown`)
+- Resolves bundler config via `getBundlerConfig()`
+- Initializes env-runner in dev mode
+- Attaches rollup plugins for dev environments
 
-### 2. `nitroEnv` — 环境注册
-- 注册 Vite 环境：`client`、`nitro` 及用户服务
-- 自动检测 SSR 的 `entry-server`
-- 配置每个环境的构建选项（消费者类型、外部依赖等）
+### 2. `nitroEnv` — Environment Registration
+- Registers Vite environments: `client`, `nitro`, and user services
+- Auto-detects `entry-server` for SSR
+- Configures per-environment build options (consumer type, externals, etc.)
 
-### 3. `nitroMain` — 构建协调
-- 设置应用类型为 `"custom"`
-- 配置模块解析别名、服务器端口
-- `buildApp` 钩子 → 调用 `buildEnvironments()`（生产）
-- `generateBundle` 钩子 → 跟踪入口点
-- `configureServer` → 调用 `configureViteDevServer()`（开发）
-- `hotUpdate` → 仅服务器模块重新加载
+### 3. `nitroMain` — Build Orchestration
+- Sets app type to `"custom"`
+- Configures resolve aliases, server port
+- `buildApp` hook → calls `buildEnvironments()` (production)
+- `generateBundle` hook → tracks entry points
+- `configureServer` → calls `configureViteDevServer()` (dev)
+- `hotUpdate` → server-only module reload
 
-### 4. `nitroPrepare` — 输出清理
-- 在构建开始前清理构建目录
+### 4. `nitroPrepare` — Output Cleanup
+- Cleans build directory before build starts
 
-### 5. `nitroService` — 虚拟模块处理
-- 解析 `#nitro-vite-setup` 虚拟模块
-- 提供服务环境的生产设置代码
+### 5. `nitroService` — Virtual Module Handler
+- Resolves `#nitro-vite-setup` virtual module
+- Provides production setup code for service environments
 
-### 6. `nitroPreviewPlugin` — 预览服务器
-- 所有预览请求通过 Nitro 路由
-- 支持 WebSocket 升级
+### 6. `nitroPreviewPlugin` — Preview Server
+- Routes all preview requests through Nitro
+- WebSocket upgrade support
 
-## `setupNitroContext()` 流程
+## `setupNitroContext()` Flow
 
-1. 合并插件配置与用户配置
-2. 加载 dotenv 文件
-3. 检测 SSR 入口（查找 `entry-server.{ts,js,tsx,jsx,mjs}`）
-4. 创建 Nitro 实例（`createNitro()`）
-5. 解析打包器配置（`getBundlerConfig()`）
-6. 初始化开发环境的 env-runner（`initEnvRunner()`）
+1. Merge plugin config with user config
+2. Load dotenv files
+3. Detect SSR entry (looks for `entry-server.{ts,js,tsx,jsx,mjs}`)
+4. Create Nitro instance (`createNitro()`)
+5. Resolve bundler config (`getBundlerConfig()`)
+6. Attach `nitro.fetch` (the env-runner is started lazily by the dev environments, not while resolving config)
 
-## 环境（`env.ts`）
+## Environments (`env.ts`)
 
-Nitro 使用 Vite 6+ 的环境 API 支持多包构建：
+Nitro uses Vite 6+ environments API for multi-bundle builds:
 
-| 环境 | 消费者 | 目的 |
+| Environment | Consumer | Purpose |
 |-------------|----------|---------|
-| `client` | `"client"` | 浏览器端 HTML/CSS/JS |
-| `nitro` | `"server"` | 主服务器包 |
-| `ssr` | `"server"` | 可选的 SSR 服务 |
-| 自定义 | `"server"` | 用户定义的服务 |
+| `client` | `"client"` | Browser HTML/CSS/JS |
+| `nitro` | `"server"` | Main server bundle |
+| `ssr` | `"server"` | Optional SSR service |
+| Custom | `"server"` | User-defined services |
 
 ### `createNitroEnvironment()`
-- 消费者：`"server"`
-- 使用打包器配置（Rollup/Rolldown）
-- 开发：创建带热重载功能的 `FetchableDevEnvironment`
-- 生产：标准环境，支持压缩、sourcemap、CommonJS 选项
-- 解析：`noExternal` 在开发与生产中不同
-- 特殊条件：`"workerd"` 用于 miniflare，排除 `"node"`
+- Consumer: `"server"`
+- Uses bundler config (Rollup/Rolldown)
+- Dev: creates `FetchableDevEnvironment` with hot reload
+- Prod: standard environment with minify, sourcemap, commonJS options
+- Resolve: `noExternal` differs for dev vs prod
+- Special conditions: `"workerd"` for miniflare, excludes `"node"`
 
-### `initEnvRunner()` / `getEnvRunner()`
-- 使用 `env-runner` 包管理 worker
-- 支持 Node Worker 或 Miniflare 运行时
-- 失败自动重启（最多 3 次重试）
-- 为 workerd 提供自定义求值器（不支持 `AsyncFunction`）
-- 通过 Vite 的转换管道路由模块导入
+### `initEnvRunner()`
+- Called from the dev environments' `createEnvironment()` (and `nitro.fetch`), so resolving the Vite config alone does not start a worker
+- Uses `env-runner` package for worker management
+- Supports Node Worker or Miniflare runtime
+- Auto-restarts on failure (max 3 retries)
+- Custom evaluator for workerd (`AsyncFunction` not allowed)
+- Routes module imports through Vite's transform pipeline
 
 ### `reloadEnvRunner()`
-- 触发 env-runner worker 的完全重载
+- Triggers full reload of the env-runner worker
 
-## 开发服务器（`dev.ts`）
+## Dev Server (`dev.ts`)
 
-### `FetchableDevEnvironment`（继承自 `DevEnvironment`）
-- 重写 `fetchModule()` 用于 CJS/ESM 解析
-- 对 workerd：防止外部化裸露导入
-- `dispatchFetch()` — 将请求路由到开发服务器 worker
-- 初始化时发送包含环境信息的自定义消息
+### `FetchableDevEnvironment` (extends `DevEnvironment`)
+- Defined lazily by `createFetchableDevEnvironment()` (async) against the `vite` instance resolved
+  from the user project — `vite` is an optional dependency, so `DevEnvironment` cannot be imported statically
+- Overrides `fetchModule()` for CJS/ESM resolution
+- For workerd: prevents externalization of bare imports
+- `dispatchFetch()` — routes requests to the dev server worker
+- Sends custom message on init with environment info
 
 ### `configureViteDevServer()`
-- 监听 Nitro 配置文件变化（触发完整重启）
-- WebSocket 升级处理
-- 监听路由 / API / 中间件目录的文件变化（防抖重载）
-- RPC 用于 `transformHTML` 消息
+- Watches Nitro config file for changes (triggers full restart)
+- WebSocket upgrade handling
+- File watchers for route/API/middleware directories (debounced reload)
+- RPC for `transformHTML` messages
 
-### 开发中间件（`nitroDevMiddleware`）
-两阶段请求路由：
+### Dev Middleware (`nitroDevMiddleware`)
+Two-stage request routing:
 
-1. **预处理器** — 判断请求是否应由 Nitro 处理：
-   - 跳过 Vite 内部请求（`/@`、`/__`）
-   - 跳过有文件扩展名的请求（`.js`、`.css` 等）
-   - 通过 `sec-fetch-dest` 头部检测浏览器
-   - 优先路由到 `NitroDevApp`（静态、代理、开发处理器）
-2. **主处理器** — 其他请求回退到 env-runner worker 处理服务端路由
+1. **Pre-processor** — checks if request should go to Nitro:
+   - Skips Vite internal requests (`/@`, `/__`)
+   - Skips file extension requests (`.js`, `.css`, etc.)
+   - Uses `sec-fetch-dest` header for browser detection
+   - Routes to `NitroDevApp` first (static/proxy/dev handlers)
+2. **Main handler** — falls back to env-runner worker for server routes
 
-### 请求流程（开发）
+### Request Flow (Dev)
 ```
-浏览器 → Vite 开发服务器
-  → nitroDevMiddleware（预处理器）
-    → NitroDevApp（静态资源、开发代理、/_vfs）
-    → env-runner worker（主服务器逻辑）
-  → Vite 静态资源 / HMR（若未处理）
+Browser → Vite Dev Server
+  → nitroDevMiddleware (pre-processor)
+    → NitroDevApp (static assets, dev proxy, /_vfs)
+    → env-runner worker (main server logic)
+  → Vite static/HMR (if not handled)
 ```
 
-## 生产构建（`prod.ts`）
+## Production Build (`prod.ts`)
 
-### `buildEnvironments()` — 5 个阶段
+### `buildEnvironments()` — 5 Stages
 
-**阶段 1：构建非 Nitro 环境**
-- 客户端环境（浏览器包）
-- 服务环境（SSR、API、自定义）
-- 每个环境详细日志
+**Stage 1: Build non-Nitro environments**
+- Client environment (browser bundle)
+- Service environments (SSR, API, custom)
+- Detailed logging per environment
 
-**阶段 2：渲染器模板处理**
-- 若客户端输入为渲染器模板，替换 SSR 出口
-- 内联 `globalThis.__nitro_vite_envs__?.["ssr"]?.fetch($REQUEST)`
-- 将处理后的模板移动到构建目录
+**Stage 2: Renderer template processing**
+- If client input == renderer template, replaces SSR outlet
+- Inlines `globalThis.__nitro_vite_envs__?.["ssr"]?.fetch($REQUEST)`
+- Moves processed template to build dir
 
-**阶段 3：资源管理**
-- 调用 `builder.writeAssetsManifest?.()`
-- 用 `max-age=31536000, immutable` 注册资源目录
+**Stage 3: Asset management**
+- Calls `builder.writeAssetsManifest?.()`
+- Registers asset dirs with `max-age=31536000, immutable`
 
-**阶段 4：构建 Nitro 环境**
-- 执行 `prepare()` → 清理输出
-- 构建主服务器包
-- 关闭 Nitro 实例
-- 触发 `compiled` 钩子
-- 写入构建信息
+**Stage 4: Build Nitro environment**
+- `prepare()` → clean output
+- Build main server bundle
+- Close Nitro instance
+- Fire `compiled` hook
+- Write build info
 
-**阶段 5：预览**
-- 启动预览服务器，记录成功日志
+**Stage 5: Preview**
+- Start preview server, log success
 
-### `prodSetup()` 虚拟模块
-生成 `#nitro-vite-setup` 内容：
+### `prodSetup()` Virtual Module
+Generates `#nitro-vite-setup` content:
 ```js
-// 对每个服务环境
+// For each service environment
 globalThis.__nitro_vite_envs__ = {
   "ssr": { fetch: (...args) => import("entry").then(m => m.default.fetch(...args)) }
 }
 ```
 
-## 打包器配置（`bundler.ts`）
+## Bundler Config (`bundler.ts`)
 
-`getBundlerConfig()` 返回：
+`getBundlerConfig()` returns:
 ```ts
 {
   base: BaseBuildConfig,
-  rollupConfig?: RollupConfig,   // 使用 Rollup 时
-  rolldownConfig?: RolldownConfig // 使用 Rolldown 时
+  rollupConfig?: RollupConfig,   // if using Rollup
+  rolldownConfig?: RolldownConfig // if using Rolldown
 }
 ```
 
-通用配置：ESM 输出、树摇、代码拆分、sourcemap。
+Common config: ESM output, tree-shaking, chunking, sourcemaps.
 
-**Rolldown 特定**：转码注入、库拆分、支持 `inlineDynamicImports` 和 `iife`。
+**Rolldown-specific**: Transform injection, library chunking, `inlineDynamicImports`/`iife` support.
+**Rollup-specific**: `@rollup/plugin-inject`, `@rollup/plugin-alias`, manual chunk naming.
 
-**Rollup 特定**：`@rollup/plugin-inject`，`@rollup/plugin-alias`，手动命名代码块。
+## HMR (Dev Only)
 
-## HMR（仅开发）
+**Server-only module reload**:
+1. `hotUpdate` hook detects file change
+2. Determines if module is server-only or shared
+3. Server-only → sends `full-reload` (with `triggeredBy`) to the environment
+4. Shared → returns for normal Vite client HMR
+5. Optionally reloads browser
 
-**仅服务器模块重载**：
-1. `hotUpdate` 钩子检测文件变化
-2. 判断模块是仅服务器还是共享
-3. 服务器专用 → 向 nitro 环境发送 `full-reload`
-4. 共享模块 → 返回，进行普通 Vite 客户端 HMR
-5. 可选浏览器重载（`experimental.vite.serverReload`）
+The dev worker scopes each `full-reload` to the environment it was sent for,
+plus any other environment that evaluated `triggeredBy` itself. Within an
+environment only the changed file and its importers are invalidated, so
+unrelated module state (runtime singletons, caches) survives the reload.
+A payload without `triggeredBy` (added/removed handlers) drops that
+environment's whole module graph instead. Reloads are serialized per
+environment and requests wait for the in-flight one.
 
-**目录监听**（防抖）：
-- 路由、API、中间件、插件、模块目录
-- 文件新增/删除 → 完整路由重建 + 重载
+`experimental.vite.serverReload: false` opts out entirely: server modules are
+still invalidated, but no `full-reload` is sent and the dev worker keeps its
+current evaluations.
 
-## 运行时集成
+**Directory watchers** (debounced):
+- Routes, API, middleware, plugins, modules dirs
+- Add/delete → full routing rebuild + reload
 
-### Worker 入口（`src/runtime/internal/vite/`）
+## Runtime Integration
 
-| 文件 | 作用 |
+### Worker Entry (`src/runtime/internal/vite/`)
+
+| File | Purpose |
 |------|---------|
-| `dev-entry.mjs` | 开发入口：polyfills，WebSocket 适配器，调度器 |
-| `dev-worker.mjs` | worker 进程：`ViteEnvRunner` 类，RPC 层，环境管理 |
-| `ssr-renderer.mjs` | SSR 服务：调用 `fetchViteEnv("ssr", req)` |
+| `dev-entry.mjs` | Dev entry: polyfills, WebSocket adapter, schedule runner |
+| `dev-worker.mjs` | Worker process: `ViteEnvRunner` class, RPC layer, env management |
+| `ssr-renderer.mjs` | SSR service: calls `fetchViteEnv("ssr", req)` |
 
-### `ViteEnvRunner`（在 `dev-worker.mjs`）
-- 管理每个环境的 Vite `ModuleRunner`
-- 通过 `runner.import()` 加载环境入口
-- 路由 fetch 请求到已加载条目
-- 暴露 `__VITE_ENVIRONMENT_RUNNER_IMPORT__` 支持 RSC
+`dev-worker.mjs` is not loaded directly: `writeDevWorkerEntry()` generates `<buildDir>/vite/dev-worker.mjs`, which re-exports it and injects the `vite/module-runner` resolved from the app (`vite` is not resolvable from Nitro's `dist/`).
 
-### 运行时 API（`src/runtime/vite.ts`）
-- `fetchViteEnv(name, input, init)` — 路由 fetch 到指定 Vite 环境
-- 访问 `globalThis.__nitro_vite_envs__` 注册表
+### `ViteEnvRunner` (in `dev-worker.mjs`)
+- Manages Vite `ModuleRunner` per environment (injected via `setModuleRunner()`)
+- Loads environment entry via `runner.import()`
+- Routes fetch requests to loaded entries
+- Exposes `__VITE_ENVIRONMENT_RUNNER_IMPORT__` for RSC
 
-## 开发与生产对比
+### Runtime API (`src/runtime/vite.ts`)
+- `fetchViteEnv(name, input, init)` — route fetch to named Vite environment
+- Accesses `globalThis.__nitro_vite_envs__` registry
 
-| 方面 | 开发 | 生产 |
+## Dev vs Production
+
+| Aspect | Dev | Production |
 |--------|-----|-----------|
-| 运行器 | env-runner（node-worker / miniflare） | 打包的 ESM |
-| HMR | 文件变化时完全重载 | 无 |
-| 错误 | 交互式错误页（Youch） | JSON 或简化 HTML |
-| 服务 | 通过 env-runner 懒加载 | 通过 `prodSetup()` 预打包 |
-| 模板 | 动态（vite-env 路由） | 静态（内联 SSR 出口） |
-| Sourcemaps | 启用 | 可选 |
+| Runner | env-runner (node-worker / miniflare) | Bundled ESM |
+| HMR | Full reload on file change | N/A |
+| Errors | Interactive error page (Youch) | JSON or minimal HTML |
+| Services | Lazy-loaded via env-runner | Pre-bundled via `prodSetup()` |
+| Template | Dynamic (vite-env route) | Static (inlined SSR outlet) |
+| Sourcemaps | Enabled | Optional |
 
-## 实验性功能
+## Experimental Features
 
-`experimental.vite` 选项：
-- `assetsImport`（默认值：true）— 使用 `@hiogawa/vite-plugin-fullstack` 的 `?assets` 导入
-- `serverReload`（默认值：true）— 服务器模块变更时重载
-- `services` — 注册自定义服务环境
+`experimental.vite` options:
+- `assetsImport` (default: true) — `?assets` imports via `@hiogawa/vite-plugin-fullstack`
+- `serverReload` (default: true) — reload the dev worker on server-only module changes
+- `services` — register custom service environments
 
-## 关键关联
+## Key Connections
 
-- `src/vite.ts` — 公共导出（`nitro` 插件）
-- `src/build/build.ts` — 调度调用 `viteBuild()`
-- `src/build/config.ts` — 基础构建配置
-- `src/build/plugins.ts` — 基础构建插件（虚拟模块、自动导入等）
-- `src/build/virtual/` — 14 个虚拟模块模板
-- `src/dev/app.ts` — 专用于开发的 `NitroDevApp` 处理器
-- `src/dev/server.ts` — 带 `RunnerManager` 的 `NitroDevServer`
-- `src/runtime/internal/vite/` — 运行时 worker 和入口点
+- `src/vite.ts` — public export (`nitro` plugin)
+- `src/build/build.ts` — dispatcher calls `viteBuild()`
+- `src/build/config.ts` — base build config
+- `src/build/plugins.ts` — base build plugins (virtual modules, WASM, externals, etc.)
+- `src/build/virtual/` — 14 virtual module templates
+- `src/dev/app.ts` — `NitroDevApp` for dev-only handlers
+- `src/dev/server.ts` — `NitroDevServer` with `RunnerManager`
+- `src/runtime/internal/vite/` — runtime worker and entry points

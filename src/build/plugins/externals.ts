@@ -87,8 +87,11 @@ export function externals(opts: ExternalsOptions): Plugin {
           };
         }
 
-        // Skip nested rollup-node resolutions
-        if (rOpts.custom?.["node-resolve"]) {
+        // Skip nested `@rollup/plugin-node-resolve` re-entries (already resolved to
+        // a file). A `require()` from a bundled CommonJS module also arrives here
+        // (`isRequire`), and must go through the main path so a package matching
+        // the trace filter is externalized and traced instead of bundled.
+        if (rOpts.custom?.["node-resolve"]?.resolved) {
           return null;
         }
 
@@ -286,8 +289,11 @@ export function resolveTraceDeps(
   // resolve time and traced explicitly. Force-tracing by name also fixes pnpm,
   // where a nested dependency only resolves from the dependent package's real
   // `.pnpm` location.
+  // Bare scopes (`@scope`) are prefix selectors for the include pattern only:
+  // they are not resolvable package names, so nf3 would warn on them.
   const traceInclude = userTraceDeps.filter(
-    (d): d is string => typeof d === "string" && !negated.has(d)
+    (d): d is string =>
+      typeof d === "string" && !negated.has(d) && !(d.startsWith("@") && !d.includes("/"))
   );
   return {
     includePattern: tracePattern

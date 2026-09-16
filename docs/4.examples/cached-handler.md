@@ -1,5 +1,6 @@
 ---
-category: features
+navigation:
+  category: features
 icon: i-lucide-clock
 ---
 
@@ -92,4 +93,4 @@ export default defineCachedHandler(
 ## 了解更多
 
 - [缓存](/docs/cache)
-- [存储](/docs/storage)
+- [存储](/docs/storage)。

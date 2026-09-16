@@ -1,15 +1,15 @@
-使用 Preact、Vite 和 Nitro 设置服务端渲染（SSR）。此设置支持流式 HTML 响应、自动资源管理和客户端水合。
+Set up server-side rendering (SSR) with Preact, Vite, and Nitro. This setup enables streaming HTML responses, automatic asset management, and client hydration.
 
-## 概览
+## Overview
 
-1. 在 Vite 配置中添加 Nitro Vite 插件
-2. 配置客户端与服务器入口文件
-3. 创建服务器入口，将应用渲染为 HTML
-4. 创建客户端入口，为服务器渲染的 HTML 执行水合
+1. Add the Nitro Vite plugin to your Vite config
+2. Configure client and server entry points
+3. Create a server entry that renders your app to HTML
+4. Create a client entry that hydrates the server-rendered HTML
 
-## 1. 配置 Vite
+## 1. Configure Vite
 
-在 Vite 配置中添加 Nitro 和 Preact 插件。定义 `client` 环境并指定客户端入口文件：
+Add the Nitro and Preact plugins to your Vite config. Define the `client` environment with your client entry point:
 
 ```js [vite.config.mjs]
 import { defineConfig } from "vite";
@@ -30,11 +30,11 @@ export default defineConfig({
 });
 ```
 
-`environments.client` 配置指示 Vite 使用哪个文件作为浏览器入口。Nitro 会自动检测常见目录中以 `entry-server` 或 `server` 命名的文件作为服务器入口。
+The `environments.client` configuration tells Vite which file to use as the browser entry point. Nitro automatically detects the SSR entry from a file named `entry-server` in `app/`, `src/`, or the project root.
 
-## 2. 创建 App 组件
+## 2. Create the App Component
 
-创建一个可同时运行于服务器和客户端的共享 Preact 组件：
+Create a shared Preact component that runs on both server and client:
 
 ```tsx [src/app.tsx]
 import { useState } from "preact/hooks";
@@ -45,9 +45,9 @@ export function App() {
 }
 ```
 
-## 3. 创建服务器入口
+## 3. Create the Server Entry
 
-服务器入口使用 `preact-render-to-string/stream` 将 Preact 应用渲染成流式 HTML 响应：
+The server entry renders your Preact app to a streaming HTML response using `preact-render-to-string/stream`:
 
 ```tsx [src/entry-server.tsx]
 import "./styles.css";
@@ -77,7 +77,7 @@ function Root(props: { url: URL }) {
           <link key={attr.href} rel="stylesheet" {...attr} />
         ))}
         {assets.js.map((attr: any) => (
-          <link key={attr.href} type="modulepreload" {...attr} />
+          <link key={attr.href} rel="modulepreload" {...attr} />
         ))}
         <script type="module" src={assets.entry} />
       </head>
@@ -93,11 +93,11 @@ function Root(props: { url: URL }) {
 }
 ```
 
-通过 `?assets=client` 和 `?assets=ssr` 查询参数导入资源。Nitro 会收集每个入口的 CSS 和 JS 资源，`merge()` 方法将它们合并为单一清单。`assets` 对象提供样式表和脚本的属性数组，以及客户端入口的 URL。使用 `renderToReadableStream` 实现流式 HTML 渲染，提升首字节时间。
+Import assets using the `?assets=client` and `?assets=ssr` query parameters. Nitro collects CSS and JS assets from each entry point, and `merge()` combines them into a single manifest. The `assets` object provides arrays of stylesheet and script attributes, plus the client entry URL. Use `renderToReadableStream` to stream HTML as Preact renders, improving time-to-first-byte.
 
-## 4. 创建客户端入口
+## 4. Create the Client Entry
 
-客户端入口对服务器渲染的 HTML 进行水合，挂载 Preact 的事件处理器：
+The client entry hydrates the server-rendered HTML, attaching Preact's event handlers:
 
 ```tsx [src/entry-client.tsx]
 import { hydrate } from "preact";

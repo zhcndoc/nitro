@@ -1,5 +1,6 @@
 ---
-category: integrations
+navigation:
+  category: integrations
 icon: i-lucide-highlighter
 ---
 
@@ -209,4 +210,4 @@ export default async ({ req }: { req: Request }) => {
 
 ## 了解更多
 
-- [Shiki](https://shiki.style/)
+- [Shiki](https://shiki.style/)。

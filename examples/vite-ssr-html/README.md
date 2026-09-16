@@ -1,6 +1,6 @@
 This example renders an HTML template with server-side data and streams the response word by word. It demonstrates how to use Nitro's Vite SSR integration without a framework.
 
-## 概览
+## Overview
 
 1. **Add the Nitro Vite plugin** to enable SSR
 2. **Create an HTML template** with a `<!--ssr-outlet-->` comment where server content goes

@@ -1,6 +1,7 @@
 ---
-category: server side rendering
-icon: i-logos-html-5
+navigation:
+  category: 服务端渲染
+icon: i-material-symbols-html
 ---
 
 # Vite SSR HTML

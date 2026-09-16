@@ -12,6 +12,6 @@ app.get("/", (c) => {
 export default app;
 ```
 
-Nitro 会自动检测项目根目录中的 `server.ts` 并将其用作服务器入口。Hono 应用处理所有传入请求，使你可以完全控制路由和中间件。
+Nitro auto-detects `server.ts` in your project root and uses it as the server entry. The Hono app handles all incoming requests, giving you full control over routing and middleware.
 
 Hono is cross-runtime compatible, so this server entry works across all Nitro deployment targets including Node.js, Deno, Bun, and Cloudflare Workers.

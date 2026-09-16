@@ -1,5 +1,6 @@
 ---
-category: server side rendering
+navigation:
+  category: 服务端渲染
 icon: i-lucide-brackets
 ---
 
@@ -81,4 +82,4 @@ Nitro 自动检测 `server.tsx` 并将其用作服务端入口。使用 nano-jsx
 ## 了解更多
 
 - [渲染器](/docs/renderer)
-- [nano-jsx](https://nanojsx.io/)
+- [nano-jsx](https://nanojsx.io/)。

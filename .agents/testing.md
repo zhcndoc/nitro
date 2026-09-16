@@ -1,59 +1,59 @@
-# Nitro 测试指南
+# Nitro Testing Guide
 
-## 测试结构
+## Test Structure
 
 ```
 test/
-├── tests.ts            # 主测试定义（各预设共享）
-├── fixture/            # 测试夹具 Nitro 应用
+├── tests.ts            # Main test definitions (shared across presets)
+├── fixture/            # Test fixture Nitro app
 │   ├── nitro.config.ts
-│   ├── routes/         # 测试路由处理器
-│   ├── api/            # 测试 API 处理器
-│   ├── middleware/      # 测试中间件
-│   ├── plugins/        # 测试插件
-│   └── public/         # 测试静态资源
-├── presets/            # 每个预设的测试配置
+│   ├── routes/         # Test route handlers
+│   ├── api/            # Test API handlers
+│   ├── middleware/      # Test middleware
+│   ├── plugins/        # Test plugins
+│   └── public/         # Test static assets
+├── presets/            # Per-preset test setup
 │   ├── node.test.ts
 │   ├── cloudflare.test.ts
 │   ├── vercel.test.ts
 │   └── ...
-├── unit/               # 独立单元测试
-└── minimal/            # 最小包输出测试
+├── unit/               # Isolated unit tests
+└── minimal/            # Minimal bundle output tests
 ```
 
-## 测试原理
+## How Tests Work
 
-1. `test/tests.ts` 使用 vitest 定义共享测试用例  
-2. 每个 `test/presets/<name>.test.ts` 引入共享测试并对特定预设执行  
-3. `test/fixture/` 中的测试夹具是完整的 Nitro 应用，用作测试目标  
-4. 预设测试将使用该预设构建夹具，然后运行 HTTP 断言
+1. `test/tests.ts` defines shared test cases using vitest
+2. Each `test/presets/<name>.test.ts` imports shared tests and runs them against a specific preset
+3. The test fixture in `test/fixture/` is a full Nitro app used as the test target
+4. Preset tests build the fixture with the preset, then run HTTP assertions
 
-## 添加回归测试
+## Adding Regression Tests
 
-1. 在 `test/fixture/` 添加测试路由/处理器（例如 `test/fixture/routes/new-feature.ts`）  
-2. 在 `test/tests.ts` 添加测试用例  
-3. 运行 `pnpm vitest run test/presets/node.test.ts` 进行验证
+1. Add test route/handler to `test/fixture/` (e.g., `test/fixture/routes/new-feature.ts`)
+2. Add test case to `test/tests.ts`
+3. Run `pnpm vitest run test/presets/node.test.ts` to verify
 
-## 运行测试
+## Running Tests
 
 ```bash
-# 运行所有测试
+# Run all tests
 pnpm test
 
-# 运行特定预设测试
+# Run specific preset test
 pnpm vitest run test/presets/node.test.ts
 
-# 运行单元测试
+# Run unit tests
 pnpm vitest run test/unit/
 
-# 运行最小包测试
+# Run minimal bundle test
 pnpm vitest run test/minimal/
 ```
 
-## Bug 修复流程
+## Bug Fix Workflow
 
-1. 在 `test/fixture/` 和 `test/tests.ts` 编写回归测试  
-2. 确认测试**失败**（`pnpm vitest run test/presets/node.test.ts`）  
-3. 修复实现  
-4. 确认测试**通过**  
-5. 运行全部测试套件（`pnpm test`）
+1. Write regression test in `test/fixture/` + `test/tests.ts`
+2. Confirm it **fails** (`pnpm vitest run test/presets/node.test.ts`)
+3. Fix the implementation
+4. Confirm it **passes**
+5. Run full suite (`pnpm test`)

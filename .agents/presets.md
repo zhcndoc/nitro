@@ -1,22 +1,22 @@
-# Nitro 预设参考
+# Nitro Presets Reference
 
-## 所有预设
+## All Presets
 
-### 核心
-- `_nitro/` — 内部预设（dev、prerender、worker 模式）
-- `_static/` — 内部静态 / 仅 prerender 输出
-- `standard/` — 与框架无关的标准服务器
-- `node/` — Node.js（server、middleware、cluster）
-- `bun/` — Bun 运行时
+### Core
+- `_nitro/` — Internal presets (dev, prerender, worker modes)
+- `_static/` — Internal static / prerender-only output
+- `standard/` — Framework-agnostic standard server
+- `node/` — Node.js (server, middleware, cluster)
+- `bun/` — Bun runtime
 
-### 云提供商
+### Cloud Providers
 - `aws-lambda/` — AWS Lambda
 - `aws-amplify/` — AWS Amplify
-- `azure/` — Azure 静态网页应用
+- `azure/` — Azure Static Web Apps
 - `cloudflare/` — Cloudflare Pages/Workers
 - `deno/` — Deno Deploy
 - `digitalocean/` — DigitalOcean App Platform
-- `edgeone/` — 腾讯 EdgeOne
+- `edgeone/` — Tencent EdgeOne
 - `firebase/` — Firebase Hosting
 - `genezio/` — Genezio
 - `heroku/` — Heroku
@@ -33,46 +33,46 @@
 - `cleavr/`
 - `flightcontrol/`
 - `iis/`
-- `platform.sh/`
+- `upsun/`
 
-## 预设结构
+## Preset Structure
 
 ```
 presets/<name>/
-├── preset.ts        # defineNitroPreset() — 配置覆盖、钩子
-├── runtime/         # 运行时入口（打包到输出中）
-│   └── <name>.ts    # 平台特定的请求处理器
-├── types.ts         # TypeScript 类型定义（可选）
-├── utils.ts         # 构建时工具（可选）
-└── unenv/           # 环境 polyfill 覆盖（可选）
+├── preset.ts        # defineNitroPreset() — config overrides, hooks
+├── runtime/         # Runtime entry points (bundled into output)
+│   └── <name>.ts    # Platform-specific request handler
+├── types.ts         # TypeScript types (optional)
+├── utils.ts         # Build-time utilities (optional)
+└── unenv/           # Environment polyfill overrides (optional)
     ├── preset.ts
     └── node-compat.ts
 ```
 
-## 创建预设
+## Creating a Preset
 
-使用来自 `src/presets/_utils/preset.ts` 的 `defineNitroPreset()`：
+Use `defineNitroPreset()` from `src/presets/_utils/preset.ts`:
 
 ```ts
 import { defineNitroPreset } from "../_utils/preset.ts";
 
 export default defineNitroPreset({
-  // 预设元数据
+  // Preset metadata
   entry: "./runtime/<name>.ts",
-  // Nitro 配置覆盖
+  // NitroConfig overrides
   node: false,
-  // 钩子
+  // Hooks
   hooks: {
     "build:before": async (nitro) => { /* ... */ },
   },
 });
 ```
 
-## 预设解析 (`presets/_resolve.ts`)
+## Preset Resolution (`presets/_resolve.ts`)
 
-`resolvePreset(name, opts)` 会考虑：
-- 预设名称别名
-- 开发与生产模式
-- 兼容日期
-- 静态托管检测
-- 在 `_all.gen.ts` 和 `_types.gen.ts` 中生成的映射
+`resolvePreset(name, opts)` considers:
+- Preset name aliases
+- Dev vs production mode
+- Compatibility dates
+- Static hosting detection
+- Generated mappings in `_all.gen.ts` and `_types.gen.ts`

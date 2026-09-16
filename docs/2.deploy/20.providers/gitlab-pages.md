@@ -4,7 +4,7 @@
 
 **预设：** `gitlab_pages`
 
-:read-more{title="GitLab Pages" to="https://pages.github.com/"}
+:read-more{title="GitLab Pages" to="https://docs.gitlab.com/ee/user/project/pages/"}
 
 ## 设置
 
@@ -12,7 +12,7 @@
 
 ## 部署
 
-1. 以下是一个示例 GitLab Pages 工作流，用于将您的站点部署到 GitLab Pages：
+以下是一个用于将站点部署到 GitLab Pages 的 GitLab CI/CD 配置示例：
 
 ```yaml [.gitlab-ci.yml]
 image: node:lts

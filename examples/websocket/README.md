@@ -1,16 +1,16 @@
 This example implements a simple chat room using WebSockets. Clients connect, send messages, and receive messages from other users in real-time. The server broadcasts messages to all connected clients using pub/sub channels.
 
-## WebSocket 处理器
+## WebSocket Handler
 
-使用 `defineWebSocketHandler` 创建一个 WebSocket 路由。
+Create a WebSocket route using `defineWebSocketHandler`.
 
 ```ts [routes/_ws.ts]
 import { defineWebSocketHandler } from "nitro";
 
 export default defineWebSocketHandler({
   open(peer) {
-    peer.send({ user: "server", message: `欢迎 ${peer}!` });
-    peer.publish("chat", { user: "server", message: `${peer} 加入了！` });
+    peer.send({ user: "server", message: `Welcome ${peer}!` });
+    peer.publish("chat", { user: "server", message: `${peer} joined!` });
     peer.subscribe("chat");
   },
   message(peer, message) {
@@ -21,12 +21,12 @@ export default defineWebSocketHandler({
         user: peer.toString(),
         message: message.toString(),
       };
-      peer.send(msg); // 回显
+      peer.send(msg); // echo
       peer.publish("chat", msg);
     }
   },
   close(peer) {
-    peer.publish("chat", { user: "server", message: `${peer} 离开了！` });
+    peer.publish("chat", { user: "server", message: `${peer} left!` });
   },
 });
 ```

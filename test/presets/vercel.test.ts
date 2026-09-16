@@ -2,16 +2,28 @@ import { promises as fsp } from "node:fs";
 import { Server, type IncomingMessage, type ServerResponse } from "node:http";
 import type { Socket } from "node:net";
 import { resolve, join, basename } from "pathe";
+import { joinURL } from "ufo";
 import { describe, expect, it, vi, beforeAll, afterAll } from "vitest";
 import { setupTest, testNitro, fixtureDir } from "../tests.ts";
 import { toFetchHandler } from "srvx/node";
 
 const presetFixturesDir = resolve(import.meta.dirname, "fixtures");
 
+const VERCEL_REQUEST_CONTEXT = Symbol.for("@vercel/request-context");
+
 // NOTE: Always prefer extending the existing `nitro:preset:vercel:web` matrix
 // (its setup/build is shared across assertions) over adding new top-level
 // `describe` blocks, which trigger a separate build and slow down CI.
+
 describe("nitro:preset:vercel:web", async () => {
+  const TEST_HASH_SALT = "initial";
+
+  // Example salt used to exercise `VERCEL_HASH_SALT` namespacing of immutable
+  // static files. Set around the (build-time) `setupTest` below and restored
+  // immediately after so it does not leak into other builds.
+  const prevHashSalt = process.env.VERCEL_HASH_SALT;
+  process.env.VERCEL_HASH_SALT = TEST_HASH_SALT;
+
   const ctx = await setupTest("vercel", {
     outDirSuffix: "-web",
     config: {
@@ -21,7 +33,15 @@ describe("nitro:preset:vercel:web", async () => {
           route: "/_ws",
           handler: resolve(presetFixturesDir, "websocket.ts"),
         },
+        {
+          route: "/slash",
+          handler: resolve(presetFixturesDir, "slash.ts"),
+        },
       ],
+      prerender: {
+        // trailing slash on purpose (#4392)
+        routes: ["/slash/"],
+      },
       vercel: {
         queues: {
           triggers: [
@@ -32,6 +52,13 @@ describe("nitro:preset:vercel:web", async () => {
       },
     },
   });
+
+  if (prevHashSalt === undefined) {
+    delete process.env.VERCEL_HASH_SALT;
+  } else {
+    process.env.VERCEL_HASH_SALT = prevHashSalt;
+  }
+
   testNitro(
     ctx,
     async () => {
@@ -64,17 +91,23 @@ describe("nitro:preset:vercel:web", async () => {
               "version": "3.x",
             },
             "overrides": {
-              "_scalar/index.html": {
-                "path": "_scalar",
+              "api/hello": {
+                "contentType": "application/json;charset=UTF-8",
               },
-              "_swagger/index.html": {
-                "path": "_swagger",
+              "api/param/hidden": {
+                "contentType": "text/plain; custom",
               },
-              "api/hey/index.html": {
-                "path": "api/hey",
+              "api/param/prerender1": {
+                "contentType": "text/plain; custom",
               },
-              "prerender/index.html": {
-                "path": "prerender",
+              "api/param/prerender3": {
+                "contentType": "text/plain; custom",
+              },
+              "api/param/prerender4": {
+                "contentType": "text/plain; custom",
+              },
+              "json-string": {
+                "contentType": "text/plain; charset=UTF-8",
               },
             },
             "routes": [
@@ -91,6 +124,13 @@ describe("nitro:preset:vercel:web", async () => {
                 },
                 "src": "/rules/redirect/wildcard/(.*)",
                 "status": 307,
+              },
+              {
+                "headers": {
+                  "Location": "/target?param=$1",
+                },
+                "src": "/rules/redirect/wildcard-query/(.*)",
+                "status": 301,
               },
               {
                 "headers": {
@@ -135,13 +175,6 @@ describe("nitro:preset:vercel:web", async () => {
               },
               {
                 "headers": {
-                  "Location": "/base",
-                },
-                "src": "/rules/ba-redirect/(.*)",
-                "status": 307,
-              },
-              {
-                "headers": {
                   "x-single": "single",
                 },
                 "src": "/single-headers/*",
@@ -163,14 +196,15 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "/cdn/(.*)",
               },
               {
-                "continue": true,
-                "headers": {
-                  "cache-control": "public,max-age=31536000,immutable",
-                },
-                "src": "/build(.*)",
+                "handle": "filesystem",
               },
               {
-                "handle": "filesystem",
+                "continue": false,
+                "headers": {
+                  "cache-control": "no-store",
+                },
+                "src": "/build/(.*)",
+                "status": 404,
               },
               {
                 "dest": "/rules/_/noncached/cached-isr?__isr_route=$__isr_route",
@@ -261,14 +295,6 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "/raw",
               },
               {
-                "dest": "/prerender-custom.html",
-                "src": "/prerender-custom.html",
-              },
-              {
-                "dest": "/prerender",
-                "src": "/prerender",
-              },
-              {
                 "dest": "/node-compat",
                 "src": "/node-compat",
               },
@@ -279,10 +305,6 @@ describe("nitro:preset:vercel:web", async () => {
               {
                 "dest": "/jsx",
                 "src": "/jsx",
-              },
-              {
-                "dest": "/json-string",
-                "src": "/json-string",
               },
               {
                 "dest": "/imports",
@@ -321,6 +343,10 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "/env",
               },
               {
+                "dest": "/embedded-kit",
+                "src": "/embedded-kit",
+              },
+              {
                 "dest": "/context",
                 "src": "/context",
               },
@@ -345,6 +371,14 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "/api/storage/item",
               },
               {
+                "dest": "/api/middleware-order",
+                "src": "/api/middleware-order",
+              },
+              {
+                "dest": "/api/methods/search",
+                "src": "/api/methods/search",
+              },
+              {
                 "dest": "/api/methods/get",
                 "src": "/api/methods/get",
               },
@@ -359,14 +393,6 @@ describe("nitro:preset:vercel:web", async () => {
               {
                 "dest": "/api/kebab",
                 "src": "/api/kebab",
-              },
-              {
-                "dest": "/api/hey",
-                "src": "/api/hey",
-              },
-              {
-                "dest": "/api/hello",
-                "src": "/api/hello",
               },
               {
                 "dest": "/api/headers",
@@ -385,6 +411,10 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "/api/cached",
               },
               {
+                "dest": "/api/body-size",
+                "src": "/api/body-size",
+              },
+              {
                 "dest": "/500",
                 "src": "/500",
               },
@@ -401,24 +431,8 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "/_vercel/cron",
               },
               {
-                "dest": "/_swagger",
-                "src": "/_swagger",
-              },
-              {
-                "dest": "/_scalar",
-                "src": "/_scalar",
-              },
-              {
-                "dest": "/_openapi.json",
-                "src": "/_openapi.json",
-              },
-              {
                 "dest": "/single-headers/[id]",
                 "src": "/single-headers/(?<id>[^/]+)",
-              },
-              {
-                "dest": "/ba-single/[id]",
-                "src": "/ba-single/(?<id>[^/]+)",
               },
               {
                 "dest": "/assets/[id]",
@@ -452,6 +466,67 @@ describe("nitro:preset:vercel:web", async () => {
             "version": 3,
           }
         `);
+      });
+
+      it("should apply immutable buildAssetsDir and write manifest", async () => {
+        // `vercel.immutableStaticFiles` relocates build assets under the
+        // reserved `_vercel/immutable` base (namespaced by the optional
+        // `VERCEL_HASH_SALT` and the framework name) and emits an
+        // `immutable.json` manifest mapping each file to its full content hash.
+        const expectedDir = joinURL(
+          "_vercel/immutable",
+          TEST_HASH_SALT,
+          ctx.nitro!.options.framework.name || ""
+        );
+        expect(ctx.nitro!.options.buildAssetsDir).toBe(expectedDir);
+        expect(expectedDir).toBe(`_vercel/immutable/${TEST_HASH_SALT}/nitro`);
+
+        const manifest = await fsp
+          .readFile(resolve(ctx.outDir, "immutable.json"), "utf8")
+          .then((r) => JSON.parse(r));
+        expect(manifest.version).toBe(1);
+        expect(manifest.hashes).toBeTypeOf("object");
+      });
+
+      it("should not cache missing immutable public assets", async () => {
+        const config = await fsp
+          .readFile(resolve(ctx.outDir, "config.json"), "utf8")
+          .then((r) => JSON.parse(r));
+        const filesystemIndex = config.routes.findIndex(
+          (route: { handle?: string }) => route.handle === "filesystem"
+        );
+
+        expect(config.routes[filesystemIndex + 1]).toEqual({
+          src: "/build/(.*)",
+          status: 404,
+          headers: {
+            "cache-control": "no-store",
+          },
+          continue: false,
+        });
+      });
+
+      it("should not duplicate the public asset cache-control rule", async () => {
+        const config = await fsp
+          .readFile(resolve(ctx.outDir, "config.json"), "utf8")
+          .then((r) => JSON.parse(r));
+        const filesystemIndex = config.routes.findIndex(
+          (route: { handle?: string }) => route.handle === "filesystem"
+        );
+
+        // `/build` has a `maxAge`, so its header comes from the route rule
+        const cacheRules = config.routes
+          .slice(0, filesystemIndex)
+          .filter(
+            (route: { src?: string; headers?: Record<string, string> }) =>
+              route.src === "/build/(.*)" && route.headers?.["cache-control"]
+          );
+        expect(cacheRules).toEqual([
+          {
+            src: "/build/(.*)",
+            headers: { "cache-control": "public, max-age=3600, immutable" },
+          },
+        ]);
       });
 
       it("should generate prerender config", async () => {
@@ -491,21 +566,20 @@ describe("nitro:preset:vercel:web", async () => {
           [
             "functions/500.func (symlink)",
             "functions/__server.func",
-            "functions/_openapi.json.func (symlink)",
-            "functions/_scalar.func (symlink)",
-            "functions/_swagger.func (symlink)",
             "functions/_vercel",
             "functions/_ws.func (symlink)",
+            "functions/api/body-size.func (symlink)",
             "functions/api/cached.func (symlink)",
             "functions/api/db.func (symlink)",
             "functions/api/echo.func",
             "functions/api/headers.func (symlink)",
             "functions/api/hello.func",
-            "functions/api/hey.func (symlink)",
             "functions/api/kebab.func (symlink)",
             "functions/api/meta/test.func (symlink)",
             "functions/api/methods/foo.get.func (symlink)",
             "functions/api/methods/get.func (symlink)",
+            "functions/api/methods/search.func (symlink)",
+            "functions/api/middleware-order.func (symlink)",
             "functions/api/param/[test-id].func (symlink)",
             "functions/api/storage/item.func (symlink)",
             "functions/api/test/[-]/foo.func (symlink)",
@@ -514,9 +588,9 @@ describe("nitro:preset:vercel:web", async () => {
             "functions/assets/[id].func (symlink)",
             "functions/assets/all.func (symlink)",
             "functions/assets/md.func (symlink)",
-            "functions/ba-single/[id].func (symlink)",
             "functions/config.func (symlink)",
             "functions/context.func (symlink)",
+            "functions/embedded-kit.func (symlink)",
             "functions/env.func (symlink)",
             "functions/errors/captured.func (symlink)",
             "functions/errors/stack.func (symlink)",
@@ -526,12 +600,9 @@ describe("nitro:preset:vercel:web", async () => {
             "functions/icon.png.func (symlink)",
             "functions/import-attributes.func (symlink)",
             "functions/imports.func (symlink)",
-            "functions/json-string.func (symlink)",
             "functions/jsx.func (symlink)",
             "functions/modules.func (symlink)",
             "functions/node-compat.func (symlink)",
-            "functions/prerender-custom.html.func (symlink)",
-            "functions/prerender.func (symlink)",
             "functions/raw.func (symlink)",
             "functions/replace.func (symlink)",
             "functions/route-group.func (symlink)",
@@ -591,6 +662,17 @@ describe("nitro:preset:vercel:web", async () => {
         const funcDir = resolve(ctx.outDir, "functions/api/hello.func");
         const indexStat = await fsp.lstat(resolve(funcDir, "index.mjs"));
         expect(indexStat.isFile()).toBe(true);
+      });
+
+      it("should preserve dependency symlink targets inside functionRules directories", async () => {
+        const dependencyPath = "node_modules/@fixture/nitro-lib";
+        const serverTarget = await fsp.readlink(
+          resolve(ctx.outDir, "functions/__server.func", dependencyPath)
+        );
+        const functionTarget = await fsp.readlink(
+          resolve(ctx.outDir, "functions/api/hello.func", dependencyPath)
+        );
+        expect(functionTarget).toBe(serverTarget);
       });
 
       it("should keep base __server.func without functionRules overrides", async () => {
@@ -687,6 +769,31 @@ describe("nitro:preset:vercel:node", async () => {
       };
     },
     () => {
+      it("should forward event.waitUntil to the Vercel request context", async () => {
+        const nodeHandler = await import(
+          resolve(ctx.outDir, "functions/__server.func/index.mjs")
+        ).then((r) => r.default || r);
+
+        const waitUntil = vi.fn();
+        const prev = (globalThis as any)[VERCEL_REQUEST_CONTEXT];
+        (globalThis as any)[VERCEL_REQUEST_CONTEXT] = { get: () => ({ waitUntil }) };
+        try {
+          const res = await toFetchHandler(nodeHandler)(
+            new Request("https://example.com/wait-until")
+          );
+          expect(await res.text()).toBe("done");
+        } finally {
+          if (prev === undefined) {
+            delete (globalThis as any)[VERCEL_REQUEST_CONTEXT];
+          } else {
+            (globalThis as any)[VERCEL_REQUEST_CONTEXT] = prev;
+          }
+        }
+
+        expect(waitUntil).toHaveBeenCalled();
+        expect(waitUntil.mock.calls[0][0]).toBeInstanceOf(Promise);
+      });
+
       it.skipIf(typeof WebSocket !== "function")(
         "should handle Vercel request context websocket upgrades",
         async () => {

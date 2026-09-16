@@ -1,6 +1,6 @@
-# StormKit
+# Stormkit
 
-> 将 Nitro 应用部署到 StormKit。
+> 将 Nitro 应用部署到 Stormkit。
 
 **预置配置：** `stormkit`
 
@@ -18,6 +18,6 @@
 
 ## 部署
 
-默认情况下，当您向主分支推送更改时，Stormkit 将自动部署您的应用。但要触发手动部署（例如，您可能在首次部署时这样做），您可以点击“立即部署”。
+默认情况下，当你将更改推送到主分支时，Stormkit 会自动部署你的应用。要触发手动部署（例如，进行首次部署），请点击 `Deploy now`。
 
 ![使用“立即部署”触发手动部署](/images/stormkit-deploy.png)

@@ -1,6 +1,6 @@
 This example shows how to cache an expensive operation (a 500 ms delay) and conditionally bypass the cache using a query parameter. On first request, the handler executes and caches the result. Subsequent requests return the cached response instantly until the cache expires or is bypassed.
 
-## 工作原理
+## How It Works
 
 ```ts [server.ts]
 import { html } from "nitro";

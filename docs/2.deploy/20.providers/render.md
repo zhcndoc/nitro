@@ -16,22 +16,20 @@
 
 ## 基础设施即代码 (IaC)
 
-1. 在仓库根目录创建一个名为 `render.yaml` 的文件，内容如下：
+1. 在仓库根目录创建一个名为 `render.yaml` 的文件，内容如下。此文件遵循 Render 的[基础设施即代码](https://render.com/docs/infrastructure-as-code)规范。
 
-> 此文件遵循 Render 上的 [Infrastructure as Code](https://render.com/docs/infrastructure-as-code)
-
-```yaml
-services:
-  - type: web
-    name: <PROJECTNAME>
-    env: node
-    branch: main
-    startCommand: node .output/server/index.mjs
-    buildCommand: npx nypm install && npm run build
-    envVars:
-    - key: NITRO_PRESET
-      value: render_com
-```
+   ```yaml [render.yaml]
+   services:
+     - type: web
+       name: <PROJECTNAME>
+       env: node
+       branch: main
+       startCommand: node .output/server/index.mjs
+       buildCommand: npx nypm install && npm run build
+       envVars:
+       - key: NITRO_PRESET
+         value: render_com
+   ```
 
 1. [创建新的 Blueprint 实例](https://dashboard.render.com/select-repo?type=blueprint) 并选择包含 `render.yaml` 文件的仓库。
 

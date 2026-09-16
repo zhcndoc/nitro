@@ -2,27 +2,27 @@
 
 > 通过 Flightcontrol 将 Nitro 应用部署到 AWS。
 
-**预设：** `flightcontrol`
+**预设：** `flight_control`
 
 :read-more{title="flightcontrol.dev" to="https://flightcontrol.dev?ref=nitro"}
 
 ## 设置你的 Flightcontrol 账户
 
-从高层次来看，首次部署项目需要遵循以下步骤：
+概括来说，首次部署项目需要完成以下步骤：
 
-1. 在 [Flightcontrol](https://app.flightcontrol.dev/signup?ref=nitro) 创建一个账户
-2. 在 [AWS](https://portal.aws.amazon.com/billing/signup) 创建一个账户（如果你还没有的话）
+1. 在 [Flightcontrol](https://app.flightcontrol.dev/signup?ref=nitro) 创建账户
+2. 在 [AWS](https://portal.aws.amazon.com/billing/signup) 创建账户（如果你还没有账户）
 3. 将你的 AWS 账户关联到 Flightcontrol
-4. 授权 Flightcontrol GitHub App 访问你选择的仓库，无论公开或私有。
-5. 通过 Dashboard 或通过 `flightcontrol.json` 创建 Flightcontrol 项目。
+4. 授权 Flightcontrol GitHub App 访问你选择的仓库，可以是公开仓库或私有仓库
+5. 创建一个 Flightcontrol 项目，可以通过 Dashboard 或 `flightcontrol.json` 进行配置
 
 ### 通过 Dashboard 创建项目
 
-1. 从 Dashboard 创建一个 Flightcontrol 项目。为源码选择一个仓库。
-2. 选择 `GUI` 配置类型。
-3. 选择 Nuxt 预设。该预设也适用于任何基于 Nitro 的应用。
-4. 选择你偏好的 AWS 服务器规格。
-5. 提交新项目的表单。
+1. 从 Dashboard 创建一个 Flightcontrol 项目。为源码选择一个仓库
+2. 选择 `GUI` 配置类型
+3. 选择 Nuxt 预设。此预设同样适用于任何基于 Nitro 的应用
+4. 选择你偏好的 AWS 服务器规格
+5. 提交新项目表单
 
 ### 通过 `flightcontrol.json` 创建项目
 
@@ -63,4 +63,4 @@
 
 ::read-more{to="https://www.flightcontrol.dev/docs?ref=nitro"}
 了解更多关于 Flightcontrol 的 [配置](https://www.flightcontrol.dev/docs?ref=nitro)。
-::
+:::

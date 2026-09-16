@@ -1,5 +1,6 @@
 ---
-category: 服务端渲染
+navigation:
+  category: 服务端渲染
 icon: i-lucide-brackets
 ---
 
@@ -79,4 +80,4 @@ Nitro 自动检测 `server.tsx` 并使用 mono-jsx 将 JSX 转换为 HTML。导�
 ## 了解更多
 
 - [渲染器](/docs/renderer)
-- [mono-jsx](https://github.com/aspect-dev/mono-jsx)
+- [mono-jsx](https://github.com/aspect-dev/mono-jsx)。
