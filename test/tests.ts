@@ -545,7 +545,7 @@ export function testNitro(
     });
   });
 
-  it.skipIf(ctx.isIsolated)("useStorage (with base)", { retry: 5 }, async () => {
+  it.skipIf(ctx.isIsolated)("useKV (with base)", { retry: 5 }, async () => {
     const putRes = await callHandler({
       url: "/api/storage/item?key=test:hello",
       method: "PUT",
@@ -576,6 +576,10 @@ export function testNitro(
         })
       ).data
     ).toBe("world");
+
+    expect((await callHandler({ url: "/api/storage/legacy?base=test&key=hello" })).data).toBe(
+      "world"
+    );
   });
 
   if (additionalTests) {
