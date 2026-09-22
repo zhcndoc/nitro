@@ -42,6 +42,9 @@ describe("nitro:preset:vercel:web", async () => {
         // trailing slash on purpose (#4392)
         routes: ["/slash/"],
       },
+      routeRules: {
+        "/rules/nested/keep": { redirect: false, headers: { "x-keep": "keep" } },
+      },
       vercel: {
         queues: {
           triggers: [
@@ -112,6 +115,47 @@ describe("nitro:preset:vercel:web", async () => {
             },
             "routes": [
               {
+                "continue": true,
+                "headers": {
+                  "x-test": "test",
+                },
+                "src": "/(.*)",
+              },
+              {
+                "continue": true,
+                "headers": {
+                  "cache-control": "public, max-age=3600, immutable",
+                },
+                "src": "/build/(.*)",
+              },
+              {
+                "continue": true,
+                "headers": {
+                  "x-single": "single",
+                },
+                "src": "/single-headers/*",
+              },
+              {
+                "continue": true,
+                "headers": {
+                  "access-control-allow-methods": "GET",
+                },
+                "src": "/rules/cors",
+              },
+              {
+                "continue": true,
+                "headers": {
+                  "cache-control": "s-maxage=60",
+                },
+                "src": "/rules/headers",
+              },
+              {
+                "headers": {
+                  "x-keep": "keep",
+                },
+                "src": "/rules/nested/keep",
+              },
+              {
                 "headers": {
                   "Location": "https://nitro.build/",
                 },
@@ -148,18 +192,6 @@ describe("nitro:preset:vercel:web", async () => {
               },
               {
                 "headers": {
-                  "cache-control": "s-maxage=60",
-                },
-                "src": "/rules/headers",
-              },
-              {
-                "headers": {
-                  "access-control-allow-methods": "GET",
-                },
-                "src": "/rules/cors",
-              },
-              {
-                "headers": {
                   "Location": "/base",
                 },
                 "src": "/rules/redirect",
@@ -172,24 +204,6 @@ describe("nitro:preset:vercel:web", async () => {
                 },
                 "src": "/rules/nested/(.*)",
                 "status": 307,
-              },
-              {
-                "headers": {
-                  "x-single": "single",
-                },
-                "src": "/single-headers/*",
-              },
-              {
-                "headers": {
-                  "cache-control": "public, max-age=3600, immutable",
-                },
-                "src": "/build/(.*)",
-              },
-              {
-                "headers": {
-                  "x-test": "test",
-                },
-                "src": "/(.*)",
               },
               {
                 "dest": "https://cdn.jsdelivr.net/$1",
@@ -525,8 +539,36 @@ describe("nitro:preset:vercel:web", async () => {
           {
             src: "/build/(.*)",
             headers: { "cache-control": "public, max-age=3600, immutable" },
+            continue: true,
           },
         ]);
+      });
+
+      it("should order header-only rules from least to most specific", async () => {
+        const config = await fsp
+          .readFile(resolve(ctx.outDir, "config.json"), "utf8")
+          .then((r) => JSON.parse(r));
+        const headerRoutes = config.routes
+          .filter(
+            (route: { continue?: boolean; status?: number }) => route.continue && !route.status
+          )
+          .map((route: { src: string }) => route.src);
+        expect(headerRoutes.indexOf("/(.*)")).toBeLessThan(headerRoutes.indexOf("/rules/headers"));
+      });
+
+      it("should not continue into less specific redirects when `redirect: false`", async () => {
+        const config = await fsp
+          .readFile(resolve(ctx.outDir, "config.json"), "utf8")
+          .then((r) => JSON.parse(r));
+        const keepIndex = config.routes.findIndex(
+          (route: { src?: string }) => route.src === "/rules/nested/keep"
+        );
+        const redirectIndex = config.routes.findIndex(
+          (route: { src?: string }) => route.src === "/rules/nested/(.*)"
+        );
+        expect(config.routes[keepIndex]).toMatchObject({ headers: { "x-keep": "keep" } });
+        expect(keepIndex).toBeLessThan(redirectIndex);
+        expect(config.routes[keepIndex].continue).toBeUndefined();
       });
 
       it("should generate prerender config", async () => {
