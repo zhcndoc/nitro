@@ -126,6 +126,16 @@ export async function setupTest(
     compatibilityDate: opts.compatibilityDate || formatDate(new Date()),
   }));
 
+  // Isolate the default sqlite database per preset build (defaults to `<cwd>/.data/db.sqlite`),
+  // otherwise parallel test files race on the same file ("database is locked").
+  const defaultDatabase = nitro.options.database?.default;
+  if (defaultDatabase?.connector === "sqlite" && !defaultDatabase.options?.path) {
+    defaultDatabase.options = {
+      ...defaultDatabase.options,
+      path: resolve(presetTmpDir, ".data/db.sqlite"),
+    };
+  }
+
   if (ctx.isDev) {
     // Setup development server
     const devServer = createDevServer(ctx.nitro);
