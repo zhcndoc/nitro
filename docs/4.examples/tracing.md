@@ -58,12 +58,12 @@ export default defineMiddleware((event) => {
 
 ```ts [server/routes/index.ts]
 import { defineHandler } from "nitro";
-import { useStorage } from "nitro/storage";
+import { useKV } from "nitro/kv";
 
 // Reads and writes storage so the request emits `unstorage.*` spans (CLIENT)
 // alongside the `srvx.request`, `middleware` and route (`h3.request`) spans.
 export default defineHandler(async () => {
-  const storage = useStorage();
+  const storage = useKV();
   const hits = ((await storage.getItem<number>("hits")) ?? 0) + 1;
   await storage.setItem("hits", hits);
   return { message: "Hello from the Nitro tracing demo", hits };
@@ -134,7 +134,7 @@ curl http://localhost:3000/users/42
 | 通道 | Span | 发出方 |
 | --- | --- | --- |
 | `h3.request` | 每个匹配的路由和中间件 | `server/routes/*`、`server/middleware/*` |
-| `unstorage.*` | 每个存储操作（`getItem`、`setItem`、…） | `server/routes/index.ts` 中的 `useStorage()` |
+| `unstorage.*` | 每个存储操作（`getItem`、`setItem`、…） | `server/routes/index.ts` 中的 `useKV()` |
 | `srvx.request` | 整个请求及响应状态（生产服务器） | srvx 服务器层 |
 
 <!-- /automd -->

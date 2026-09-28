@@ -1,4 +1,4 @@
-Nitro 可以通过 Node [diagnostics channels](https://nodejs.org/api/diagnostics_channel.html) 对其请求生命周期进行检测——无需 OpenTelemetry SDK。此示例开启检测功能并启用内置控制台日志记录器，将每个 h3、srvx 和 unstorage span 按请求分组到时间线（瀑布图）中。
+Nitro 可以通过 Node [diagnostics channels](https://nodejs.org/api/diagnostics_channel.html) 对其请求生命周期进行检测，无需 OpenTelemetry SDK。此示例开启检测功能并启用内置控制台日志记录器，将每个 h3、srvx 和 unstorage span 按请求分组到时间线（瀑布图）中。
 
 ## 启用追踪
 
@@ -45,6 +45,6 @@ curl http://localhost:3000/users/42
 
 | Channel | Span | Emitted by |
 | --- | --- | --- |
-| `h3.request` | 每个匹配的路由和中间件 | `server/routes/*`、`server/middleware/*` |
-| `unstorage.*` | 每个存储操作（`getItem`、`setItem`、…） | `server/routes/index.ts` 中的 `useStorage()` |
-| `srvx.request` | 整个请求，以及响应状态（生产服务器） | srvx 服务器层 |
+| `h3.request` | each matched route and middleware | `server/routes/*`, `server/middleware/*` |
+| `unstorage.*` | each storage operation (`getItem`, `setItem`, …) | `useKV()` in `server/routes/index.ts` |
+| `srvx.request` | the whole request, with response status (production server) | the srvx server layer |

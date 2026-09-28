@@ -1,124 +1,124 @@
-# Nitro Architecture Deep Dive
+# Nitro 架构深入解析
 
-## Core Instance (`src/nitro.ts`)
+## 核心实例（`src/nitro.ts`）
 
-`createNitro(config, opts)` creates the main context with:
-- `options: NitroOptions` — Resolved configuration
-- `hooks: Hookable<NitroHooks>` — Build lifecycle hooks
-- `vfs: Map<string, { render }>` — Virtual file system
+`createNitro(config, opts)` 创建主上下文，其中包含：
+- `options: NitroOptions` — 解析后的配置
+- `hooks: Hookable<NitroHooks>` — 构建生命周期钩子
+- `vfs: Map<string, { render }>` — 虚拟文件系统
 - `routing: { routes, routeRules, globalMiddleware, routedMiddleware }`
 - `scannedHandlers: NitroEventHandler[]`
 - `logger: ConsolaInstance`
-- `updateConfig(config)` — Hot-reload config
-- `close()` — Cleanup
+- `updateConfig(config)` — 热重载配置
+- `close()` — 清理
 
-**Setup flow:**
-1. Load options via `loadOptions()`
-2. Install modules via `installModules()`
-3. Init routing via `initNitroRouting()`
-4. Scan handlers/plugins/tasks via `scanAndSyncOptions()`
-5. Setup hooks
+**设置流程：**
+1. 通过 `loadOptions()` 加载选项
+2. 通过 `installModules()` 安装模块
+3. 通过 `initNitroRouting()` 初始化路由
+4. 通过 `scanAndSyncOptions()` 扫描处理程序／插件／任务
+5. 设置钩子
 
-## Entry Points
+## 入口点
 
-- `src/builder.ts` — Main public API: `createNitro()`, `build()`, `createDevServer()`, `prerender()`, `copyPublicAssets()`, `prepare()`, `runTask()`, `listTasks()`
-- `src/vite.ts` — Vite plugin export from `src/build/vite/plugin.ts`
+- `src/builder.ts` — 主要公共 API：`createNitro()`、`build()`、`createDevServer()`、`prerender()`、`copyPublicAssets()`、`prepare()`、`runTask()`、`listTasks()`
+- `src/vite.ts` — 从 `src/build/vite/plugin.ts` 导出的 Vite 插件
 
-## Build System (`src/build/`)
+## 构建系统（`src/build/`）
 
-**Builder dispatch** (`build/build.ts`): delegates to `rollup`, `rolldown`, or `vite` based on `nitro.options.builder`.
+**构建器分发**（`build/build.ts`）：根据 `nitro.options.builder` 将构建任务委托给 `rollup`、`rolldown` 或 `vite`。
 
-**Builder selection** (resolved in `config/resolvers/builder.ts`):
-- Check `NITRO_BUILDER` / `NITRO_VITE_BUILDER` env vars
-- Auto-detect available packages
-- Fallback: rolldown → vite → rollup
+**构建器选择**（在 `config/resolvers/builder.ts` 中解析）：
+- 检查 `NITRO_BUILDER`／`NITRO_VITE_BUILDER` 环境变量
+- 自动检测可用的软件包
+- 回退顺序：rolldown → vite → rollup
 
-**Base config** (`build/config.ts`):
-- Extensions: `.ts`, `.mjs`, `.js`, `.json`, `.node`, `.tsx`, `.jsx`
-- Import.meta replacements (`import.meta.dev`, `import.meta.preset`, etc.)
-- Unenv aliases for polyfills
-- External dependency patterns
+**基础配置**（`build/config.ts`）：
+- 扩展名：`.ts`、`.mjs`、`.js`、`.json`、`.node`、`.tsx`、`.jsx`
+- Import.meta 替换项（`import.meta.dev`、`import.meta.preset` 等）
+- 用于 polyfill 的 Unenv 别名
+- 外部依赖模式
 
-**Plugins** (`build/plugins.ts`):
-1. Virtual modules — renders from `build/virtual/`
-2. WASM loader — unwasm
-3. Server main injection — `globalThis.__server_main__`
-4. Raw imports — `?raw` suffix
-5. Route meta — OpenAPI metadata
-6. Replace plugin — variable substitution
-7. Externals plugin — Node.js native resolution
-8. Sourcemap minify (optional)
+**插件**（`build/plugins.ts`）：
+1. 虚拟模块 — 从 `build/virtual/` 渲染
+2. WASM 加载器 — unwasm
+3. 注入服务器主入口 — `globalThis.__server_main__`
+4. 原始导入 — `?raw` 后缀
+5. 路由元信息 — OpenAPI 元数据
+6. 替换插件 — 变量替换
+7. 外部依赖插件 — Node.js 原生解析
+8. Sourcemap 压缩（可选）
 
-**Virtual modules** (`build/virtual/`, 14 templates):
-All prefixed `#nitro/virtual/<name>`:
-- `routing.ts` — Compiled router matcher
-- `plugins.ts` — Plugin registry
-- `error-handler.ts` — Error handler
-- `public-assets.ts` — Public asset metadata
-- `server-assets.ts` — Server asset metadata
-- `runtime-config.ts` — Runtime config object
-- `database.ts` — Database setup
-- `storage.ts` — Storage backends
-- `tasks.ts` — Task registry
-- `polyfills.ts` — Env polyfills
-- `feature-flags.ts` — Feature detection
-- `routing-meta.ts` — Route metadata (OpenAPI)
-- `renderer-template.ts` — SSR renderer
-- `_all.ts` — Aggregator
+**虚拟模块**（`build/virtual/`，14 个模板）：
+全部以 `#nitro/virtual/<name>` 为前缀：
+- `routing.ts` — 编译后的路由匹配器
+- `plugins.ts` — 插件注册表
+- `error-handler.ts` — 错误处理程序
+- `public-assets.ts` — 公共资源元数据
+- `server-assets.ts` — 服务器资源元数据
+- `runtime-config.ts` — 运行时配置对象
+- `database.ts` — 数据库设置
+- `kv.ts` — KV 存储后端
+- `tasks.ts` — 任务注册表
+- `polyfills.ts` — 环境 polyfill
+- `feature-flags.ts` — 功能检测
+- `routing-meta.ts` — 路由元数据（OpenAPI）
+- `renderer-template.ts` — SSR 渲染器
+- `_all.ts` — 聚合器
 
-## Configuration System (`src/config/`)
+## 配置系统（`src/config/`）
 
-**Loader** (`config/loader.ts`): `loadOptions(config, opts)`
-1. Merge with defaults (`NitroDefaults`)
-2. Load c12 config files (`nitro.config.ts`, `package.json.nitro`, etc.)
-3. Resolve preset
-4. Run config resolvers sequentially
+**加载器**（`config/loader.ts`）：`loadOptions(config, opts)`
+1. 与默认值合并（`NitroDefaults`）
+2. 加载 c12 配置文件（`nitro.config.ts`、`package.json.nitro` 等）
+3. 解析 preset
+4. 依次运行配置解析器
 
-**Resolvers** (`config/resolvers/`):
-`compatibility`, `tsconfig`, `paths`, `imports`, `route-rules`, `database`, `export-conditions`, `runtime-config`, `open-api`, `url`, `assets`, `storage`, `error`, `unenv`, `builder`
+**解析器**（`config/resolvers/`）：
+`compatibility`、`tsconfig`、`paths`、`imports`、`route-rules`、`database`、`export-conditions`、`runtime-config`、`open-api`、`url`、`assets`、`storage`、`error`、`unenv`、`builder`
 
-**Defaults** (`config/defaults.ts`): All NitroConfig defaults.
+**默认值**（`config/defaults.ts`）：所有 NitroConfig 默认值。
 
-## Runtime (`src/runtime/`)
+## 运行时（`src/runtime/`）
 
-**Internal** (`runtime/internal/`):
-- `app.ts` — NitroApp creation, H3 app setup
-- `cache.ts` — Response caching
-- `context.ts` — Async context
-- `route-rule-handlers.ts` — Nitro's rule handlers for the compiled matcher: a `cache` handler bound to Nitro's cache runtime. The built-ins (headers, redirect, proxy, cors) and rule matching/normalization live in [`h3/rules`](https://h3.dev/guide/rules).
-- `static.ts` — Static file serving
-- `task.ts` — Task execution
-- `plugin.ts` — Plugin helpers
-- `runtime-config.ts` — Config getter
+**内部模块**（`runtime/internal/`）：
+- `app.ts` — NitroApp 创建、H3 app 设置
+- `cache.ts` — 响应缓存
+- `context.ts` — 异步上下文
+- `route-rule-handlers.ts` — Nitro 为编译后的匹配器提供的规则处理程序：一个绑定到 Nitro 缓存运行时的 `cache` 处理程序。内置处理程序（headers、redirect、proxy、cors）以及规则匹配／规范化位于 [`h3/rules`](https://h3.dev/guide/rules)。
+- `static.ts` — 静态文件服务
+- `task.ts` — 任务执行
+- `plugin.ts` — 插件辅助函数
+- `runtime-config.ts` — 配置 getter
 
-**Public exports**: `runtime/app.ts` (`defineConfig()`), `runtime/nitro.ts` (`serverFetch()`), `runtime/cache.ts`, `runtime/task.ts`, `runtime/storage.ts`, etc.
+**公共导出**：`runtime/app.ts`（`defineConfig()`）、`runtime/nitro.ts`（`serverFetch()`）、`runtime/cache.ts`、`runtime/task.ts`、`runtime/kv.ts` 等
 
-## Dev Server (`src/dev/`)
+## 开发服务器（`src/dev/`）
 
-- `dev/server.ts` — `NitroDevServer`: Worker management via `env-runner`, restart on failure (max 3 retries), WebSocket support, VFS debug endpoint (`/_vfs/**`)
-- `dev/app.ts` — `NitroDevApp`: H3 app with error handling, static serving with compression, dev proxy
+- `dev/server.ts` — `NitroDevServer`：通过 `env-runner` 管理 Worker，失败时重启（最多重试 3 次），支持 WebSocket，VFS 调试端点（`/_vfs/**`）
+- `dev/app.ts` — `NitroDevApp`：带错误处理的 H3 app，支持压缩的静态服务，开发代理
 
-## Prerender (`src/prerender/`)
+## 预渲染（`src/prerender/`）
 
-- `prerender/prerender.ts` — Main flow: parse routes → build prerenderer (preset: `nitro-prerender`) → execute in parallel → link crawling → write to disk → compress
-- `prerender/utils.ts` — `extractLinks()`, `matchesIgnorePattern()`, `formatPrerenderRoute()`
+- `prerender/prerender.ts` — 主流程：解析路由 → 构建预渲染器（preset：`nitro-prerender`）→ 并行执行 → 爬取链接 → 写入磁盘 → 压缩
+- `prerender/utils.ts` — `extractLinks()`、`matchesIgnorePattern()`、`formatPrerenderRoute()`
 
-## Routing & Scanning (`src/routing.ts`, `src/scan.ts`)
+## 路由与扫描（`src/routing.ts`、`src/scan.ts`）
 
-**Scanning**: Discovers routes, middleware, plugins, tasks, modules from filesystem.
+**扫描**：从文件系统发现路由、中间件、插件、任务和模块。
 
-Route file conventions:
+路由文件约定：
 - `routes/index.ts` → `GET /`
 - `routes/users/[id].ts` → `GET /users/:id`
 - `routes/users/[...slug].ts` → `GET /users/**:slug`
 - `api/users.post.ts` → `POST /api/users`
-- `.dev`/`.prod`/`.prerender` suffixes for environment filtering
+- `.dev`／`.prod`／`.prerender` 后缀用于环境筛选
 
-**Router** (`Router` class): Based on `rou3`, compiles to optimized string matcher, supports method routing + env conditions.
+**路由器**（`Router` 类）：基于 `rou3`，编译为优化的字符串匹配器，支持方法路由和环境条件。
 
-## Presets (`src/presets/`)
+## Preset（`src/presets/`）
 
-Several deployment-target presets (+ internal `_nitro`/`_static`); see `.agents/presets.md`. Structure per preset:
+多个部署目标 preset（以及内部的 `_nitro`／`_static`）；参见 `.agents/presets.md`。每个 preset 的结构：
 
 ```
 presets/<name>/
@@ -129,26 +129,26 @@ presets/<name>/
 └── unenv/           # Env overrides (optional)
 ```
 
-Key presets: `standard`, `node` (server/middleware/cluster), `cloudflare` (pages/workers), `vercel`, `netlify`, `aws-lambda`, `deno`, `firebase`, `azure`, `bun`, `winterjs`
+关键 preset：`standard`、`node`（服务器／中间件／集群）、`cloudflare`（pages／workers）、`vercel`、`netlify`、`aws-lambda`、`deno`、`firebase`、`azure`、`bun`、`winterjs`
 
-Resolution: `presets/_resolve.ts` handles aliases, dev/prod, compat dates, static hosting.
+解析：`presets/_resolve.ts` 处理别名、开发／生产环境、兼容性日期和静态托管。
 
-## CLI (`src/cli/`)
+## CLI（`src/cli/`）
 
-Uses `citty` with lazy-loaded commands: `dev`, `build`, `deploy`, `preview`, `prepare`, `task`, `docs`.
+使用 `citty` 和延迟加载命令：`dev`、`build`、`deploy`、`preview`、`prepare`、`task`、`docs`。
 
-## Key Libraries
+## 关键库
 
-| Library | Purpose |
+| 库 | 用途 |
 |---------|---------|
-| `h3` | HTTP framework |
-| `rou3` | Route matching |
-| `c12` | Config loading |
-| `citty` | CLI framework |
-| `hookable` | Hook system |
-| `unstorage` | Storage abstraction |
-| `unenv` | Runtime polyfills |
-| `defu` | Config merging |
-| `pathe` | Path operations |
-| `consola` | Logging |
-| `env-runner` | Worker management |
+| `h3` | HTTP 框架 |
+| `rou3` | 路由匹配 |
+| `c12` | 配置加载 |
+| `citty` | CLI 框架 |
+| `hookable` | 钩子系统 |
+| `unstorage` | 存储抽象 |
+| `unenv` | 运行时 polyfill |
+| `defu` | 配置合并 |
+| `pathe` | 路径操作 |
+| `consola` | 日志记录 |
+| `env-runner` | Worker 管理 |

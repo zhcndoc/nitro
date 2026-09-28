@@ -6,12 +6,12 @@ import type { RunnerRPCHooks, UpgradeContext } from "env-runner";
 import { IncomingMessage, ServerResponse } from "node:http";
 import { NodeRequest, sendNodeResponse } from "srvx/node";
 import { createViteHotChannel } from "env-runner/vite";
-import { basename, dirname, join, normalize } from "pathe";
+import { basename, dirname, isAbsolute, join, normalize, relative } from "pathe";
 import { debounce } from "perfect-debounce";
 import { withBase, withoutBase } from "ufo";
 import { scanHandlers } from "../../scan.ts";
 import { onWatchError } from "../../utils/watch.ts";
-import { importVite } from "./_import.ts";
+import { importVite, _resolveFromPath, type ViteImportOptions } from "./_import.ts";
 
 // https://vite.dev/guide/api-environment-runtimes.html#modulerunner
 
@@ -50,11 +50,13 @@ export async function createFetchableDevEnvironment(
   config: ResolvedConfig,
   devServer: DevServer,
   entry: string,
-  opts?: { preventExternalize?: boolean }
+  opts?: { preventExternalize?: boolean; vite?: ViteImportOptions }
 ): Promise<FetchableDevEnvironment> {
   const transport = createViteHotChannel(devServer, name);
   const context: DevEnvironmentContext = { hot: true, transport };
-  const FetchableDevEnvironment = await getFetchableDevEnvironment(config.root);
+  const FetchableDevEnvironment = await getFetchableDevEnvironment(
+    opts?.vite || { dir: config.root }
+  );
   return new FetchableDevEnvironment(name, config, context, devServer, entry, opts);
 }
 
@@ -80,12 +82,15 @@ const _envClasses = new Map<string, Promise<FetchableDevEnvironmentConstructor>>
  * `DevEnvironment` is a value import from the (optional) `vite` dependency, so the subclass is
  * defined lazily against the `vite` instance resolved from the user project.
  */
-function getFetchableDevEnvironment(dir: string): Promise<FetchableDevEnvironmentConstructor> {
-  let envClass = _envClasses.get(dir);
+function getFetchableDevEnvironment(
+  opts: ViteImportOptions
+): Promise<FetchableDevEnvironmentConstructor> {
+  const key = opts.path ? _resolveFromPath("vite", opts) : opts.dir;
+  let envClass = _envClasses.get(key);
   if (!envClass) {
-    envClass = importVite({ dir }).then((vite) => _defineFetchableDevEnvironment(vite));
-    envClass.catch(() => _envClasses.delete(dir));
-    _envClasses.set(dir, envClass);
+    envClass = importVite(opts).then((vite) => _defineFetchableDevEnvironment(vite));
+    envClass.catch(() => _envClasses.delete(key));
+    _envClasses.set(key, envClass);
   }
   return envClass;
 }
@@ -177,9 +182,9 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
     server.config.configFileDependencies.push(nitroConfigFile);
   }
 
-  // Websocket
+  // Websocket (`httpServer` is null in middleware mode, the parent server handles upgrades)
   if (nitro.options.features.websocket ?? nitro.options.experimental.websocket) {
-    server.httpServer!.on("upgrade", (req, socket, head) => {
+    server.httpServer?.on("upgrade", (req, socket, head) => {
       const protocol = req.headers["sec-websocket-protocol"];
       if (protocol?.startsWith("vite-")) {
         // Vite HMR WebSocket connection
@@ -245,7 +250,8 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
   nitroEnv.devServer.onMessage(async (message: any) => {
     if (message?.__rpc === "transformHTML") {
       try {
-        const html = (await server.transformIndexHtml("/", message.data)).replace(
+        const htmlURL = _htmlTemplateURL(nitro.options.renderer?.template, server.config.root);
+        const html = (await server.transformIndexHtml(htmlURL, message.data)).replace(
           "<!--ssr-outlet-->",
           `{{{ globalThis.__nitro_vite_envs__?.["ssr"]?.fetch($REQUEST) || "" }}}`
         );
@@ -438,4 +444,13 @@ export function matchesMiddlewareRoute(route: string | undefined, url: string): 
   }
   const boundary = path[route.length];
   return !boundary || boundary === "/" || boundary === ".";
+}
+
+// Vite derives the HTML file path from the URL, which relative imports (e.g. in inline `<style>`) resolve against.
+function _htmlTemplateURL(template: string | undefined, root: string): string {
+  if (!template) {
+    return "/index.html";
+  }
+  const path = relative(root, template);
+  return path.startsWith("../") || isAbsolute(path) ? join("/@fs", template) : `/${path}`;
 }
