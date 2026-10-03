@@ -10,6 +10,7 @@ import { unwasm } from "unwasm/plugin";
 import { baseBuildConfig } from "../config.ts";
 import { NITRO_VIRTUAL_PREFIX, nitroVirtualPath } from "./entry.ts";
 import { importAttributes } from "../plugins/import-attributes.ts";
+import { importOXC } from "../../utils/oxc.ts";
 import { raw, RESOLVED_RE as RAW_RE } from "../plugins/raw.ts";
 import { routeMeta } from "../plugins/route-meta.ts";
 
@@ -34,7 +35,7 @@ export async function unbundledPlugins(nitro: Nitro): Promise<EnvRunnerPlugin[]>
     windowsPathPlugin(base.extensions),
     await transformPlugin(nitro, sourceDirs),
     replacePlugin(base.replacements, sourceDirs),
-    withoutSourceMap(fromRollup(await importAttributes())),
+    withoutSourceMap(fromRollup(await importAttributes({ rootDir: nitro.options.rootDir }))),
     rawVirtualPlugin(nitro),
     fromRollup(raw()),
   ];
@@ -118,7 +119,7 @@ function windowsPathPlugin(extensions: string[]): EnvRunnerPlugin {
 
 /** TypeScript and JSX, with the same options as the bundled build. */
 async function transformPlugin(nitro: Nitro, sourceDirs: string[]): Promise<EnvRunnerPlugin> {
-  const { transformSync } = await import("rolldown/utils");
+  const { transformSync } = await importOXC({ dir: nitro.options.rootDir });
   const tsc = nitro.options.typescript.tsConfig?.compilerOptions;
   return {
     name: "nitro:transform",
