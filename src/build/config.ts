@@ -1,6 +1,7 @@
 import type { Nitro, NitroImportMeta } from "nitro/types";
 import { pkgDir } from "nitro/meta";
 import { pathRegExp, toPathRegExp } from "../utils/regex.ts";
+import { BUILD_EXTENSIONS } from "./_extensions.ts";
 import { resolveBuildEnv } from "./env.ts";
 import { isUnenvId } from "./plugins/unenv.ts";
 
@@ -9,8 +10,7 @@ export type BaseBuildConfig = Awaited<ReturnType<typeof baseBuildConfig>>;
 const ROOT_ALIAS = "@";
 
 export async function baseBuildConfig(nitro: Nitro) {
-  // prettier-ignore
-  const extensions: string[] = [".ts", ".mjs", ".js", ".json", ".node", ".tsx", ".jsx" ];
+  const extensions: string[] = [...BUILD_EXTENSIONS];
 
   const isNodeless = nitro.options.node === false;
 
