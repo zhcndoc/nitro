@@ -25,7 +25,7 @@ import type { Nitro, NitroFrameworkInfo } from "./nitro.ts";
 import type { NitroOpenAPIConfig } from "./openapi.ts";
 export type { NitroOpenAPIConfig } from "./openapi.ts";
 import type { NitroPreset } from "./preset.ts";
-import type { OXCOptions, RolldownConfig } from "./build.ts";
+import type { NitroBuildPluginOption, OXCOptions, RolldownConfig } from "./build.ts";
 import type { RollupConfig } from "./build.ts";
 import type { NitroRouteConfig, NitroRouteRules } from "./route-rules.ts";
 import type { JsonValue, SerializableOptions } from "./_utils.ts";
@@ -740,6 +740,20 @@ export interface NitroOptions extends PresetOptions {
      */
     path?: string;
   };
+
+  /**
+   * Build plugins, applied with every builder (`rollup`, `rolldown`, `vite` and `false`).
+   *
+   * Plugins use the Rollup plugin interface. Only the `resolveId`, `load` and `transform` hooks
+   * are supported by all builders; with `builder: false`, plugins run in
+   * [env-runner](https://github.com/unjs/env-runner), which supports only these.
+   *
+   * Plugins with `enforce: "pre"` are placed before Nitro's own plugins, the others after them
+   * (a hook's own `order` takes precedence).
+   *
+   * @see https://nitro.build/config#buildplugins
+   */
+  buildPlugins: NitroBuildPluginOption[];
 
   /**
    * Additional Rollup configuration.

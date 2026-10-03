@@ -1,4 +1,4 @@
-import type { Nitro } from "nitro/types";
+import type { Nitro, NitroBuildPlugin, NitroBuildPluginOption } from "nitro/types";
 import type { Plugin } from "rollup";
 import type { BaseBuildConfig } from "./config.ts";
 
@@ -83,5 +83,31 @@ export async function baseBuildPlugins(nitro: Nitro, base: BaseBuildConfig) {
     );
   }
 
+  return plugins;
+}
+
+/** Nitro's `plugins` wrapped with the `buildPlugins` (ordered by `enforce`). */
+export async function withBuildPlugins<T>(nitro: Nitro, plugins: T[]): Promise<T[]> {
+  const buildPlugins = await resolveBuildPlugins(nitro);
+  const byEnforce = (enforce?: "pre" | "post") =>
+    buildPlugins.filter((p) => p.enforce === enforce) as T[];
+  return [...byEnforce("pre"), ...plugins, ...byEnforce(), ...byEnforce("post")];
+}
+
+/** Flattened `buildPlugins` (nested arrays and promises resolved, falsy entries skipped). */
+export async function resolveBuildPlugins(nitro: Nitro): Promise<NitroBuildPlugin[]> {
+  return flatPlugins(nitro.options.buildPlugins || []);
+}
+
+async function flatPlugins(options: NitroBuildPluginOption[]): Promise<NitroBuildPlugin[]> {
+  const plugins: NitroBuildPlugin[] = [];
+  for (const entry of options) {
+    const option = await entry;
+    if (Array.isArray(option)) {
+      plugins.push(...(await flatPlugins(option)));
+    } else if (option) {
+      plugins.push(option);
+    }
+  }
   return plugins;
 }
