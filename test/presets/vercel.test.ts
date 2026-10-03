@@ -461,8 +461,8 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "/api/test/(?<_0>[^/]*)/foo",
               },
               {
-                "dest": "/api/param/[test-id]",
-                "src": "/api/param/(?<test>[^/]+)-id",
+                "dest": "/api/param/[test_id]",
+                "src": "/api/param/(?<test_id>[^/]+)",
               },
               {
                 "dest": "/tasks/[...name]",
@@ -626,7 +626,7 @@ describe("nitro:preset:vercel:web", async () => {
             "functions/api/methods/get.func (symlink)",
             "functions/api/methods/search.func (symlink)",
             "functions/api/middleware-order.func (symlink)",
-            "functions/api/param/[test-id].func (symlink)",
+            "functions/api/param/[test_id].func (symlink)",
             "functions/api/storage/item.func (symlink)",
             "functions/api/storage/legacy.func (symlink)",
             "functions/api/test/[-]/foo.func (symlink)",
