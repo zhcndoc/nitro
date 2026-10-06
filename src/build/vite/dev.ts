@@ -11,6 +11,7 @@ import { createViteHotChannel } from "env-runner/vite";
 import { basename, dirname, isAbsolute, join, normalize, relative } from "pathe";
 import { debounce } from "perfect-debounce";
 import { withBase, withoutBase } from "ufo";
+import { addRoute, createRouter, findRoute } from "rou3";
 import { scanHandlers } from "../../scan.ts";
 import { onWatchError } from "../../utils/watch.ts";
 import { handleDevRPC } from "../../dev/_rpc.ts";
@@ -37,6 +38,7 @@ export type FetchHandler = (req: Request) => Promise<Response>;
 type NitroDevRequest = IncomingMessage & {
   _nitroHandled?: boolean;
   _nitroAssetCheck?: boolean;
+  _nitroDevRoute?: boolean;
 };
 
 export interface DevServer extends RunnerRPCHooks {
@@ -305,7 +307,7 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
       if (nodeRes.writableEnded || nodeRes.headersSent) {
         return;
       }
-      if (devAppRes.status !== 404) {
+      if (devAppRes.status !== 404 || nodeReq._nitroDevRoute) {
         return await sendNodeResponse(nodeRes, devAppRes);
       }
 
@@ -339,6 +341,23 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
     }
   };
 
+  const isCatchAllRoute = (route: string) => route === "/**" || route.startsWith("/**:");
+
+  // Dev handler and proxy routes are matched as-is against the `baseURL`-prefixed URL
+  const isDevAppCatchAllRoute = (route: string) =>
+    isCatchAllRoute(withoutBase(route, nitro.options.baseURL));
+  const devAppRoutes = createRouter();
+  for (const h of nitro.options.devHandlers) {
+    if (h.route && !h.middleware && !isDevAppCatchAllRoute(h.route)) {
+      addRoute(devAppRoutes, h.method?.toUpperCase() || "", h.route);
+    }
+  }
+  for (const route of Object.keys(nitro.options.devProxy)) {
+    if (!isDevAppCatchAllRoute(route)) {
+      addRoute(devAppRoutes, "", route);
+    }
+  }
+
   // Opaque catch-alls: the SSR renderer and a custom server entry (see .agents/vite-dev.md §2).
   const isOpaqueHandler = (h?: { handler?: string }) =>
     !!h?.handler &&
@@ -366,9 +385,14 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
       .pathname;
     const match = nitro.routing.routes.match(req.method || "", pathname);
     const matchedHandlers = match ? (Array.isArray(match) ? match : [match]) : [];
-    const isExplicitRoute = matchedHandlers.some(
-      (h) => h?.route && h.route !== "/**" && !h.route.startsWith("/**:")
-    );
+    const isExplicitRoute = matchedHandlers.some((h) => h?.route && !isCatchAllRoute(h.route));
+
+    // Dev handler and proxy routes are explicit too; their response (even a 404) is final, since
+    // falling through to the Nitro env would let the SSR catch-all answer an asset load (#4234).
+    if (!isExplicitRoute && findRoute(devAppRoutes, req.method || "", pathname)) {
+      req._nitroDevRoute = true;
+      return nitroDevMiddleware(req, res, next);
+    }
 
     // Public assets mounted under an explicit non-root `baseURL` without fallthrough are
     // authoritatively served by Nitro (a miss is a deterministic 404, never a Vite asset),
