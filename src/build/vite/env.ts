@@ -55,10 +55,13 @@ export function createNitroEnvironment(ctx: NitroPluginContext): EnvironmentOpti
           envConfig,
           await initEnvRunner(ctx),
           entry,
-          { preventExternalize: isWorkerdRunner, vite: viteImportOptions(ctx.nitro!) }
+          {
+            preventExternalize: isWorkerdRunner,
+            vite: viteImportOptions(ctx.nitro!),
+            onInit: () => (ctx._viteEnvs ??= new Map()).set(envName, entry),
+          }
         );
         ctx._transformRequest = (id) => env.transformRequest(id);
-        (ctx._viteEnvs ??= new Map()).set(envName, entry);
         return env;
       },
     },
@@ -96,11 +99,11 @@ export function createServiceEnvironment(
     dev: {
       createEnvironment: async (envName, envConfig) => {
         const entry = tryResolve(serviceConfig.entry);
-        (ctx._viteEnvs ??= new Map()).set(envName, entry);
         const { createFetchableDevEnvironment } = await import("./dev.ts");
         return createFetchableDevEnvironment(envName, envConfig, await initEnvRunner(ctx), entry, {
           preventExternalize: isWorkerdRunner,
           vite: viteImportOptions(ctx.nitro!),
+          onInit: () => (ctx._viteEnvs ??= new Map()).set(envName, entry),
         });
       },
     },
