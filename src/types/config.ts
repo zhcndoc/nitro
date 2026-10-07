@@ -1,4 +1,3 @@
-import type commonjs from "@rollup/plugin-commonjs";
 import type { C12InputConfig, ConfigWatcher, DotenvOptions, ResolvedConfig } from "c12";
 import type { WatchConfigOptions } from "c12";
 import type { ChokidarOptions } from "chokidar";
@@ -26,11 +25,10 @@ import type { NitroOpenAPIConfig } from "./openapi.ts";
 export type { NitroOpenAPIConfig } from "./openapi.ts";
 import type { NitroPreset } from "./preset.ts";
 import type { NitroBuildPluginOption, OXCOptions, RolldownConfig } from "./build.ts";
+import type { CommonJSOptions } from "./_bundler.ts";
 import type { RollupConfig } from "./build.ts";
 import type { NitroRouteConfig, NitroRouteRules } from "./route-rules.ts";
 import type { JsonValue, SerializableOptions } from "./_utils.ts";
-
-type RollupCommonJSOptions = NonNullable<Parameters<typeof commonjs.default>[0]>;
 
 /**
  * Fully resolved Nitro options available on `nitro.options`.
@@ -892,7 +890,7 @@ export interface NitroOptions extends PresetOptions {
    *
    * @see https://nitro.build/config#commonjs
    */
-  commonJS?: RollupCommonJSOptions;
+  commonJS?: CommonJSOptions;
 
   /**
    * Custom export conditions for module resolution.

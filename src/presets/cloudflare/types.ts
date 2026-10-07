@@ -1,12 +1,3 @@
-import type {
-  ExecutionContext,
-  ForwardableEmailMessage,
-  MessageBatch,
-  ScheduledController,
-  TraceItem,
-} from "@cloudflare/workers-types";
-import type { DurableObject } from "cloudflare:workers";
-
 import type { RawConfig } from "@cloudflare/workers-utils";
 
 export type WranglerConfig = Partial<RawConfig>;
@@ -92,8 +83,6 @@ export interface CloudflareOptions {
   exports?: string;
 }
 
-type DurableObjectState = ConstructorParameters<typeof DurableObject>[0];
-
 declare module "nitro/types" {
   export interface NitroRuntimeHooks {
     // https://developers.cloudflare.com/workers/runtime-apis/handlers/scheduled/
@@ -140,4 +129,75 @@ declare module "nitro/types" {
 
     "cloudflare:durable:alarm": (durable: DurableObject) => void;
   }
+}
+
+// Subset of `@cloudflare/workers-types` (not a nitro dependency)
+
+interface ExecutionContext {
+  waitUntil(promise: Promise<any>): void;
+  passThroughOnException(): void;
+  readonly props: unknown;
+}
+
+interface ScheduledController {
+  readonly scheduledTime: number;
+  readonly cron: string;
+  noRetry(): void;
+}
+
+interface ForwardableEmailMessage {
+  readonly from: string;
+  readonly to: string;
+  readonly raw: ReadableStream<Uint8Array>;
+  readonly headers: Headers;
+  readonly rawSize: number;
+  setReject(reason: string): void;
+  forward(rcptTo: string, headers?: Headers): Promise<unknown>;
+  reply(message: unknown): Promise<unknown>;
+}
+
+interface MessageBatch<Body = unknown> {
+  readonly queue: string;
+  readonly messages: readonly {
+    readonly id: string;
+    readonly timestamp: Date;
+    readonly body: Body;
+    readonly attempts: number;
+    retry(options?: { delaySeconds?: number }): void;
+    ack(): void;
+  }[];
+  retryAll(options?: { delaySeconds?: number }): void;
+  ackAll(): void;
+}
+
+interface TraceItem {
+  readonly event: unknown;
+  readonly eventTimestamp: number | null;
+  readonly logs: { readonly timestamp: number; readonly level: string; readonly message: any }[];
+  readonly exceptions: {
+    readonly timestamp: number;
+    readonly message: string;
+    readonly name: string;
+    readonly stack?: string;
+  }[];
+  readonly scriptName: string | null;
+  readonly entrypoint?: string;
+  readonly outcome: string;
+  readonly truncated: boolean;
+  readonly cpuTime: number;
+  readonly wallTime: number;
+}
+
+// Instance of a `DurableObject` class from `cloudflare:workers` (its `ctx` and `env` are protected)
+type DurableObject = object & {
+  alarm?(alarmInfo?: { retryCount: number; isRetry: boolean }): void | Promise<void>;
+};
+
+interface DurableObjectState {
+  readonly id: { toString(): string; equals(other: any): boolean; readonly name?: string };
+  readonly storage: any;
+  waitUntil(promise: Promise<any>): void;
+  blockConcurrencyWhile<T>(callback: () => Promise<T>): Promise<T>;
+  acceptWebSocket(ws: WebSocket, tags?: string[]): void;
+  getWebSockets(tag?: string): WebSocket[];
 }

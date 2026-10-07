@@ -1,5 +1,3 @@
-import type { send } from "@vercel/queue";
-
 /**
  * Vercel Build Output Configuration
  * @see https://vercel.com/docs/build-output-api/v3
@@ -285,8 +283,33 @@ declare module "nitro/types" {
   export interface NitroRuntimeHooks {
     "vercel:queue": (_: {
       message: unknown;
-      metadata: import("@vercel/queue").MessageMetadata;
-      send: typeof send;
+      metadata: VercelQueueMessageMetadata;
+      send: VercelQueueSend;
     }) => void;
   }
 }
+
+// Subset of `@vercel/queue` types (not a nitro dependency)
+
+interface VercelQueueMessageMetadata {
+  messageId: string;
+  deliveryCount: number;
+  createdAt: Date;
+  expiresAt: Date;
+  topicName: string;
+  consumerGroup: string;
+  region: string;
+}
+
+type VercelQueueSend = <T = unknown>(
+  topicName: string,
+  payload: T,
+  options?: {
+    idempotencyKey?: string;
+    retentionSeconds?: number;
+    delaySeconds?: number;
+    headers?: Record<string, string>;
+    region?: string;
+    [key: string]: unknown;
+  }
+) => Promise<{ messageId: string | null }>;
