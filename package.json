@@ -70,7 +70,6 @@
     "typecheck": "tsc --noEmit --skipLibCheck"
   },
   "dependencies": {
-    "consola": "^3.4.2",
     "crossws": "^0.4.15",
     "db0": "^0.4.1",
     "env-runner": "^0.3.3",
@@ -113,6 +112,7 @@
     "citty": "^0.2.2",
     "compatx": "^0.2.0",
     "confbox": "^0.3.1",
+    "consola": "^3.4.2",
     "cookie-es": "^3.1.1",
     "croner": "^10.0.1",
     "defu": "^6.1.7",

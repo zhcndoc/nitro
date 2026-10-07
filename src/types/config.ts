@@ -3,7 +3,7 @@ import type { C12InputConfig, ConfigWatcher, DotenvOptions, ResolvedConfig } fro
 import type { WatchConfigOptions } from "c12";
 import type { ChokidarOptions } from "chokidar";
 import type { CompatibilityDateSpec, CompatibilityDates } from "compatx";
-import type { LogLevel } from "consola";
+import type { LogLevel } from "./_consola.ts";
 import type { ConnectorName, ConnectorOptions } from "db0";
 import type { NestedHooks } from "hookable";
 import type { ProxyServerOptions } from "httpxy";
