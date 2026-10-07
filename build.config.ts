@@ -30,6 +30,7 @@ export default defineBuildConfig({
     {
       type: "bundle",
       input: ["src/builder.ts", "src/cli/index.ts", "src/types/index.ts", "src/vite.ts"],
+      minifyLibs: true,
       license: { gzip: true },
     },
     {
@@ -38,7 +39,7 @@ export default defineBuildConfig({
       // Kept separate from the main bundle so runtime chunks never pull in build-time code.
       type: "bundle",
       input: await glob(["src/runtime/**/*.ts", "src/presets/*/runtime/**/*.ts"]),
-      license: { gzip: true },
+      minifyLibs: true,
       dts: { entry: "src/runtime/**/*.ts", generator: "oxc" },
       rolldown: {
         // Keep side-effect imports of virtual modules (e.g. `import "#nitro/virtual/polyfills"`)
