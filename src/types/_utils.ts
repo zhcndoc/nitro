@@ -1,9 +1,3 @@
-export type Enumerate<N extends number, Acc extends number[] = []> = Acc["length"] extends N
-  ? Acc[number]
-  : Enumerate<N, [...Acc, Acc["length"]]>;
-
-export type IntRange<F extends number, T extends number> = Exclude<Enumerate<T>, Enumerate<F>>;
-
 declare const invalidValue: unique symbol;
 
 /** Uninhabited, so a rejected value reports `Message` in its type error. */

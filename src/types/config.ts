@@ -1282,11 +1282,6 @@ export type DatabaseConnectionConfigs = Record<DatabaseConnectionName, DatabaseC
 
 // Runtime config
 
-/** Application-specific runtime configuration. */
-export interface NitroRuntimeConfigApp {
-  [key: string]: any;
-}
-
 /**
  * Server runtime configuration accessible via `useRuntimeConfig()`.
  *
