@@ -1,4 +1,13 @@
+import type {
+  ExecutionContext as CFExecutionContext,
+  ForwardableEmailMessage as CFForwardableEmailMessage,
+  MessageBatch as CFMessageBatch,
+  ScheduledController as CFScheduledController,
+  TraceItem as CFTraceItem,
+} from "@cloudflare/workers-types";
+import type { DurableObject as CFDurableObject } from "cloudflare:workers";
 import type { RawConfig } from "@cloudflare/workers-utils";
+import type { OptionalDepType } from "../../types/_utils.ts";
 
 export type WranglerConfig = Partial<RawConfig>;
 
@@ -131,21 +140,35 @@ declare module "nitro/types" {
   }
 }
 
-// Subset of `@cloudflare/workers-types` (not a nitro dependency)
+// `@cloudflare/workers-types` when installed, otherwise a fallback subset
 
-interface ExecutionContext {
+type ExecutionContext = OptionalDepType<CFExecutionContext, ExecutionContextFallback>;
+type ScheduledController = OptionalDepType<CFScheduledController, ScheduledControllerFallback>;
+type ForwardableEmailMessage = OptionalDepType<
+  CFForwardableEmailMessage,
+  ForwardableEmailMessageFallback
+>;
+type MessageBatch = OptionalDepType<CFMessageBatch, MessageBatchFallback>;
+type TraceItem = OptionalDepType<CFTraceItem, TraceItemFallback>;
+type DurableObject = OptionalDepType<CFDurableObject, DurableObjectFallback>;
+type DurableObjectState = OptionalDepType<
+  ConstructorParameters<typeof CFDurableObject>[0],
+  DurableObjectStateFallback
+>;
+
+interface ExecutionContextFallback {
   waitUntil(promise: Promise<any>): void;
   passThroughOnException(): void;
   readonly props: unknown;
 }
 
-interface ScheduledController {
+interface ScheduledControllerFallback {
   readonly scheduledTime: number;
   readonly cron: string;
   noRetry(): void;
 }
 
-interface ForwardableEmailMessage {
+interface ForwardableEmailMessageFallback {
   readonly from: string;
   readonly to: string;
   readonly raw: ReadableStream<Uint8Array>;
@@ -156,7 +179,7 @@ interface ForwardableEmailMessage {
   reply(message: unknown): Promise<unknown>;
 }
 
-interface MessageBatch<Body = unknown> {
+interface MessageBatchFallback<Body = unknown> {
   readonly queue: string;
   readonly messages: readonly {
     readonly id: string;
@@ -170,7 +193,7 @@ interface MessageBatch<Body = unknown> {
   ackAll(): void;
 }
 
-interface TraceItem {
+interface TraceItemFallback {
   readonly event: unknown;
   readonly eventTimestamp: number | null;
   readonly logs: { readonly timestamp: number; readonly level: string; readonly message: any }[];
@@ -189,11 +212,11 @@ interface TraceItem {
 }
 
 // Instance of a `DurableObject` class from `cloudflare:workers` (its `ctx` and `env` are protected)
-type DurableObject = object & {
+type DurableObjectFallback = object & {
   alarm?(alarmInfo?: { retryCount: number; isRetry: boolean }): void | Promise<void>;
 };
 
-interface DurableObjectState {
+interface DurableObjectStateFallback {
   readonly id: { toString(): string; equals(other: any): boolean; readonly name?: string };
   readonly storage: any;
   waitUntil(promise: Promise<any>): void;

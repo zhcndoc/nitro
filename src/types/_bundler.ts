@@ -1,4 +1,4 @@
-// Subset of Rollup and Rolldown option types (both are optional, not nitro dependencies)
+// Fallback Rollup and Rolldown option types, used when they are not installed (see `OptionalDepType`)
 
 type MaybeArray<T> = T | T[];
 type MaybePromise<T> = T | Promise<T>;

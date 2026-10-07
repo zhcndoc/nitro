@@ -23,6 +23,16 @@ const optionalDeps = [
 // Optional dependencies of bundled libraries, replaced by an on demand import (see `src/shims/`)
 const shimmedDeps = ["dotenv", "giget", "jiti"];
 
+// Optional dependencies imported by the public types, with a fallback type when not installed
+// (see `OptionalDepType` in `src/types/_utils.ts`)
+const optionalTypeDeps = [
+  "@cloudflare/workers-types",
+  "@vercel/queue",
+  "cloudflare:workers",
+  "rolldown",
+  "rollup",
+];
+
 const pkg = await import("./package.json", { with: { type: "json" } }).then((r) => r.default || r);
 
 export default defineBuildConfig({
@@ -181,6 +191,27 @@ export default defineBuildConfig({
         title: "Nitro Documentation",
         filter: (e: { entry: { path: string } }) => !e.entry.path.startsWith("/blog"),
       });
+
+      // Optional dependency types
+      for (const file of await glob("dist/**/*.d.mts")) {
+        const code = await readFile(file, "utf8");
+        const lines = code.split("\n").flatMap((line) => {
+          if (
+            !optionalTypeDeps.some(
+              (dep) => line.includes(`from "${dep}"`) || line.includes(`import("${dep}")`)
+            )
+          ) {
+            return [line];
+          }
+          if (!/^import (?:type )?\{[^}]+\} from "[^"]+";$/.test(line)) {
+            throw new Error(`Unexpected optional dependency type import in \`${file}\`: ${line}`);
+          }
+          return ["// @ts-ignore optional dependency", line];
+        });
+        if (lines.join("\n") !== code) {
+          await writeFile(file, lines.join("\n"));
+        }
+      }
 
       // Vite types
       await writeFile(

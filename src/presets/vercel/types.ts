@@ -1,3 +1,6 @@
+import type { MessageMetadata, send } from "@vercel/queue";
+import type { OptionalDepType } from "../../types/_utils.ts";
+
 /**
  * Vercel Build Output Configuration
  * @see https://vercel.com/docs/build-output-api/v3
@@ -283,13 +286,13 @@ declare module "nitro/types" {
   export interface NitroRuntimeHooks {
     "vercel:queue": (_: {
       message: unknown;
-      metadata: VercelQueueMessageMetadata;
-      send: VercelQueueSend;
+      metadata: OptionalDepType<MessageMetadata, VercelQueueMessageMetadata>;
+      send: OptionalDepType<typeof send, VercelQueueSend>;
     }) => void;
   }
 }
 
-// Subset of `@vercel/queue` types (not a nitro dependency)
+// Fallback `@vercel/queue` types, used when it is not installed
 
 interface VercelQueueMessageMetadata {
   messageId: string;

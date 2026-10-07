@@ -1,8 +1,20 @@
 import type {
+  InputOptions as RollupInputOptions,
+  InputPluginOption as RollupInputPluginOption,
+  OutputOptions as RollupOutputOptions,
+} from "rollup";
+import type {
+  InputOptions as RolldownInputOptions,
+  OutputOptions as RolldownOutputOptions,
+  MinifyOptions as RolldownMinifyOptions,
+  RolldownPluginOption,
+} from "rolldown";
+import type {
   BundlerInputOptions,
   BundlerMinifyOptions,
   BundlerOutputOptions,
 } from "./_bundler.ts";
+import type { OptionalDepType } from "./_utils.ts";
 import type { TransformOptions as OXCTransformOptions } from "oxbox";
 
 /**
@@ -48,20 +60,28 @@ export type NitroBuildPluginOption = MaybePromise<
   NitroBuildPlugin | false | null | undefined | NitroBuildPluginOption[]
 >;
 
-export type RollupConfig = BundlerInputOptions & {
-  output?: BundlerOutputOptions;
+export type RollupConfig = OptionalDepType<
+  Omit<RollupInputOptions, "plugins">,
+  BundlerInputOptions
+> & {
+  output?: OptionalDepType<RollupOutputOptions, BundlerOutputOptions>;
   // `rollupConfig` is also reused for the `rolldown` builder (see `build/vite/bundler.ts`),
   // so it accepts a mix of Rollup, Rolldown and Vite plugins.
-  plugins?: NitroBuildPluginOption[];
+  plugins?: (
+    | OptionalDepType<RollupInputPluginOption, NitroBuildPluginOption>
+    | OptionalDepType<RolldownPluginOption, NitroBuildPluginOption>
+  )[];
 };
 
-export type RolldownConfig = BundlerInputOptions & {
-  output?: BundlerOutputOptions;
-  plugins?: NitroBuildPluginOption[];
+export type RolldownConfig = OptionalDepType<
+  RolldownInputOptions,
+  BundlerInputOptions & { plugins?: NitroBuildPluginOption[] }
+> & {
+  output?: OptionalDepType<RolldownOutputOptions, BundlerOutputOptions>;
 };
 
 export interface OXCOptions {
-  minify?: BundlerMinifyOptions;
+  minify?: OptionalDepType<RolldownMinifyOptions, BundlerMinifyOptions>;
   transform?: Omit<OXCTransformOptions, "jsx"> & {
     jsx?: Exclude<OXCTransformOptions["jsx"], false | string>;
   };
