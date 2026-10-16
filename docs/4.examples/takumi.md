@@ -176,7 +176,7 @@ export default defineConfig({
   },
   "devDependencies": {
     "nitro": "latest",
-    "takumi-js": "^2.1.1",
+    "takumi-js": "^2.15.2",
     "vite": "latest"
   }
 }
@@ -286,13 +286,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: var(--fg);
   background:
     radial-gradient(1200px 600px at 100% -10%, var(--bg-from), transparent 60%),

@@ -335,6 +335,11 @@ export function testNitro(
     expect(res.data).toBe("Hello from virtual entry!");
   });
 
+  it("applies `buildPlugins`", async () => {
+    const res = await callHandler({ url: "/build-plugins" });
+    expect(res.data).toEqual({ message: "Hello from build plugin!", transform: "transformed" });
+  });
+
   // TODO
   it.todo("Handle 405 method not allowed", async () => {
     const res = await callHandler({ url: "/api/upload" });
@@ -552,7 +557,13 @@ export function testNitro(
       subpathLib: "@fixture/nitro-lib@2.0.0",
       extraUtils: "@fixture/nitro-utils/extra",
       cjsRequirer: "@fixture/nitro-native-mock",
+      bundledDep: "@fixture/nitro-lib@3.0.0",
     });
+  });
+
+  it("externalizes a traced package's root export by its bare name", async () => {
+    const { data } = await callHandler({ url: "/traced-root-export" });
+    expect(data).toBe("@fixture/nitro-root-export");
   });
 
   it.skipIf(ctx.isIsolated)("useKV (with base)", { retry: 5 }, async () => {

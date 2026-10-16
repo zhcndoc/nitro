@@ -14,6 +14,22 @@
 
 [Azure Static Web Apps](https://azure.microsoft.com/en-us/products/app-service/static) 专为在 [GitHub Actions 工作流](https://docs.microsoft.com/en-us/azure/static-web-apps/github-actions-workflow)中持续部署而设计。Nitro 会检测此部署环境，并自动启用 `azure_swa` 预设。
 
+服务器会作为托管 Azure Function，使用 [Node.js v4 编程模型](https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference-node?pivots=nodejs-model-v4)进行部署。项目依赖中需要 `@azure/functions` v4（缺少时 Nitro 会提示安装）。该软件包会被追踪并包含在构建输出中，因此部署时无需再次安装。
+
+:pm-install{name="@azure/functions@^4"}
+
+若要继续使用旧版 [v3 编程模型](https://learn.microsoft.com/en-us/azure/azure-functions/functions-reference-node?pivots=nodejs-model-v3)（`function.json`，无需 `@azure/functions`），请设置 `azure.functionsVersion` 选项：
+
+```ts [nitro.config.ts]
+import { defineConfig } from "nitro";
+
+export default defineConfig({
+  azure: {
+    functionsVersion: 3,
+  },
+});
+```
+
 ### 本地预览
 
 要在本地进行测试，请安装 [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local)，然后构建并启动本地预览环境：
@@ -33,7 +49,7 @@ Nitro 会自动设置以下属性：
 
 | 属性 | 条件 | 默认值 |
 | --- | --- | --- |
-| **[platform.apiRuntime](https://learn.microsoft.com/en-us/azure/static-web-apps/configuration#platform)** | 根据 `package.json` 中的 `engines.node` 字段设置为 `node:20` 或 `node:22`。 | `node:20` |
+| **[platform.apiRuntime](https://learn.microsoft.com/en-us/azure/static-web-apps/configuration#platform)** | 根据 `package.json` 中的 `engines.node` 字段设置为 `node:20` 或 `node:22`。 | `node:22` |
 | **[navigationFallback.rewrite](https://learn.microsoft.com/en-us/azure/static-web-apps/configuration#fallback-routes)** | 始终为 `/api/server` | `/api/server` |
 | **[routes](https://learn.microsoft.com/en-us/azure/static-web-apps/configuration#routes)** | 添加所有预渲染路由。此外，如果没有 `index.html` 文件，则会创建一个空文件以实现兼容，并将对 `/index.html` 的请求重定向到根目录（由 `/api/server` 处理）。 | `[]` |
 

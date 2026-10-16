@@ -1,5 +1,3 @@
-import type { IntRange } from "./_utils.ts";
-
 // Route rule types are owned by h3 (`h3/rules`). Nitro re-exports them and
 // augments the open `RouteRuleConfig` / `RouteRules` interfaces with its own
 // rules (`isr`, `prerender`, `static`).
@@ -25,9 +23,6 @@ export type NitroRouteConfig = RouteRuleConfig;
  * @deprecated Use `NormalizedRouteRules` from `h3/rules` (re-exported by `nitro/types`).
  */
 export type NitroRouteRules = NormalizedRouteRules;
-
-/** Valid HTTP status code range (100–599). */
-export type HTTPstatus = IntRange<100, 599>;
 
 // --- Nitro-specific route rules (module augmentation) ---
 
@@ -102,6 +97,8 @@ export interface VercelISRConfig {
   /**
    * (vercel)
    * When `true`, the query string will be present on the `request` argument passed to the invoked function. The `allowQuery` filter still applies.
+   *
+   * Defaults to `true` when `allowQuery` is a non-empty list, so the listed params reach the handler. Set to `false` to opt out.
    */
   passQuery?: boolean;
 

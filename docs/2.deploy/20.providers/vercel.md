@@ -367,7 +367,7 @@ Nitro 配置中的 `vercel` 键下提供了其他选项：
 
 ### 通过路由规则进行细粒度 ISR 配置
 
-默认情况下，查询参数会影响缓存键，但不会传递给路由处理程序，除非另有指定。
+默认情况下，查询参数会影响缓存键，但不会传递给路由处理程序。`allowQuery` 列出参数时，Nitro 也会启用 `passQuery`，使处理程序能够接收这些参数。
 
 你可以向 `isr` 路由规则传递选项对象来配置缓存行为：
 
@@ -377,7 +377,7 @@ Nitro 配置中的 `vercel` 键下提供了其他选项：
   - 如果为空数组，则不会将查询值纳入缓存因素。
   - 如果为 `undefined`，则每个不同的查询值都会独立缓存。
   - 对于通配符 `/**` 路由规则，始终会添加 `url`。
-- `passQuery`：为 `true` 时，查询字符串会出现在传递给所调用函数的 `request` 参数中。`allowQuery` 过滤器仍然适用。
+- `passQuery`：为 `true` 时，查询字符串会出现在传递给所调用函数的 `request` 参数中。`allowQuery` 过滤器仍然适用。`allowQuery` 为非空列表时，默认启用此选项，因此列出的参数会传递给处理程序。设置为 `false` 可退出此行为。
 - `exposeErrBody`：为 `true` 时，无论状态码为何都会公开响应正文，包括错误状态码（默认值：`false`）。
 
 ```ts [nitro.config.ts]
@@ -388,7 +388,6 @@ export default defineConfig({
     "/products/**": {
       isr: {
         allowQuery: ["q"],
-        passQuery: true,
         exposeErrBody: true
       },
     },
