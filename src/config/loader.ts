@@ -8,6 +8,7 @@ import type { PresetName } from "../presets/index.ts";
 import type { LoadConfigOptions, NitroConfig, NitroOptions, NitroPresetMeta } from "nitro/types";
 
 import { NitroDefaults } from "./defaults.ts";
+import { mergeConfig, mergeConfigHooks } from "./_merge.ts";
 
 // Resolvers
 import { resolveAssetsOptions } from "./resolvers/assets.ts";
@@ -103,6 +104,7 @@ async function _loadUserConfig(
     envName,
     extend: { extendKey: ["extends", "preset"] },
     defaults: NitroDefaults,
+    merger: mergeConfig,
     envMerger: mergeEnvConfig,
     async overrides({ rawConfigs }) {
       // prettier-ignore
@@ -193,6 +195,9 @@ const kvConfigKeys = new Set(["kv", "storage", "devStorage"]);
 
 // Env mounts (e.g. from `$development`) with a different driver replace the whole mount instead of deep merging options
 const mergeEnvConfig = createDefu((obj, key, value, namespace) => {
+  if (mergeConfigHooks(obj, key, value, namespace)) {
+    return true;
+  }
   const current = obj[key] as { driver?: unknown } | undefined;
   if (
     kvConfigKeys.has(namespace) &&
