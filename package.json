@@ -72,13 +72,10 @@
   },
   "dependencies": {
     "crossws": "^0.4.15",
-    "db0": "^0.4.1",
     "env-runner": "^0.3.4",
     "h3": "^2.0.3",
     "nf3": "^0.4.2",
-    "ocache": "^0.3.0",
-    "srvx": "^1.0.6",
-    "unstorage": "^2.0.0-alpha.11"
+    "srvx": "^1.0.6"
   },
   "devDependencies": {
     "@apphosting/common": "^0.0.9",
@@ -116,6 +113,7 @@
     "consola": "^3.4.2",
     "cookie-es": "^3.1.1",
     "croner": "^10.0.1",
+    "db0": "^0.4.1",
     "defu": "^6.1.7",
     "destr": "^2.0.5",
     "dot-prop": "^10.2.0",
@@ -139,6 +137,7 @@
     "mlly": "^1.8.2",
     "nypm": "^0.6.10",
     "obuild": "^0.4.45",
+    "ocache": "^0.3.0",
     "oxbox": "^0.1.0",
     "oxc-parser": "link:shims/oxc-parser",
     "oxfmt": ">=0.73.0",
@@ -161,6 +160,7 @@
     "ultrahtml": "^1.7.0",
     "unctx": "^3.0.1",
     "unenv": "^2.0.0-rc.24",
+    "unstorage": "^2.0.0-alpha.11",
     "unwasm": "^0.6.1",
     "vite": "^8.3.4",
     "vite7": "npm:vite@^7.3.7",
