@@ -29,6 +29,27 @@ Vercel 支持 Nitro 零配置部署。[立即将 Nitro 部署到 Vercel](https:/
 
 Nitro 顶层的 `/api` 目录与 Vercel 不兼容。请改用 `routes/api/` 目录。
 
+## 运行时
+
+:read-more{title="Vercel" to="https://vercel.com/docs/functions/runtimes/node-js/node-js-versions"}
+
+Nitro 会按以下顺序检查各配置来源，以确定服务器函数的运行时：
+
+1. Nitro 配置中的 `vercel.functions.runtime`。
+2. `package.json` 中的 `engines`。`engines.node` 会选择符合版本范围的最新受支持 Node.js 版本，`engines.bun` 则选择 Bun。两者同时设置时，只有 `vercel.json` 也设置了 `bunVersion` 才会使用 Bun。如果 `engines.node` 未匹配到受支持的版本，Nitro 会记录警告并使用构建环境的 Node.js 主版本号（按第 4 步所述限制范围），即使构建时使用的是 Bun。
+3. `vercel.json` 中的 `bunVersion`。
+4. 执行构建的运行时：使用 Bun 构建时为 Bun，否则采用构建环境的 Node.js 主版本号，并限制在 Vercel 支持的版本范围内。
+
+第 2、3 项遵循与 Vercel 相同的优先级。
+
+```json [package.json]
+{
+  "engines": {
+    "node": "24.x"
+  }
+}
+```
+
 ## Bun 运行时
 
 :read-more{title="Vercel" to="https://vercel.com/docs/functions/runtimes/bun"}
@@ -47,7 +68,7 @@ export default defineConfig({
 })
 ```
 
-或者，如果你在 `vercel.json` 中指定了 `bunVersion` 属性，Nitro 也会自动检测 Bun：
+另外，如果在 `package.json` 中指定 `engines.bun`，或在 `vercel.json` 中设置 `bunVersion`，Nitro 也会自动检测并使用 Bun：
 
 ```json [vercel.json]
 {
@@ -55,6 +76,10 @@ export default defineConfig({
   "bunVersion": "1.x"
 }
 ```
+
+如果 `package.json` 也设置了 `engines.node`，则除非同时设置 `engines.bun` 和 `bunVersion`，否则会使用 Node.js（参阅[运行时](#runtime)）。
+
+Nitro 会优先使用 `engines.bun`，其次才使用 `bunVersion` 来选择 Bun 版本。要求 Bun 1.4 的版本范围（例如 `1.4.x`、`^1.4.0` 和 `>=1.4`）会选择 `bun1.4.x`。也允许使用较早次版本的范围（例如 `1.x` 或 `>=1`）会保留为 `bun1.x`，遵循 Vercel 对次版本的显式选择机制。无效或不受支持的范围会导致构建失败。
 
 ## 每条路由的函数配置
 
@@ -332,7 +357,6 @@ export default defineConfig({
 Nitro 配置中的 `vercel` 键下提供了其他选项：
 
 - `entryFormat`：Vercel Functions 的处理程序格式。`"web"`（默认）或 `"node"`。`node` 格式支持与 Node.js 特定 API 的兼容性（例如 `req.runtime.node`）。
-- `regions`：边缘函数的[区域](https://vercel.com/docs/concepts/functions/edge-functions#edge-function-regions)列表。
 - `skewProtection`：设置为 `false` 以禁用 Nitro 的 [skew protection](https://vercel.com/docs/skew-protection) 集成（当 Vercel 控制面板中启用 skew protection 时，默认启用）。
 - `cronHandlerRoute`：与 `scheduledTasks` 一起使用的 Vercel Cron 处理程序端点的路由路径（默认值：`"/_vercel/cron"`）。
 

@@ -57,37 +57,97 @@ export default defineConfig({
 - [`cloudflare:durable:alarm`](https://developers.cloudflare.com/durable-objects/api/alarms/)（仅适用于 [`cloudflare_durable`](#cloudflare-workers-with-durable-objects) 预设）
 
 ::note
-`cloudflare:queue` 钩子会将消息批次作为 `batch` 接收，而 `cloudflare:email` 钩子会将收到的消息作为 `message` 接收。较旧的 `event` 字段已弃用，不再适用于这两个钩子。
+`cloudflare:queue` 钩子通过 `batch` 接收消息批次，`cloudflare:email` 钩子通过 `message` 接收传入的消息。
 ::
+
+### Durable Objects
+
+从 [`server.ts`](/docs/server-entry) 文件导出 Durable Object 类。它们在部署后的 Worker 和本地开发环境（包括 Vite）中都可用。也可以在其他文件中定义这些类，再从此处重新导出。
+
+```ts [server.ts]
+import { DurableObject } from "cloudflare:workers";
+
+export class Counter extends DurableObject {
+  async fetch() {
+    const count = (await this.ctx.storage.get<number>("count")) || 0;
+    await this.ctx.storage.put("count", count + 1);
+    return Response.json({ count: count + 1 });
+  }
+}
+
+export default {
+  fetch() {},
+};
+```
+
+::note
+`server.ts` 必须包含默认导出。如果该文件仅用于导出 Durable Objects，请保留上面的空 `fetch` 处理器，以便请求继续交由你的路由处理。
+::
+
+在 Wrangler 配置中声明绑定和 Durable Object 导出：
+
+```json [wrangler.json]
+{
+  "durable_objects": {
+    "bindings": [{ "name": "COUNTER", "class_name": "Counter" }]
+  },
+  "exports": {
+    "Counter": { "type": "durable-object", "storage": "sqlite" }
+  }
+}
+```
+
+在 Nitro 处理器中访问该绑定：
+
+```ts [routes/counter.ts]
+import { defineHandler } from "nitro";
+
+export default defineHandler((event) => {
+  const { COUNTER } = event.req.runtime!.cloudflare!.env;
+  return COUNTER.get(COUNTER.idFromName("default")).fetch(event.req);
+});
+```
+
+使用 Wrangler 环境时，请在所选环境中声明绑定和导出。本地 Durable Object 状态会保存在 `.wrangler/state/v3` 中，包括开发服务器重新加载前后的状态。
+
+在开发环境中，Durable Objects 会与路由共享模块状态，并在开发服务器不重启的情况下应用代码更改。新增的类或未在 Wrangler 配置中声明的类会触发警告。
+
+如需使用 `Counter` 类为 `COUNTER` 绑定添加类型，请参阅[绑定类型](#typing-bindings)。
 
 ### 额外导出
 
-你可以将 `exports.cloudflare.ts` 文件添加到项目根目录，以从 Cloudflare Worker 入口点导出其他处理程序或属性。
+Workflows 或 `WorkerEntrypoint` 等其他类也以相同方式从 `server.ts` 导出：
 
-```ts [exports.cloudflare.ts]
+```ts [server.ts]
+import {
+  WorkerEntrypoint,
+  WorkflowEntrypoint,
+  type WorkflowEvent,
+  type WorkflowStep,
+} from "cloudflare:workers";
+
 export class MyWorkflow extends WorkflowEntrypoint {
   async run(event: WorkflowEvent, step: WorkflowStep) {
     // ...
   }
 }
+
+export class MyEntrypoint extends WorkerEntrypoint {
+  greet(name: string) {
+    return `Hello ${name}`;
+  }
+}
 ```
 
-Nitro 将自动检测此文件并将其导出包含在最终构建中。
+在 Wrangler 配置中通过 `workflows` 绑定或 `exports` 条目声明这些类：
 
-::warning
-`exports.cloudflare.ts` 文件不能包含默认导出。
-::
-
-你还可以使用 `nitro.config.ts` 中的 `cloudflare.exports` 选项来自定义入口点文件位置：
-
-```ts [nitro.config.ts]
-import { defineConfig } from "nitro";
-
-export default defineConfig({
-  cloudflare: {
-    exports: "custom-exports-entry.ts"
+```json [wrangler.json]
+{
+  "workflows": [{ "name": "my-workflow", "binding": "MY_WORKFLOW", "class_name": "MyWorkflow" }],
+  "exports": {
+    "MyEntrypoint": { "type": "worker" }
   }
-})
+}
 ```
 
 ### 定时任务（Cron 触发器）
@@ -127,7 +187,7 @@ export default defineConfig({
 })
 ```
 
-该预设入口会导出一个 `$DurableObject` 类。你需要在 wrangler 配置中声明 Durable Object 绑定和迁移：
+预设入口会导出 `$DurableObject` 类。在 Wrangler 配置中声明其绑定和导出：
 
 ```json [wrangler.json]
 {
@@ -139,12 +199,9 @@ export default defineConfig({
       }
     ]
   },
-  "migrations": [
-    {
-      "tag": "v1",
-      "new_classes": ["$DurableObject"]
-    }
-  ]
+  "exports": {
+    "$DurableObject": { "type": "durable-object", "storage": "sqlite" }
+  }
 }
 ```
 
@@ -356,6 +413,76 @@ defineHandler(async (event) => {
 })
 ```
 
+### 绑定类型
+
+使用 [`wrangler types`](https://developers.cloudflare.com/workers/languages/typescript/#generate-types) 根据 Wrangler 配置为绑定和 Workers 运行时生成类型。该命令会写入 `worker-configuration.d.ts` 文件，并在其中声明全局 `Env` 接口。
+
+```json [package.json]
+{
+  "scripts": {
+    "postinstall": "wrangler types",
+    "typecheck": "wrangler types && tsc --noEmit"
+  }
+}
+```
+
+在 `tsconfig.json` 中包含生成的文件。该文件也提供运行时类型，因此无需安装 `@cloudflare/workers-types`。Nitro 会为你启用 [`nodejs_compat`](https://developers.cloudflare.com/workers/runtime-apis/nodejs/) 标记；如果还要使用 Node.js API，请将 `@types/node`（以及 `wrangler`）添加到开发依赖中，并在类型配置中加入 `node`：
+
+```json [tsconfig.json]
+{
+  "compilerOptions": {
+    "types": ["./worker-configuration.d.ts", "node"]
+  }
+}
+```
+
+从 `cloudflare:workers` 导入的绑定会自动获得类型：
+
+```ts
+import { defineHandler } from "nitro";
+import { env } from "cloudflare:workers";
+
+export default defineHandler(async () => {
+  return env.MY_KV.get("key");
+});
+```
+
+如需同时为 `event.req.runtime.cloudflare.env` 添加类型，请扩展 [srvx](https://srvx.h3.dev) 的 `CloudflareEnv` 接口：
+
+```ts [env.d.ts]
+declare module "srvx" {
+  interface CloudflareEnv extends Env {}
+}
+
+export {};
+```
+
+::note
+要应用此扩展，项目必须能够解析 `srvx`。使用 pnpm 时，请将它添加到开发依赖中。
+::
+
+若要使用类为自定义 [Durable Objects](#durable-objects)、[Workflows 和 `WorkerEntrypoint`](#additional-exports) 绑定添加类型，请将 Wrangler 配置中的 `main` 指向导出这些类的文件。Nitro 仍会在生成的配置中将 `main` 设置为构建后的入口。
+
+```json [wrangler.json]
+{
+  "main": "./server.ts"
+}
+```
+
+之后，`wrangler types` 会从该文件读取这些类：
+
+```ts [worker-configuration.d.ts]
+interface Env {
+  COUNTER: DurableObjectNamespace<import("./server").Counter>;
+  MY_WORKFLOW: Workflow<Parameters<import("./server").MyWorkflow["run"]>[0]["payload"]>;
+  API: Service<typeof import("./server").Api>;
+}
+```
+
+::tip
+更改 Wrangler 配置后，请重新运行 `wrangler types`；也可以在 CI 中运行 `wrangler types --check`，以发现过期的类型。
+::
+
 ### 在本地开发中访问绑定
 
 在开发模式下，Nitro 使用 [Miniflare](https://miniflare.dev/) 模拟 Cloudflare 环境（这是 Wrangler 和生产环境中的 Cloudflare Workers 使用的相同 [`workerd`](https://github.com/cloudflare/workerd) 运行时）。这意味着绑定可以直接从请求事件中原生访问，无需单独的代理。
@@ -417,10 +544,10 @@ export default defineConfig({
 
 与 `wrangler dev` 相比，有以下几点不同：
 
-- 绑定（KV、D1、R2 等）的本地数据会持久化到 `.wrangler/state/v3`，并与 `wrangler dev` 共享
-- 无论 `compatibility_date` 如何设置，都会使用已安装的 `miniflare` 所支持的最新兼容性日期
-- 静态资源由 Nitro 提供服务，并且无法使用指向其他 Worker 的绑定（`services`、`tail_consumers`）以及指向类或处理程序的绑定（`durable_objects`、`workflows`、队列使用者）
-- 设置 `cloudflare.wrangler` 后，它会与最近的 Wrangler 配置文件合并
+- 绑定（KV、D1、R2 等）的本地数据会持久化到 `.wrangler/state/v3`，并与 `wrangler dev` 共享。
+- 无论 `compatibility_date` 如何设置，都会使用已安装的 `miniflare` 所支持的最新兼容性日期。
+- Nitro 会提供静态资源。可使用从 [`server.ts`](#durable-objects) 导出的本地 Durable Objects、Workflows 和 `WorkerEntrypoint`；但无法使用指向其他 Worker 的绑定（`services`、`tail_consumers`、外部 Durable Objects 和 Workflows）以及队列消费者。
+- 设置 `cloudflare.wrangler` 后，它会与最近的 Wrangler 配置文件合并。
 
 #### Wrangler environments
 

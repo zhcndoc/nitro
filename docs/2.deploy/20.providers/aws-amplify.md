@@ -28,10 +28,10 @@ import { defineConfig } from "nitro";
 
 export default defineConfig({
   awsAmplify: {
-      // 捕获所有静态回退：true,
-      // 图片优化：{ path: "/_image", cacheControl: "public, max-age=3600, immutable" },
-      // 图片设置：{ ... },
-      // 运行时: "nodejs24.x", // 默认值: "nodejs20.x" | "nodejs22.x" | "nodejs24.x"
+      // catchAllStaticFallback: true,
+      // imageOptimization: { path: "/_image", cacheControl: "public, max-age=3600, immutable" },
+      // imageSettings: { ... },
+      // runtime: "nodejs24.x", // "nodejs20.x" | "nodejs22.x" (default) | "nodejs24.x"
   }
 })
 ```

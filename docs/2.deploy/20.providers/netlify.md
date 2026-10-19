@@ -19,6 +19,8 @@ Nitro 会自动检测你处于 [Netlify](https://www.netlify.com) 构建环境�
 
 要进行部署，只需像平常为 Netlify 执行的那样推送到你的 git 仓库[即可](https://docs.netlify.com/configure-builds/get-started/)。
 
+Nitro 使用 [Netlify Frameworks API](https://docs.netlify.com/build/frameworks/frameworks-api/) 写入构建输出：服务器函数写入 `.netlify/v1/functions`，边缘函数写入 `.netlify/v1/edge-functions`，部署配置写入 `.netlify/v1/config.json`。静态资源写入 `dist`。
+
 ::note
 创建新项目时，请确保发布目录设置为 `dist`
 ::
@@ -45,7 +47,7 @@ Netlify Edge Functions 使用 Deno 和强大的 V8 JavaScript 运行时，让你
 
 ## 自定义部署配置
 
-你可以在 `nitro.config` 中使用 `netlify.config` 键提供额外的部署配置。它遵循 [Netlify Frameworks API](https://docs.netlify.com/build/frameworks/frameworks-api/) 的 `config.json` 格式，并会与内置的自动生成配置合并。
+你可以在 `nitro.config` 中通过 `netlify.config` 键提供额外的部署配置。它遵循 [Netlify Frameworks API](https://docs.netlify.com/build/frameworks/frameworks-api/) 的 `config.json` 格式，并写入 `.netlify/v1/config.json`；Netlify 会在构建期间将其与站点配置合并。
 
 ```ts [nitro.config.ts]
 import { defineConfig } from "nitro";
@@ -73,7 +75,3 @@ export default defineConfig({
 - `headers`：自定义[标头规则](https://docs.netlify.com/routing/headers/)。
 - `images`：[Netlify Image CDN](https://docs.netlify.com/image-cdn/create-integration/) 配置（例如 `remote_images`）。
 - `redirects`：自定义[重定向规则](https://docs.netlify.com/routing/redirects/)。
-
-::note
-顶层的 `netlify.images` 选项已弃用。请改用 `netlify.config.images`
-::

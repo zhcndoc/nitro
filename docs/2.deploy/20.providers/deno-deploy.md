@@ -2,66 +2,24 @@
 
 > 将 Nitro 应用部署到 [Deno Deploy](https://deno.com/deploy)。
 
-**预设：** `deno_deploy`
+**预设：** `deno_server`
 
-:read-more{title="Deno Deploy" to="https://deno.com/deploy"}
+:read-more{title="Deno Deploy" to="https://docs.deno.com/deploy/"}
 
-## 使用 CLI 部署
+::warning
+Deno 团队加入 Cloudflare 后，Deno Deploy 将于 2027 年关闭（[公告](https://deno.com/blog/cloudflare)）。建议改为部署到 [Cloudflare](/deploy/providers/cloudflare)。
+::
 
-你可以使用 [deployctl](https://deno.com/deploy/docs/deployctl) 来部署你的应用。
+## 通过关联的 GitHub 仓库部署
 
-登录 [Deno Deploy](https://dash.deno.com/account#access-tokens) 以获取 `DENO_DEPLOY_TOKEN` 访问令牌，并将其设置为环境变量。
+Deno Deploy 会运行 [Deno](/deploy/runtimes/deno) 运行时预设生成的输出。
 
-```bash
-# Build with the deno_deploy preset
-NITRO_PRESET=deno_deploy npm run build
+1. 在 [Deno Deploy](https://console.deno.com) 上创建新应用并关联 GitHub 仓库。
+2. 将**构建命令**设置为使用 `deno_server` 预设进行构建（例如 `NITRO_PRESET=deno_server npm run build`）。
+3. 选择 **Dynamic** 运行时配置，并将**入口文件**设为 `.output/server/index.mjs`。
 
-# 确保从输出目录运行 deployctl 命令
-cd .output
-deployctl deploy --project=my-project server/index.ts
-```
+之后，每次推送到该仓库都会触发新的构建和部署。
 
-## 使用 GitHub Actions 在 CI/CD 中部署
-
-将 deployctl GitHub Action 作为一个步骤包含在工作流中。
-
-无需任何密钥，但你需要将 GitHub 仓库关联到 Deno Deploy 项目，并在 [Deno Deploy](https://dash.deno.com) 的项目设置中选择“GitHub Actions”部署模式。
-
-在你的 `.github/workflows` 目录中创建以下工作流文件：
-
-```yaml [.github/workflows/deno_deploy.yml]
-name: deno-deploy
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - run: corepack enable
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 20
-          cache: pnpm
-      - run: pnpm install
-      - run: pnpm build
-        env:
-          NITRO_PRESET: deno_deploy
-      - name: 部署到 Deno Deploy
-        uses: denoland/deployctl@v1
-        with:
-          project: my-project
-          entrypoint: server/index.ts
-          root: .output
-```
-
-## Deno 运行时
-
-:read-more{to="/deploy/runtimes/deno"}
+::note
+`deno_deploy` 预设原本面向 Deno Deploy Classic，该服务已于 2026 年 7 月 20 日关闭。在 Nitro v3 中，`deno_deploy` 是 `deno_server` 的别名。
+::
