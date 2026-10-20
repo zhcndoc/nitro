@@ -292,6 +292,31 @@ export function testNitro(
     expect(headers["x-test"]).toBe("test");
   });
 
+  it("global middleware runs before cached (`swr`) route handlers", async () => {
+    const url = "/rules/swr/middleware-order";
+    // miss, then hits: the middleware must run each time, and the header it
+    // sets must not be stored in the shared cache entry
+    const miss = await callHandler({ url, headers: { "x-echo": "a" } });
+    expect(miss.data).toEqual(["rules", "global"]);
+    expect(miss.headers["x-echo"]).toBe("a");
+    const hit = await callHandler({ url, headers: { "x-echo": "b" } });
+    expect(hit.data).toEqual(["rules", "global"]);
+    expect(hit.headers["x-echo"]).toBe("b");
+    const anonymous = await callHandler({ url });
+    expect(anonymous.headers["x-echo"]).toBeUndefined();
+  });
+
+  it("keeps middleware headers out of `defineCachedHandler` cache entries", async () => {
+    const url = "/api/cached-middleware";
+    const miss = await callHandler({ url, headers: { "x-echo": "a" } });
+    expect(miss.data).toBe("cached");
+    expect(miss.headers["x-echo"]).toBe("a");
+    const hit = await callHandler({ url, headers: { "x-echo": "b" } });
+    expect(hit.headers["x-echo"]).toBe("b");
+    const anonymous = await callHandler({ url });
+    expect(anonymous.headers["x-echo"]).toBeUndefined();
+  });
+
   it("API Works", async () => {
     const { data: helloData } = await callHandler({ url: "/api/hello" });
     expect(helloData).to.toMatchObject({ message: "Hello API" });
