@@ -7,6 +7,7 @@ import type { Socket } from "node:net";
 import { IncomingMessage, ServerResponse } from "node:http";
 import type { Http2ServerResponse } from "node:http2";
 import { readFile } from "node:fs/promises";
+import { statSync } from "node:fs";
 import { NodeRequest, sendNodeResponse } from "srvx/node";
 import { createViteHotChannel } from "env-runner/vite";
 import { isAbsolute, join, relative } from "pathe";
@@ -388,6 +389,41 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
     const isAssetByExt =
       !!ext && ASSET_EXT_RE.test(ext) && !/\btext\/html\b/.test(req.headers["accept"] || "");
 
+    // `?url` imports compile to a bare root-relative path (`/src/foo.txt`) that carries no
+    // request-time marker: `fetch()` sends no usable `Sec-Fetch-Dest` and the extension can be
+    // anything, so the only disambiguation left is that Vite's `serveStaticMiddleware` can
+    // serve it as a real file under the project root. Mirrors its skip rules (`.html` files
+    // are left for Nitro) — #4230.
+    const isAssetByFile = () => {
+      const urlPath = req.url!.split(/[?#]/, 1)[0];
+      // Vite only serves root files under its base; outside it, the probe would only leak existence.
+      if (
+        !ext ||
+        ext === "html" ||
+        /\btext\/html\b/.test(req.headers["accept"] || "") ||
+        !urlPath.startsWith(viteBase)
+      ) {
+        return false;
+      }
+      let filePath = withoutBase(urlPath, viteBase);
+      try {
+        filePath = decodeURI(filePath);
+      } catch {}
+      // Never probe outside the root (`/%2e%2e/...`), or the response would leak file existence.
+      const file = join(server.config.root, filePath);
+      const rel = relative(server.config.root, file);
+      if (rel.startsWith("../") || isAbsolute(rel)) {
+        return false;
+      }
+      // `throwIfNoEntry` only covers a missing entry; a stat error (permissions, symlink
+      // loop) on a crafted path must not take the request down — it is simply not an asset.
+      try {
+        return statSync(file, { throwIfNoEntry: false })?.isFile() === true;
+      } catch {
+        return false;
+      }
+    };
+
     // `document`/`iframe`/`frame` are definite navigations; any other concrete `Sec-Fetch-Dest`
     // (`image`, `video`, `style`, ...) is a definite asset load. Only `GET`/`HEAD` can be
     // browser asset loads at all — other methods are never assets.
@@ -398,7 +434,7 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
         : // Vite tags module-graph fetches for files it serves as modules (e.g. an imported
           // `.json`) with an `?import` query. Only the module graph emits it — a page navigation
           // never does — so it stays authoritative for extensions left out of `ASSET_EXT_RE` (#4433).
-          /[?&]import(?:[&=]|$)/.test(req.url!) || isAssetByExt);
+          /[?&]import(?:[&=]|$)/.test(req.url!) || isAssetByExt || isAssetByFile());
 
     // Non-asset requests go to Nitro: the catch-all (`matchedHandlers` are all catch-all here,
     // since explicit routes already returned) renders them, and bare (extensionless) unmatched
