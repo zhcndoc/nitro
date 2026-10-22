@@ -107,7 +107,7 @@ function nitroInit(ctx: NitroPluginContext): VitePlugin {
           (ctx.bundlerConfig?.rolldownConfig?.plugins as VitePlugin[]) ||
           (ctx.bundlerConfig?.rollupConfig?.plugins as VitePlugin[]) ||
           [];
-        return [...(plugins || [])];
+        return [nitroSelfAliases(ctx.bundlerConfig?.base.aliases ?? {}), ...plugins];
       }
     },
   };
@@ -241,6 +241,24 @@ function nitroServerAliases(ctx: NitroPluginContext): VitePlugin {
   };
 }
 
+function nitroSelfAliases(aliases: Record<string, string>): VitePlugin {
+  return {
+    name: "nitro:self-aliases",
+    resolveId: {
+      order: "pre",
+      filter: { id: /^nitro(\/|$)/ },
+      async handler(id, importer, options) {
+        const resolved = resolveAlias(id, aliases);
+        if (resolved !== id) {
+          return (
+            (await this.resolve(resolved, importer, { ...options, skipSelf: true })) || resolved
+          );
+        }
+      },
+    },
+  };
+}
+
 function nitroMain(ctx: NitroPluginContext): VitePlugin {
   return {
     name: "nitro:main",
@@ -252,14 +270,19 @@ function nitroMain(ctx: NitroPluginContext): VitePlugin {
       if (!ctx.bundlerConfig) {
         throw new Error("Bundler config is not initialized yet!");
       }
+      const scopeSelfAliases = ctx.nitro?.options.dev && !ctx._isVitest;
       return {
         appType: userConfig.appType || "custom",
         resolve: {
-          // TODO: environment specific aliases not working
-          // https://github.com/vitejs/vite/pull/17583 (seems not effective)
-          // preserve alias order (exclude node: builtins to prevent leaking to client builds)
+          // Keep alias order and never leak `node:` builtins to client builds.
+          // In dev, the `nitro/*` aliases (no `nitro` dependency in the
+          // project) are scoped to the `nitro` environment so they do not
+          // bypass the dev service proxy (not used by Vitest).
           alias: Object.entries(ctx.bundlerConfig.base.aliases)
-            .filter(([, replacement]) => !replacement.startsWith("node:"))
+            .filter(
+              ([find, replacement]) =>
+                !replacement.startsWith("node:") && !(scopeSelfAliases && /^nitro(\/|$)/.test(find))
+            )
             .map(([find, replacement]) => ({
               find,
               replacement,
