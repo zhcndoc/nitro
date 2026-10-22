@@ -1,7 +1,7 @@
 import { pathToFileURL } from "node:url";
 import { defu } from "defu";
 import mime from "mime";
-import { writeFile } from "../utils/fs.ts";
+import { writeFile, prettyPath } from "../utils/fs.ts";
 import type { Nitro, NormalizedRouteRules, PrerenderRoute, PublicAssetDir } from "nitro/types";
 import { join, relative, resolve } from "pathe";
 import { createRouter, addRoute, findAllRoutes } from "rou3";
@@ -347,18 +347,17 @@ export async function prerender(nitro: Nitro) {
     failedRoutes: [...failedRoutes],
   });
 
+  // Every route failed and nothing was written: fail regardless of `failOnError` (#4591)
+  if (failedRoutes.size > 0 && nitro._prerenderedRoutes.length === 0) {
+    logPrerenderErrors(nitro, failedRoutes);
+    throw new Error(
+      `Prerendered 0 routes. All ${failedRoutes.size} route(s) failed, so nothing was written to \`${prettyPath(nitro.options.output.publicDir)}\`.` +
+        missingRendererHint(nitro)
+    );
+  }
+
   if (nitro.options.prerender.failOnError && failedRoutes.size > 0) {
-    nitro.logger.log("\nErrors prerendering:");
-    for (const route of failedRoutes) {
-      // const parents = linkParents.get(route.route);
-      // const parentsText = parents?.size
-      //   ? `\n${[...parents.values()]
-      //       .map((link) => colors.gray(`  │ └── Linked from ${link}`))
-      //       .join("\n")}`
-      //   : "";
-      nitro.logger.log(formatPrerenderRoute(route));
-    }
-    nitro.logger.log("");
+    logPrerenderErrors(nitro, failedRoutes);
     throw new Error("Exiting due to prerender errors.");
   }
 
@@ -401,4 +400,22 @@ async function startPrerenderer(nitroRenderer: Nitro): Promise<EnvServer> {
     runner: "node-worker",
     entry: serverEntrypoint,
   }).start();
+}
+
+function logPrerenderErrors(nitro: Nitro, failedRoutes: Set<PrerenderRoute>) {
+  nitro.logger.log("\nErrors prerendering:");
+  for (const route of failedRoutes) {
+    nitro.logger.log(formatPrerenderRoute(route));
+  }
+  nitro.logger.log("");
+}
+
+function missingRendererHint(nitro: Nitro): string {
+  if (nitro.options.renderer) {
+    return "";
+  }
+  if (nitro.options.builder === "vite") {
+    return " No Vite SSR entry was detected. If the app renders HTML, place `entry-server` in `app/`, `src/` or the project root, or set `environments.ssr.build.rollupOptions.input` in the Vite config.";
+  }
+  return " No `renderer` is configured. Check that the app has a route or renderer able to serve the prerendered routes.";
 }
