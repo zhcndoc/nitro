@@ -18,10 +18,10 @@ importers:
   .:
     dependencies:
       crossws:
-        specifier: ^0.4.15
+        specifier: ^0.4.16
         version: 0.4.16(srvx@1.0.7)
       env-runner:
-        specifier: ^0.3.7
+        specifier: ^0.3.8
         version: 0.3.8
       h3:
         specifier: ^2.0.8
