@@ -1,8 +1,11 @@
 import type { OpenAPI3 } from "../../src/types/openapi-ts.ts";
 import { describe, expect, it } from "vitest";
-import { setupTest, testNitro } from "../tests.ts";
+import { describeIf, setupTest, testNitro } from "../tests.ts";
 
-describe("nitro:preset:nitro-dev (serve static)", async () => {
+// Nitro dev server does not support the vite builder (use `vite dev`)
+const supported = process.env.NITRO_BUILDER !== "vite";
+
+describeIf(supported, "nitro:preset:nitro-dev (serve static)", async () => {
   const ctx = await setupTest("nitro-dev", {
     config: { serveStatic: true },
     outDirSuffix: "-serve-static",
@@ -16,7 +19,7 @@ describe("nitro:preset:nitro-dev (serve static)", async () => {
   });
 });
 
-describe("nitro:preset:nitro-dev", async () => {
+describeIf(supported, "nitro:preset:nitro-dev", async () => {
   const ctx = await setupTest("nitro-dev");
   testNitro(
     ctx,

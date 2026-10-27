@@ -16,7 +16,11 @@ const rootDir = fileURLToPath(new URL("../fixture/cloudflare-dev", import.meta.u
 // Dev reloads (a full rebuild with Rollup) can take longer than the default 1s poll timeout on CI
 const reloadPoll = { timeout: 10_000 };
 
+// Nitro dev server does not support the vite builder (use `vite dev`)
+const skipNitroDev = process.env.NITRO_BUILDER === "vite";
+
 for (const mode of ["nitro", "vite", "build", "vite-build"] as const) {
+  if (mode === "nitro" && skipNitroDev) continue;
   describe(`cloudflare bindings: ${mode}`, { concurrent: false }, () => {
     let fetchPath: (path: string) => Promise<Response>;
     let serverURL: string | undefined;
@@ -260,6 +264,7 @@ for (const mode of ["nitro", "vite", "build", "vite-build"] as const) {
 }
 
 for (const mode of ["nitro", "vite"] as const) {
+  if (mode === "nitro" && skipNitroDev) continue;
   for (const binding of [false, true]) {
     describe(`cloudflare-dev websocket: ${mode} (\`$DurableObject\` binding: ${binding})`, () => {
       let wsURL: URL;
