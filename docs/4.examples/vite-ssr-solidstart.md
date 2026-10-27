@@ -23,7 +23,7 @@ icon: i-logos-solidjs-icon
   "dependencies": {
     "@solidjs/meta": "^0.29.4",
     "@solidjs/router": "^1.0.0",
-    "@solidjs/start": "^2.0.6",
+    "@solidjs/start": "^2.1.0",
     "nitro": "latest",
     "solid-js": "^1.9.17",
     "vite": "latest"
