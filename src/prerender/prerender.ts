@@ -69,7 +69,9 @@ export async function prerender(nitro: Nitro) {
     deps: { ...nitro.options.deps, paths: { ...viteDepPaths(nitro) } },
   };
   await nitro.hooks.callHook("prerender:config", prerendererConfig);
-  const nitroRenderer = await createNitro(prerendererConfig);
+  const nitroRenderer = await createNitro(prerendererConfig, {
+    c12: { envName: [nitro.options.envName, "prerender"] },
+  });
   const prerenderStartTime = Date.now();
   await nitro.hooks.callHook("prerender:init", nitroRenderer);
   await nitroRenderer.routing.sync();

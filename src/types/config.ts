@@ -555,6 +555,18 @@ export interface NitroOptions extends PresetOptions {
   dev: boolean;
 
   /**
+   * Environment name used to apply `$env.<envName>` (or `$<envName>`) config overrides.
+   *
+   * Defaults to `"development"` in development and `"production"` otherwise. A custom
+   * name (for example `"staging"`) can be set with the `--envName` CLI flag or the
+   * `c12.envName` load option of `createNitro()`. Available in server code as
+   * `import.meta.envName`.
+   *
+   * @see https://nitro.build/docs/configuration#environment-specific-config
+   */
+  envName: string;
+
+  /**
    * Development server options.
    *
    * @see https://nitro.build/config#devserver
@@ -1092,6 +1104,7 @@ export interface NitroConfig
         | "_config"
         | "_c12"
         | "layers"
+        | "envName"
         | "serverEntry"
         | "renderer"
         | "output"
@@ -1099,7 +1112,7 @@ export interface NitroConfig
       >
     >,
     C12InputConfig<NitroConfig> {
-  /** Config overrides applied when prerendering (on top of `$production`). */
+  /** Config overrides applied when prerendering (on top of the build env overrides, `$production` by default). */
   $prerender?: NitroConfig;
 
   preset?: PresetNameInput;

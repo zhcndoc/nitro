@@ -112,7 +112,6 @@ async function _loadUserConfig(
     name: "nitro",
     cwd: configOverrides.rootDir,
     dotenv: _dotenv,
-    envName,
     extend: { extendKey: ["extends", "preset"] },
     defaults: NitroDefaults,
     merger: mergeConfig,
@@ -179,6 +178,7 @@ async function _loadUserConfig(
       }
     },
     ...opts.c12,
+    envName,
   });
 
   const options = klona(loadedConfig.config) as NitroOptions;
@@ -186,6 +186,10 @@ async function _loadUserConfig(
   options._config = configOverrides;
   options._c12 = loadedConfig;
   options.layers = resolveLayers(loadedConfig);
+  // Exposed as `import.meta.envName` (the first name of a list, such as `["production", "prerender"]`)
+  options.envName =
+    (Array.isArray(envName) ? envName.find(Boolean) : envName) ||
+    (options.dev ? "development" : "production");
 
   const _presetName =
     (loadedConfig.layers || []).find((l) => l.config?._meta?.name)?.config?._meta?.name || preset;
