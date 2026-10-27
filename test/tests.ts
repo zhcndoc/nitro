@@ -16,7 +16,7 @@ import {
 } from "nitro/builder";
 import type { Nitro, NitroConfig } from "nitro/types";
 import { join, resolve } from "pathe";
-import { isWindows } from "std-env";
+import { isBun, isWindows } from "std-env";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 export interface Context {
@@ -272,13 +272,18 @@ export function testNitro(
     expect(headers["x-init"]).toBe("1");
     expect(JSON.parse(headers["x-fast-response"] as string)).toEqual({
       // srvx `FastResponse` is the native `Response` outside of Node.js
-      fast: ctx.nitro!.options.node && !["bun", "deno-server", "standard"].includes(ctx.preset),
+      fast:
+        ctx.nitro!.options.node &&
+        !["bun", "deno-server", "standard"].includes(ctx.preset) &&
+        !ctx.nitro!.options.exportConditions?.includes("bun"),
       statics: true,
       subclass: true,
     });
   });
 
-  it.runIf(["bun", "deno-server", "nitro-dev"].includes(ctx.preset))(
+  // On Bun, the dev worker closes the socket and the dev proxy responds with 500 instead of 413
+  // https://github.com/unjs/env-runner/issues/97
+  it.runIf(["bun", "deno-server", "nitro-dev"].includes(ctx.preset) && !(ctx.isDev && isBun))(
     "Server entry options are passed to srvx",
     async () => {
       const small = await callHandler({
@@ -859,11 +864,13 @@ export function testNitro(
         const res = await callHandler({ url: `/errors/throw?handled&action=${errorAction}` });
         expect(res).toMatchObject({
           status: 503,
-          statusText: /deno|bun/.test(ctx.preset)
-            ? "Service Unavailable"
-            : /aws/.test(ctx.preset)
-              ? ""
-              : "Custom Status Text",
+          // Bun.serve (also behind the dev server on Bun) drops custom status text: https://github.com/oven-sh/bun/issues/13817
+          statusText:
+            /deno|bun/.test(ctx.preset) || (ctx.isDev && isBun)
+              ? "Service Unavailable"
+              : /aws/.test(ctx.preset)
+                ? ""
+                : "Custom Status Text",
           headers: {
             "content-type": "application/json; charset=utf-8",
             "x-custom-error": "custom-value",
