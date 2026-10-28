@@ -7,6 +7,7 @@ import { excludeSourcemapSources } from "../plugins/sourcemap.ts";
 import { builtinModules } from "node:module";
 import { defu } from "defu";
 import { getChunkName, libChunksGroup } from "../chunks.ts";
+import { escapeRegExp } from "../../utils/regex.ts";
 
 export const getRolldownConfig = async (nitro: Nitro): Promise<RolldownConfig> => {
   const base = await baseBuildConfig(nitro);
@@ -23,12 +24,12 @@ export const getRolldownConfig = async (nitro: Nitro): Promise<RolldownConfig> =
     tsconfig: false,
     external: [
       ...base.env.external,
-      // Builtins aliased to polyfills are bundled (rolldown checks `external` before aliases and plugins)
-      ...[...builtinModules, ...builtinModules.map((m) => `node:${m}`)].filter(
-        (id) => !base.env.alias[id] || base.env.alias[id].startsWith("node:")
-      ),
+      // Rolldown checks `external` before aliases and plugins: builtins aliased to polyfills
+      // are bundled, and the ones aliased to another id are left to `nitro:builtin-aliases`
+      ...builtins.filter((id) => !base.env.alias[id] || base.env.alias[id] === id),
     ],
     plugins: await withBuildPlugins(nitro, [
+      builtinAliases(base.env.alias),
       ...((await baseBuildPlugins(nitro, base)) as RolldownPlugin[]),
       // Emitted files are read from the filesystem, which worker runtimes do not have
       nitro.options.node && ((await assetUrls(nitro)) as RolldownPlugin),
@@ -92,3 +93,27 @@ export const getRolldownConfig = async (nitro: Nitro): Promise<RolldownConfig> =
 
   return config as RolldownConfig;
 };
+
+// Some builtins are only listed with a prefix (e.g. `node:sqlite`, or `bun:sqlite` with Bun)
+const builtins = builtinModules.flatMap((m) => (m.includes(":") ? [m] : [m, `node:${m}`]));
+
+// Externalizes ids aliased to another `node:` id (e.g. `events` or `buffer/` to `node:events` or
+// `node:buffer`) with that id (Rolldown only resolves aliases to `node:` ids with the `node` platform)
+function builtinAliases(alias: Record<string, string>): RolldownPlugin | false {
+  const aliases = new Map(
+    Object.entries(alias).filter(([id, to]) => to !== id && to.startsWith("node:"))
+  );
+  if (aliases.size === 0) {
+    return false;
+  }
+  return {
+    name: "nitro:builtin-aliases",
+    resolveId: {
+      order: "pre",
+      filter: {
+        id: new RegExp(`^(${[...aliases.keys()].map((id) => escapeRegExp(id)).join("|")})$`),
+      },
+      handler: (id) => ({ id: aliases.get(id)!, external: true }),
+    },
+  };
+}

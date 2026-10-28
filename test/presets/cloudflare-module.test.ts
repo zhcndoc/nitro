@@ -4,6 +4,7 @@ import { resolve } from "pathe";
 import { describe, expect, it } from "vitest";
 
 import { setupTest, testNitro } from "../tests.ts";
+import { testBuiltinImports } from "./_builtin-imports.ts";
 
 const presetFixturesDir = resolve(import.meta.dirname, "fixtures");
 
@@ -96,6 +97,8 @@ describe("nitro:preset:cloudflare-module", async () => {
       await mf.dispose();
     }
   });
+
+  testBuiltinImports(ctx);
 
   it("should export the correct functions", async () => {
     const entry = await fsp.readFile(resolve(ctx.outDir, "server", "index.mjs"), "utf8");

@@ -10,6 +10,7 @@ import {
   writeConfig,
 } from "../../src/presets/netlify/utils.ts";
 import { getPresetTmpDir, setupTest, testNitro } from "../tests.ts";
+import { testBuiltinImports } from "./_builtin-imports.ts";
 
 describe("nitro:preset:netlify", async () => {
   const ctx = await setupTest("netlify", {
@@ -244,4 +245,18 @@ describe("nitro:preset:netlify", async () => {
       await fsp.rm(dir, { recursive: true, force: true });
     });
   });
+});
+
+describe("nitro:preset:netlify-edge", async () => {
+  const ctx = await setupTest("netlify-edge", {
+    config: {
+      minify: false,
+      output: {
+        serverDir: resolve(getPresetTmpDir("netlify-edge"), ".output/server"),
+        publicDir: resolve(getPresetTmpDir("netlify-edge"), "dist"),
+      },
+    },
+  });
+
+  testBuiltinImports(ctx);
 });
