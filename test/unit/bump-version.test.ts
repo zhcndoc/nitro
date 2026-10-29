@@ -62,15 +62,9 @@ describe("resolveVersion", async () => {
       prerelease: "",
     },
     {
-      name: "first rc",
-      existing: ["3.0.260310-beta"],
-      expected: "3.0.260311-rc.1",
-      prerelease: "rc",
-    },
-    {
-      name: "rc counter continues across dates",
-      existing: ["3.0.260301-rc.1", "3.0.260305-rc.2", "3.0.260311-rc.3"],
-      expected: "3.0.260311-rc.4",
+      name: "rc channel",
+      existing: ["3.0.260311-beta", "3.0.260311-rc"],
+      expected: "3.0.260311-rc.2",
       prerelease: "rc",
     },
   ];

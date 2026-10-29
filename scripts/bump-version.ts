@@ -43,20 +43,6 @@ export async function resolveVersion(
 ): Promise<string> {
   const versions = await fetchExistingVersions(pkgName);
   const base = `3.0.${dateStr}`;
-
-  if (prerelease === "rc") {
-    let max = 0;
-    for (const v of versions) {
-      const n = Number(/^3\.0\.\d+-rc\.(\d+)$/.exec(v)?.[1]);
-      if (n > max) {
-        max = n;
-      }
-    }
-    const version = `${base}-rc.${max + 1}`;
-    console.log(c.gray(`  Resolved version: ${c.cyan(version)}`));
-    return version;
-  }
-
   const prefix = prerelease ? `${base}-${prerelease}` : base;
   const matching = versions.filter((v) => v.startsWith(prefix));
 
