@@ -18,6 +18,9 @@ export const projectTemplates: ProjectTemplate[] = [
     scripts: { dev: "vite dev", build: "vite build", preview: "vite preview" },
     devDependencies: { vite: deps.vite.version },
     files: {
+      "AGENTS.md": agentsMD(
+        "`index.html` + `app/` are the frontend; `index.html` is also served for any unmatched route. Scripts: `dev` (`vite dev`; `nitro dev` does not run Vite), `build` (outputs `.output/`), `preview`."
+      ),
       "vite.config.ts": `import { defineConfig } from "vite";
 import { nitro } from "nitro/vite";
 
@@ -54,7 +57,12 @@ button.addEventListener("click", async () => {
     description: "API server, bundled for production",
     scripts: { dev: "nitro dev", build: "nitro build", preview: "nitro preview" },
     devDependencies: { rolldown: deps.rolldown.version },
-    files: { "index.html": serverIndexHTML() },
+    files: {
+      "AGENTS.md": agentsMD(
+        "Scripts: `dev`, `build` (bundles into `.output/`; run with `node .output/server/index.mjs`), `preview`."
+      ),
+      "public/index.html": landingHTML(),
+    },
   },
   {
     name: "runtime",
@@ -63,6 +71,9 @@ button.addEventListener("click", async () => {
     scripts: { dev: "nitro dev", start: "nitro start" },
     devDependencies: {},
     files: {
+      "AGENTS.md": agentsMD(
+        "Scripts: `dev` and `start` run the `server/` sources directly without a build (experimental `builder: false`; `nitro build` is not supported)."
+      ),
       "nitro.config.ts": `import { defineConfig } from "nitro";
 
 export default defineConfig({
@@ -70,7 +81,7 @@ export default defineConfig({
   builder: false,
 });
 `,
-      "index.html": serverIndexHTML(),
+      "public/index.html": landingHTML(),
     },
   },
 ];
@@ -95,19 +106,13 @@ export default defineHandler(() => {
   ".gitignore": `node_modules
 dist
 .data
-.nitro
-.cache
 .output
 .env
 .env.local
 `,
-  "AGENTS.md": `This is a [Nitro](https://nitro.build) project. Your knowledge of Nitro v3 is likely outdated: refer to https://nitro.build/docs (or run \`npx nitro docs\`).
-
-\`server/\` contains the server code (create subdirectories as needed): \`api/\` (\`/api\` prefixed handlers), \`routes/\`, \`middleware/\`, \`plugins/\`, \`utils/\`, \`assets/\` and \`tasks/\`. \`public/\` holds static assets.
-`,
 };
 
-function serverIndexHTML(): string {
+function landingHTML(): string {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -117,9 +122,21 @@ function serverIndexHTML(): string {
   </head>
   <body>
     <h1>Nitro</h1>
-    <p>Edit <code>index.html</code> or <code>server/api/hello.ts</code> to get started.</p>
-    <pre>{{{ serverFetch("/api/hello") }}}</pre>
+    <p>Your server is running. Try <a href="/api/hello">/api/hello</a>.</p>
+    <p>Edit <code>server/api/hello.ts</code> to get started, or replace this page in <code>public/index.html</code>.</p>
   </body>
 </html>
+`;
+}
+
+function agentsMD(templateNotes: string): string {
+  return `This is a [Nitro](https://nitro.build) v3 server project (built on H3 v2). Nitro v3 differs a lot from v2 and your knowledge is likely outdated: read https://nitro.build/llms.txt (index of Markdown docs), especially \`docs/utils.md\` (imports) and \`docs/migration.md\` (v2 differences).
+
+- \`server/\` is the server directory (\`serverDir\`); create subdirectories as needed: \`api/\` (routes under \`/api\`), \`routes/\`, \`middleware/\`, \`plugins/\` and \`assets/\` (server assets). File paths map to URLs: \`server/api/users/[id].get.ts\` is \`GET /api/users/:id\`.
+- \`public/\` (project root) holds static files.
+- No auto-imports: import \`defineHandler\`, \`HTTPError\`, ... from \`"nitro"\`, H3 utilities (\`getQuery\`, \`readBody\`, ...) from \`"nitro/h3"\`, and your own helpers (e.g. \`server/utils/\`) with relative imports.
+- Handlers receive an H3 v2 event (\`event.req\` is a web \`Request\`, \`event.url\` a \`URL\`) and return JSON, a string or a \`Response\`.
+- ${templateNotes}
+- Testing: \`npx nitro fetch /api/hello\` sends one request to the server sources (or to the running dev server) and prints the response, no build needed (curl-like options: \`-X\`, \`-H\`, \`--json\`, \`-i\`). \`npx nitro serve\` starts the server from the sources.
 `;
 }
