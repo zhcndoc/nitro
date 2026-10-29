@@ -424,11 +424,6 @@ export interface NitroOptions extends PresetOptions {
      * to be enabled.
      */
     tracingLogger?: boolean;
-
-    /**
-     * @deprecated Use the top-level `vite` option (`vite.services`, `vite.assetsImport` and `vite.serverReload`) instead.
-     */
-    vite?: Pick<NonNullable<NitroOptions["vite"]>, "services" | "assetsImport" | "serverReload">;
   };
 
   /**
@@ -1268,9 +1263,6 @@ export interface TracingChannelOptions {
   db0?: boolean;
 }
 
-/** @deprecated Use {@link TracingChannelOptions}. */
-export type TracingOptions = TracingChannelOptions;
-
 /**
  * Preset shape accepted by the deprecated `unenv` option (compatible with
  * unenv's `Preset`).
@@ -1327,12 +1319,6 @@ export type KVMount = BuiltinKVMount | CustomKVMount;
 export interface KVMounts {
   [path: string]: KVMount;
 }
-
-/** @deprecated Use {@link BuiltinKVMount}. */
-export type BuiltinStorageMount = BuiltinKVMount;
-
-/** @deprecated Use {@link CustomKVMount}. */
-export type CustomStorageMount = CustomKVMount;
 
 /** @deprecated Use {@link KVMount}. */
 export type StorageMount = KVMount;
