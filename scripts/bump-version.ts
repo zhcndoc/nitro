@@ -43,6 +43,20 @@ export async function resolveVersion(
 ): Promise<string> {
   const versions = await fetchExistingVersions(pkgName);
   const base = `3.0.${dateStr}`;
+
+  if (prerelease === "rc") {
+    let max = 0;
+    for (const v of versions) {
+      const n = Number(/^3\.0\.\d+-rc\.(\d+)$/.exec(v)?.[1]);
+      if (n > max) {
+        max = n;
+      }
+    }
+    const version = `${base}-rc.${max + 1}`;
+    console.log(c.gray(`  Resolved version: ${c.cyan(version)}`));
+    return version;
+  }
+
   const prefix = prerelease ? `${base}-${prerelease}` : base;
   const matching = versions.filter((v) => v.startsWith(prefix));
 
@@ -66,16 +80,17 @@ export async function resolveVersion(
 }
 
 async function main() {
-  console.log(c.bold("\nBump version to beta\n"));
-
   const pkgPath = resolve(process.cwd(), "package.json");
   const pkg = JSON.parse(await fsp.readFile(pkgPath, "utf8"));
   const oldVersion = pkg.version;
+  const prerelease = /-([a-z]+)/.exec(oldVersion)?.[1] ?? "";
+
+  console.log(c.bold(`\nBump version${prerelease ? ` to ${prerelease}` : ""}\n`));
 
   const dateStr = fmtDate(new Date());
   console.log(c.gray(`Date: ${c.cyan(dateStr)}`));
 
-  const newVersion = await resolveVersion(pkg.name, dateStr);
+  const newVersion = await resolveVersion(pkg.name, dateStr, prerelease);
 
   console.log();
   console.log(`  ${c.cyan(pkg.name)} ${c.gray(oldVersion)} → ${c.green(newVersion)}`);
