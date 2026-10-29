@@ -24,8 +24,8 @@ icon: i-logos-preact
     "@preact/preset-vite": "^2.10.6",
     "@tailwindcss/vite": "^4.3.3",
     "nitro": "latest",
-    "preact": "^11.0.2",
-    "preact-render-to-string": "^6.8.1",
+    "preact": "^11.1.0",
+    "preact-render-to-string": "^6.8.2",
     "tailwindcss": "^4.3.3",
     "vite": "latest"
   }
