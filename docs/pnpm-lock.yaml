@@ -13,10 +13,10 @@ importers:
         version: 0.4.3
       motion-v:
         specifier: ^2.8.0
-        version: 2.8.0(@vueuse/core@15.0.0(vue@3.5.44))(vue@3.5.44)
+        version: 2.9.0(@vueuse/core@15.0.0(vue@3.5.44))(vue@3.5.44)
       undocs:
-        specifier: npm:undocs-nightly@0.10.1-20261029-141502-950c193
-        version: undocs-nightly@0.10.1-20261029-141502-950c193(@oxc-project/types@0.155.0)(csstype@3.2.3)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(lightningcss@1.33.0)(rolldown@1.2.15)
+        specifier: npm:undocs-nightly@0.10.1-20261029-224826-2e3e487
+        version: undocs-nightly@0.10.1-20261029-224826-2e3e487(@oxc-project/types@0.155.0)(csstype@3.2.3)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(lightningcss@1.33.0)(rolldown@1.2.15)
 
 packages:
 
@@ -655,8 +655,8 @@ packages:
   estree-walker@2.0.2:
     resolution: {integrity: sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==}
 
-  exsolve@1.1.3:
-    resolution: {integrity: sha512-kuzL9zherLQoqDeQaS55AiiIg1kb4KYXaSusTtgZTPlvKP2gGCI82LNmBNh5RjDVUXIcmgx+/Mx7vPwRzBbhJA==}
+  exsolve@1.2.0:
+    resolution: {integrity: sha512-h1pQPR9XoeSMdntRNCjyTznaume4UpfXrULBnlkZ2CUM/G5eSa+pBByGldO5uR8dxbPC+OuJXsPPNf+JZ81ADg==}
 
   fastest-levenshtein@1.0.16:
     resolution: {integrity: sha512-eRnCtTTtGZFpQCwhJiUOuxPQWRXVKYDn0b2PeHfXL6/Zi53SLAzAHfVhVWK2AryC/WH05kGfxhFIPvTF0SXQzg==}
@@ -671,8 +671,8 @@ packages:
       picomatch:
         optional: true
 
-  framer-motion@14.3.1:
-    resolution: {integrity: sha512-/6kjoSWyGsaUaHGaZehiqyVj0eJlY163TPKQCoTh0gHVr0JLyJE/NwCTqkLbXAnOOM00fLD/d92eh9mZfJaa6w==}
+  framer-motion@14.7.1:
+    resolution: {integrity: sha512-mFDYZxyfeZnpvL/zEQEqLZNYVA/ya47c9TBfZb/PEoNBBVSVvCLkMrCv9U38cuw72W161XENZwZB0+4nIBLEJg==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
@@ -885,8 +885,8 @@ packages:
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
-  magic-string@1.4.3:
-    resolution: {integrity: sha512-z12OxmaPGE0F4xlpGdjuAUckipLpQlTAuAmyGhNoD7ODpYUzvDfvtxUbjM/jwznyP178oju/KDdyi220wNJ0RQ==}
+  magic-string@1.4.5:
+    resolution: {integrity: sha512-oLLC2+YvQUfAa+vxoufE/yc1icb87M9iXIRqAoR/2EhE/8cb3SF/+Gi0c2By1B+5Vz2e2vQtUvHiu1+63Znh+w==}
 
   md4w@0.2.7:
     resolution: {integrity: sha512-lFM7vwk3d4MzkV2mija7aPkK6OjKXZDQsH2beX+e2cvccBoqc6RraheMtAO0Wcr/gjj5L+WS5zhb+06AmuGZrg==}
@@ -907,14 +907,14 @@ packages:
   mlly@1.8.2:
     resolution: {integrity: sha512-d+ObxMQFmbt10sretNDytwt85VrbkhhUA/JBGm1MPaWJ65Cl4wOgLaB1NYvJSZ0Ef03MMEU/0xpPMXUIQ29UfA==}
 
-  motion-dom@14.3.1:
-    resolution: {integrity: sha512-6gsjOAjXgZPoLLHNiBI1uBVNhSrIXSm6YBU8RsFM//byOvIys8YHPQE3VZqW3rWR021tcd3eT8pmV8zWTY9Jsg==}
+  motion-dom@14.7.1:
+    resolution: {integrity: sha512-p9q9F7+HoijbQjUG/cSGNmWS2t1OaAKxkd2RG5gQJRoDwoTap/Khb7K1P5rLW90crnSmx0rcRXzh3Jd5UNrpEw==}
 
-  motion-utils@14.1.1:
-    resolution: {integrity: sha512-3VvN5Uvf8B6qG+OfOui6Nht5EWp+vLuU3IqcAj7ItZGKqtmTjCebl5sGZF7/08gEHRnEl1AP/fIwbcEyVrcQGQ==}
+  motion-utils@14.7.0:
+    resolution: {integrity: sha512-woO0/Nb7ys75f94fjvQi/6leiHGvZUYkeHUPEZ3vxsV+9OpEVhkxp01x8MlRwX0zt31EqgXsKDAoBoJLC148Tw==}
 
-  motion-v@2.8.0:
-    resolution: {integrity: sha512-kCwxm+EUbXW/lUdhTyozTKCX2WmQ5aDrjrPtFnUKByw99cz6mQAJyqtIubGdecnDM4VvNz8JOhWy2upp3m5b3w==}
+  motion-v@2.9.0:
+    resolution: {integrity: sha512-CpyTqgsAuqXv8OlJFbfOSXUb2z8xqDI7ixvBIFhKgXD4zTNmR1c3xGO5Aq3amM8KMi4gRQiECUtAXaiW1UOb2g==}
     peerDependencies:
       '@vueuse/core': '>=10.0.0'
       vue: '>=3.0.0'
@@ -924,8 +924,8 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  nitro-nightly@3.0.1-20261028-065025-1a9a371c:
-    resolution: {integrity: sha512-DlOS5H/tg4McutiHaSC/Fj3W5gYshcAz/ytV6QeZpqilkIUdfUA8ndzS+QgCL2D6MD6Zp7bBCUR+aC0SNNcDwQ==}
+  nitro@3.0.261029-rc:
+    resolution: {integrity: sha512-BQvzAV0HgcsJCkDqZAbGYlGNi9ALJznhsihugYAIi+8IcItz320FNaxbAJvn/pMNxGOYo2MGs10mTU9tcnB9jQ==}
     engines: {node: '>=22.22.0'}
     hasBin: true
 
@@ -985,8 +985,8 @@ packages:
   pkg-types@2.4.0:
     resolution: {integrity: sha512-07Fys7iVx0X6TcviMOgogM1Lk33ZyqOezMnU79S+kffWqwolG/5W9V8EgQSeYCIfFTYVgssRbnH630Oa2+soBA==}
 
-  postcss@8.5.31:
-    resolution: {integrity: sha512-YUbWYCgErwnMAVkjUnYa+KlMBzGpHwiIt/DE7f0G33AuX2LH9UcTk6KgWxd3zRU+pN3u/C+Xl3EnMLM4Hea7Sg==}
+  postcss@8.5.32:
+    resolution: {integrity: sha512-LJlKCCAUFKOuZxipUdYw1NzIITEsPcgyOG9LkvRJvuKj/bRzbuRY0ARXvL0pWGpsZvn8jku+LMep2eU0seHp8g==}
     engines: {node: ^10 || ^12 || >=14}
 
   rangi@2.2.0:
@@ -1015,11 +1015,6 @@ packages:
   source-map-js@1.2.2:
     resolution: {integrity: sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==}
     engines: {node: '>=0.10.0'}
-
-  srvx@1.0.7:
-    resolution: {integrity: sha512-8h30Qy2cpYkcXgByHNpV4+jp609bU3ic7MqnfyLQ2Fpa8BgjIaI2zfsDKAIbwm8DcYDrCLqm5izF5KeL2nxdvg==}
-    engines: {node: '>=20.16.0'}
-    hasBin: true
 
   srvx@1.0.8:
     resolution: {integrity: sha512-ngFS/J6St4PJfHRHGjr78xkPPtbyXtdMOLNE4x/XZunEK3OhV7aGUWMHf9WTUEy6wm1U0W4okkd82ZFFWRVQTw==}
@@ -1057,8 +1052,8 @@ packages:
   ufo@1.6.4:
     resolution: {integrity: sha512-JFNbkD1Svwe0KvGi8GOeLcP4kAWQ609twvCdcHxq1oSL8svv39ZuSvajcD8B+5D0eL4+s1Is2D/O6KN3qcTeRA==}
 
-  undocs-nightly@0.10.1-20261029-141502-950c193:
-    resolution: {integrity: sha512-OPRjkSq3XoRAW0c03KD7kEnHbUGdV+uvS3a+XpCYFqTvhK2D1UGWwATu2sAvFo78w6g1WytD2/X8OPpOG2q9sQ==}
+  undocs-nightly@0.10.1-20261029-224826-2e3e487:
+    resolution: {integrity: sha512-dZKcD05EAnZJyCGqUVAGJrZDY3fCDQD5GeZ+OhedgxXWj5eL1YJvBeQ5vBlApiRchFgl9c0GR8r4SyiOcx2x9g==}
     hasBin: true
 
   unhead@3.4.3:
@@ -1069,8 +1064,8 @@ packages:
       vite:
         optional: true
 
-  unplugin@3.4.0:
-    resolution: {integrity: sha512-9skdIFlCsPdFV7wUfZxNsFInlW+7nJmGu2gkTu0OUhF56aXGsHab9x52/QhdJ4lC7ZDPWTxbiC4ANqVlsuaW3w==}
+  unplugin@3.7.0:
+    resolution: {integrity: sha512-GrM2uq3DQo3hvLU2FjeYhooJ8BY9N6j1Fbzgx7Pta3VVJevsD3VP4dPjZkZOS0mLvN8w9zzr9OlP+31bSMyuLw==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
       '@farmfe/core': '*'
@@ -1472,10 +1467,10 @@ snapshots:
 
   '@unhead/bundler@3.4.3(@oxc-project/types@0.155.0)(lightningcss@1.33.0)(rolldown@1.2.15)(unhead@3.4.3(rolldown@1.2.15)(vite@8.3.5(jiti@2.7.0)))(vite@8.3.5(jiti@2.7.0))':
     dependencies:
-      magic-string: 1.4.3
+      magic-string: 1.4.5
       oxc-walker: 1.1.1(@oxc-project/types@0.155.0)(rolldown@1.2.15)
       unhead: 3.4.3(rolldown@1.2.15)(vite@8.3.5(jiti@2.7.0))
-      unplugin: 3.4.0(rolldown@1.2.15)(vite@8.3.5(jiti@2.7.0))
+      unplugin: 3.7.0(rolldown@1.2.15)(vite@8.3.5(jiti@2.7.0))
     optionalDependencies:
       lightningcss: 1.33.0
       rolldown: 1.2.15
@@ -1494,7 +1489,7 @@ snapshots:
       '@unhead/bundler': 3.4.3(@oxc-project/types@0.155.0)(lightningcss@1.33.0)(rolldown@1.2.15)(unhead@3.4.3(rolldown@1.2.15)(vite@8.3.5(jiti@2.7.0)))(vite@8.3.5(jiti@2.7.0))
       hookable: 6.1.2
       unhead: 3.4.3(rolldown@1.2.15)(vite@8.3.5(jiti@2.7.0))
-      unplugin: 3.4.0(rolldown@1.2.15)(vite@8.3.5(jiti@2.7.0))
+      unplugin: 3.7.0(rolldown@1.2.15)(vite@8.3.5(jiti@2.7.0))
       vue: 3.5.44
     optionalDependencies:
       vite: 8.3.5(jiti@2.7.0)
@@ -1541,7 +1536,7 @@ snapshots:
       '@vue/shared': 3.5.44
       estree-walker: 2.0.2
       magic-string: 0.30.21
-      postcss: 8.5.31
+      postcss: 8.5.32
       source-map-js: 1.2.2
 
   '@vue/compiler-ssr@3.5.44':
@@ -1616,7 +1611,7 @@ snapshots:
       confbox: 0.2.4
       defu: 6.1.7
       dotenv: 17.4.2
-      exsolve: 1.1.3
+      exsolve: 1.2.0
       giget: 3.3.1
       jiti: 2.7.0
       ohash: 2.0.12
@@ -1629,7 +1624,7 @@ snapshots:
     dependencies:
       confbox: 0.3.1
       defu: 6.1.7
-      exsolve: 1.1.3
+      exsolve: 1.2.0
       pathe: 2.0.3
       pkg-types: 2.4.0
       rc9: 3.1.0
@@ -1696,7 +1691,7 @@ snapshots:
 
   estree-walker@2.0.2: {}
 
-  exsolve@1.1.3: {}
+  exsolve@1.2.0: {}
 
   fastest-levenshtein@1.0.16: {}
 
@@ -1704,10 +1699,10 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.7
 
-  framer-motion@14.3.1:
+  framer-motion@14.7.1:
     dependencies:
-      motion-dom: 14.3.1
-      motion-utils: 14.1.1
+      motion-dom: 14.7.1
+      motion-utils: 14.7.0
       tslib: 2.8.1
 
   fsevents@2.3.3:
@@ -1720,7 +1715,7 @@ snapshots:
   h3@2.0.8(crossws@0.4.17(srvx@1.0.8))(ocache@0.3.1):
     dependencies:
       rou3: 1.0.0
-      srvx: 1.0.7
+      srvx: 1.0.8
     optionalDependencies:
       crossws: 0.4.17(srvx@1.0.8)
       ocache: 0.3.1
@@ -1845,7 +1840,7 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.6.0
 
-  magic-string@1.4.3:
+  magic-string@1.4.5:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.6.0
 
@@ -1868,19 +1863,19 @@ snapshots:
       pkg-types: 1.3.1
       ufo: 1.6.4
 
-  motion-dom@14.3.1:
+  motion-dom@14.7.1:
     dependencies:
-      motion-utils: 14.1.1
+      motion-utils: 14.7.0
 
-  motion-utils@14.1.1: {}
+  motion-utils@14.7.0: {}
 
-  motion-v@2.8.0(@vueuse/core@15.0.0(vue@3.5.44))(vue@3.5.44):
+  motion-v@2.9.0(@vueuse/core@15.0.0(vue@3.5.44))(vue@3.5.44):
     dependencies:
       '@vueuse/core': 15.0.0(vue@3.5.44)
-      framer-motion: 14.3.1
+      framer-motion: 14.7.1
       hey-listen: 1.0.8
-      motion-dom: 14.3.1
-      motion-utils: 14.1.1
+      motion-dom: 14.7.1
+      motion-utils: 14.7.0
       vue: 3.5.44
     transitivePeerDependencies:
       - react
@@ -1888,7 +1883,7 @@ snapshots:
 
   nanoid@3.3.20: {}
 
-  nitro-nightly@3.0.1-20261028-065025-1a9a371c:
+  nitro@3.0.261029-rc:
     dependencies:
       crossws: 0.4.17(srvx@1.0.8)
       env-runner: 0.3.10
@@ -1941,10 +1936,10 @@ snapshots:
   pkg-types@2.4.0:
     dependencies:
       confbox: 0.3.1
-      exsolve: 1.1.3
+      exsolve: 1.2.0
       pathe: 2.0.3
 
-  postcss@8.5.31:
+  postcss@8.5.32:
     dependencies:
       nanoid: 3.3.20
       picocolors: 1.1.1
@@ -1986,8 +1981,6 @@ snapshots:
 
   source-map-js@1.2.2: {}
 
-  srvx@1.0.7: {}
-
   srvx@1.0.8: {}
 
   tailwind-merge@3.7.0: {}
@@ -2019,7 +2012,7 @@ snapshots:
 
   ufo@1.6.4: {}
 
-  undocs-nightly@0.10.1-20261029-141502-950c193(@oxc-project/types@0.155.0)(csstype@3.2.3)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(lightningcss@1.33.0)(rolldown@1.2.15):
+  undocs-nightly@0.10.1-20261029-224826-2e3e487(@oxc-project/types@0.155.0)(csstype@3.2.3)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(lightningcss@1.33.0)(rolldown@1.2.15):
     dependencies:
       '@floating-ui/dom': 1.8.0
       '@fontsource-variable/geist': 5.3.0
@@ -2042,8 +2035,8 @@ snapshots:
       md4x: 0.0.30
       mermaid-compact: 0.0.1
       minisearch: 7.2.0
-      motion-v: 2.8.0(@vueuse/core@15.0.0(vue@3.5.44))(vue@3.5.44)
-      nitro: nitro-nightly@3.0.1-20261028-065025-1a9a371c
+      motion-v: 2.9.0(@vueuse/core@15.0.0(vue@3.5.44))(vue@3.5.44)
+      nitro: 3.0.261029-rc
       nypm: 0.6.12
       ofetch: 1.5.1
       rangi: 2.2.0
@@ -2094,7 +2087,7 @@ snapshots:
   unhead@3.4.3(rolldown@1.2.15)(vite@8.3.5(jiti@2.7.0)):
     dependencies:
       hookable: 6.1.2
-      unplugin: 3.4.0(rolldown@1.2.15)(vite@8.3.5(jiti@2.7.0))
+      unplugin: 3.7.0(rolldown@1.2.15)(vite@8.3.5(jiti@2.7.0))
     optionalDependencies:
       vite: 8.3.5(jiti@2.7.0)
     transitivePeerDependencies:
@@ -2108,9 +2101,10 @@ snapshots:
       - unloader
       - webpack
 
-  unplugin@3.4.0(rolldown@1.2.15)(vite@8.3.5(jiti@2.7.0)):
+  unplugin@3.7.0(rolldown@1.2.15)(vite@8.3.5(jiti@2.7.0)):
     dependencies:
       '@jridgewell/remapping': 2.3.5
+      '@rolldown/pluginutils': 1.0.1
       picomatch: 4.0.7
       webpack-virtual-modules: 0.6.2
     optionalDependencies:
@@ -2131,7 +2125,7 @@ snapshots:
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.7
-      postcss: 8.5.31
+      postcss: 8.5.32
       rolldown: 1.2.15
       tinyglobby: 0.2.17
     optionalDependencies:
