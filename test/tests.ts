@@ -314,13 +314,18 @@ export function testNitro(
     // miss, then hits: the middleware must run each time, and the header it
     // sets must not be stored in the shared cache entry
     const miss = await callHandler({ url, headers: { "x-echo": "a" } });
-    expect(miss.data).toEqual(["rules", "global"]);
+    expect(miss.data).toEqual(["rules", "global", "routed"]);
     expect(miss.headers["x-echo"]).toBe("a");
     const hit = await callHandler({ url, headers: { "x-echo": "b" } });
-    expect(hit.data).toEqual(["rules", "global"]);
+    expect(hit.data).toEqual(["rules", "global", "routed"]);
     expect(hit.headers["x-echo"]).toBe("b");
     const anonymous = await callHandler({ url });
     expect(anonymous.headers["x-echo"]).toBeUndefined();
+  });
+
+  it("global and routed middleware run for non-GET requests to cached (`swr`) routes", async () => {
+    const { data } = await callHandler({ url: "/rules/swr/middleware-order", method: "POST" });
+    expect(data).toEqual(["rules", "global", "routed"]);
   });
 
   it("keeps middleware headers out of `defineCachedHandler` cache entries", async () => {

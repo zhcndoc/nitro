@@ -78,6 +78,11 @@ export default defineConfig({
       middleware: true,
     },
     {
+      route: "/rules/swr/middleware-order",
+      handler: "./server/routed-middleware/order.ts",
+      middleware: true,
+    },
+    {
       route: "/api/methods/guarded",
       handler: "./server/routed-middleware/guard.ts",
       method: "GET",
