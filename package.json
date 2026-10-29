@@ -112,7 +112,7 @@
     "chokidar": "^6.0.0",
     "citty": "^0.2.2",
     "compatx": "^0.2.0",
-    "confbox": "^0.3.1",
+    "confbox": "^0.3.2",
     "consola": "^3.4.2",
     "cookie-es": "^3.1.1",
     "croner": "^11.0.0",
