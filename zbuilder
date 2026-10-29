@@ -1,0 +1,21 @@
+FROM --platform=$BUILDPLATFORM node:24-bookworm AS builder
+
+WORKDIR /app
+
+ENV CI=true
+
+RUN corepack enable pnpm
+
+COPY . .
+
+WORKDIR /app/docs
+
+RUN pnpm install --frozen-lockfile
+
+RUN NITRO_PRESET=static pnpm run build
+
+FROM ikxin/caddy:latest
+
+COPY --from=builder /app/docs/.output/public /usr/share/caddy
+
+EXPOSE 8080
