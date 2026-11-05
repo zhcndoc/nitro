@@ -6,24 +6,22 @@ import type { Socket } from "node:net";
 
 import { IncomingMessage, ServerResponse } from "node:http";
 import type { Http2ServerResponse } from "node:http2";
-import { readFile } from "node:fs/promises";
+import { statSync } from "node:fs";
 import { NodeRequest, sendNodeResponse } from "srvx/node";
 import { createViteHotChannel } from "env-runner/vite";
 import { isAbsolute, join, relative } from "pathe";
 import { debounce } from "perfect-debounce";
 import { withBase, withoutBase } from "ufo";
-import { handleDevRPC } from "../../dev/_rpc.ts";
+import { withDevErrorRecovery } from "../../dev/_error-recovery.ts";
+import { DevReloadSignal } from "../../dev/_reload-signal.ts";
+import { writeDevBuildInfo } from "../info.ts";
 import { rescanHandlers, watchScanDirs } from "./_scan-watch.ts";
 import { importVite, _resolveFromPath, type ViteImportOptions } from "./_import.ts";
 import { _isWorkerdRunner } from "./env.ts";
+import { setupDevPageTemplate } from "./_page-template-dev.ts";
+import { ASSET_EXT_RE } from "../../utils/regex.ts";
 
 // https://vite.dev/guide/api-environment-runtimes.html#modulerunner
-
-// Extensions that strongly indicate a browser asset load (script/style/font/image/media).
-// Used as a fallback signal when `Sec-Fetch-Dest` is absent (plain-HTTP non-loopback origins).
-// Kept narrow on purpose so that arbitrary dotted Nitro route params (e.g. `.../foo.bar.1`) keep reaching Nitro.
-const ASSET_EXT_RE =
-  /^(?:[jt]sx?|mjs|cjs|css|s[ac]ss|less|styl|vue|svelte|astro|mdx?|map|wasm|png|jpe?g|gif|svg|webp|avif|ico|bmp|woff2?|ttf|otf|eot|mp[34]|webm|wav|ogg|m4a)$/i;
 
 // workerd built-in module namespaces (`cloudflare:workers`, `cloudflare:sockets`, `workerd:...`).
 // These are provided natively by the runtime and have no host-side representation, so they must be
@@ -55,7 +53,7 @@ export async function createFetchableDevEnvironment(
   config: ResolvedConfig,
   devServer: DevServer,
   entry: string,
-  opts?: { preventExternalize?: boolean; vite?: ViteImportOptions; onInit?: () => void }
+  opts?: { workerd?: boolean; vite?: ViteImportOptions; onInit?: () => void }
 ): Promise<FetchableDevEnvironment> {
   const transport = createViteHotChannel(devServer, name);
   const context: DevEnvironmentContext = { hot: true, transport };
@@ -68,6 +66,8 @@ export async function createFetchableDevEnvironment(
 export interface FetchableDevEnvironment extends DevEnvironment {
   devServer: DevServer;
   dispatchFetch(request: Request): Promise<Response>;
+  /** Called when the environment (and so its Vite server) closes. */
+  onClose?: () => void;
 }
 
 interface FetchableDevEnvironmentConstructor {
@@ -77,7 +77,7 @@ interface FetchableDevEnvironmentConstructor {
     context: DevEnvironmentContext,
     devServer: DevServer,
     entry: string,
-    opts?: { preventExternalize?: boolean; onInit?: () => void }
+    opts?: { workerd?: boolean; onInit?: () => void }
   ): FetchableDevEnvironment;
 }
 
@@ -105,9 +105,10 @@ function _defineFetchableDevEnvironment({
 }: typeof import("vite")): FetchableDevEnvironmentConstructor {
   return class FetchableDevEnvironment extends DevEnvironment {
     devServer: DevServer;
+    onClose?: () => void;
 
     #entry: string;
-    #preventExternalize: boolean;
+    #workerd: boolean;
     #onInit?: () => void;
 
     constructor(
@@ -116,12 +117,12 @@ function _defineFetchableDevEnvironment({
       context: DevEnvironmentContext,
       devServer: DevServer,
       entry: string,
-      opts?: { preventExternalize?: boolean; onInit?: () => void }
+      opts?: { workerd?: boolean; onInit?: () => void }
     ) {
       super(name, config, context);
       this.devServer = devServer;
       this.#entry = entry;
-      this.#preventExternalize = opts?.preventExternalize ?? false;
+      this.#workerd = opts?.workerd ?? false;
       this.#onInit = opts?.onInit;
     }
 
@@ -130,26 +131,8 @@ function _defineFetchableDevEnvironment({
       importer?: string,
       options?: FetchFunctionOptions
     ): Promise<FetchResult> {
-      // workerd cannot handle CJS/Node modules loaded via import().
-      // Bare imports (like "vue") are normally externalized by Vite's fetchModule,
-      // resolved using mainFields: ["main"] which often picks CJS entries.
-      // We intercept bare imports, resolve them through the environment's plugin
-      // pipeline (which respects resolve.conditions and picks ESM), then route
-      // the resolved path through transformRequest for proper SSR processing.
-      if (this.#preventExternalize && WORKERD_BUILTIN_RE.test(id)) {
+      if (this.#workerd && WORKERD_BUILTIN_RE.test(id)) {
         return { externalize: id, type: "builtin" };
-      }
-      if (
-        this.#preventExternalize &&
-        !id.startsWith("file://") &&
-        importer &&
-        id[0] !== "." &&
-        id[0] !== "/"
-      ) {
-        const resolved = await this.pluginContainer.resolveId(id, importer);
-        if (resolved && !resolved.external) {
-          return super.fetchModule(resolved.id, importer, options);
-        }
       }
       return super.fetchModule(id, importer, options);
     }
@@ -172,6 +155,7 @@ function _defineFetchableDevEnvironment({
     }
 
     override async close(): Promise<void> {
+      this.onClose?.();
       await super.close();
       await this.devServer.close?.();
     }
@@ -185,6 +169,20 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
   const nitroEnv = server.environments.nitro as FetchableDevEnvironment;
 
   const viteBase = server.config.base || "/";
+
+  // One reload state per server: inline plugins (and their dev app) are reused on
+  // `server.restart()`, which creates the new server before it closes the old one. Closing it
+  // answers waiting error pages, which would otherwise hold a middleware mode host server open.
+  const reloadSignal = new DevReloadSignal();
+  ctx.devApp!.reloadSignal = reloadSignal;
+
+  // Page template, compiled into the renderer template module
+  const pageTemplate = setupDevPageTemplate(ctx, server, nitroEnv);
+
+  nitroEnv.onClose = () => {
+    reloadSignal.close();
+    pageTemplate.close();
+  };
 
   // Restart with nitro.config changes
   const nitroConfigFile = nitro.options._c12.configFile;
@@ -201,10 +199,11 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
     (opts) => typeof opts === "object" && opts.ws
   );
   if (websocket || wsProxy) {
+    const viteHmrBase = _getViteHmrBase(server);
     server.httpServer?.on("upgrade", (req, socket, head) => {
-      const protocol = req.headers["sec-websocket-protocol"];
-      if (protocol?.startsWith("vite-")) {
-        // Vite HMR WebSocket connection
+      // Vite HMR WebSocket connection. Other `vite-*` upgrades (e.g. the HMR socket of a proxied
+      // upstream Vite on another path) are never claimed by Vite and must reach Nitro.
+      if (viteHmrBase && _isViteHmrUpgrade(req, viteHmrBase)) {
         return;
       }
       if (ctx.devApp?.proxyUpgrade(req, socket as Socket, head)) {
@@ -220,6 +219,7 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
   const reload = debounce(async () => {
     await rescanHandlers(nitro, nitroEnv);
     nitroEnv.hot.send({ type: "full-reload" });
+    ctx.devApp?.reloadSignal.bump();
   });
   watchScanDirs(nitro, server, () => reload());
 
@@ -240,22 +240,17 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
     });
   }
 
-  // Worker => Host RPC
-  nitroEnv.devServer.onMessage((message) =>
-    handleDevRPC(message, {
-      sendMessage: (message) => nitroEnv.devServer.sendMessage(message),
-      handlers: {
-        transformHTML: async (html: string) => {
-          const htmlURL = _htmlTemplateURL(nitro.options.renderer?.template, server.config.root);
-          return (await server.transformIndexHtml(htmlURL, html)).replace(
-            "<!--ssr-outlet-->",
-            `{{{ globalThis.__nitro_vite_envs__?.["ssr"]?.fetch($REQUEST) || "" }}}`
-          );
-        },
-        rendererTemplate: () => readFile(nitro.options.renderer!.template!, "utf8"),
-      },
-    })
-  );
+  // Point CLI commands (`nitro fetch`) to this dev server
+  server.httpServer?.once("listening", () => {
+    const url = _getListenURL(server);
+    if (url) {
+      writeDevBuildInfo(nitro, { url }).catch((error) => {
+        nitro.logger.warn(
+          `Failed to write dev build info: ${error instanceof Error ? error.message : String(error)}`
+        );
+      });
+    }
+  });
 
   const nitroDevMiddleware = async (
     nodeReq: NitroDevRequest,
@@ -292,6 +287,7 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
       }
 
       // Dispatch the request to the nitro environment
+      await pageTemplate.sync(req);
       const envRes = await nitroEnv.dispatchFetch(req);
       if (nodeRes.writableEnded || nodeRes.headersSent) {
         return;
@@ -310,7 +306,16 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
         await envRes.body?.cancel();
         return next();
       }
-      return await sendNodeResponse(nodeRes, envRes);
+      // The dev worker reloads lazily, so the page checks that it renders again before reloading.
+      // Nitro routes are served outside the Vite `base`.
+      return await sendNodeResponse(
+        nodeRes,
+        withDevErrorRecovery(req, envRes, {
+          signal: ctx.devApp!.reloadSignal,
+          base: nitro.options.baseURL,
+          poll: true,
+        })
+      );
     } catch (error) {
       if (_isResponseDestroyed(nodeRes)) return;
       return next(error);
@@ -324,11 +329,10 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
   const isCatchAllRoute = (route: string) =>
     route === "/**" || route.startsWith("/**:") || /^\/:\w+\(\.\*\)$/.test(route);
 
-  // Opaque catch-alls: the SSR renderer and a custom server entry (see .agents/vite-dev.md §2).
+  // Only a scanned user route file catch-all is transparent; the SSR renderer, a custom server
+  // entry and `routes:`/`handlers:` registrations are opaque (see .agents/vite-dev.md §2).
   const isOpaqueHandler = (h?: { handler?: string }) =>
-    !!h?.handler &&
-    (h.handler === nitro.options.renderer?.handler ||
-      h.handler === (nitro.options.serverEntry && nitro.options.serverEntry.handler));
+    !!h?.handler && !nitro.scannedHandlers.some((s) => s.handler === h.handler);
 
   // Handle server routes first to avoid conflicts with static assets served by Vite from the root
   // https://github.com/vitejs/vite/pull/20866
@@ -385,6 +389,41 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
     const isAssetByExt =
       !!ext && ASSET_EXT_RE.test(ext) && !/\btext\/html\b/.test(req.headers["accept"] || "");
 
+    // `?url` imports compile to a bare root-relative path (`/src/foo.txt`) that carries no
+    // request-time marker: `fetch()` sends no usable `Sec-Fetch-Dest` and the extension can be
+    // anything, so the only disambiguation left is that Vite's `serveStaticMiddleware` can
+    // serve it as a real file under the project root. Mirrors its skip rules (`.html` files
+    // are left for Nitro) — #4230.
+    const isAssetByFile = () => {
+      const urlPath = req.url!.split(/[?#]/, 1)[0];
+      // Vite only serves root files under its base; outside it, the probe would only leak existence.
+      if (
+        !ext ||
+        ext === "html" ||
+        /\btext\/html\b/.test(req.headers["accept"] || "") ||
+        !urlPath.startsWith(viteBase)
+      ) {
+        return false;
+      }
+      let filePath = withoutBase(urlPath, viteBase);
+      try {
+        filePath = decodeURI(filePath);
+      } catch {}
+      // Never probe outside the root (`/%2e%2e/...`), or the response would leak file existence.
+      const file = join(server.config.root, filePath);
+      const rel = relative(server.config.root, file);
+      if (rel.startsWith("../") || isAbsolute(rel)) {
+        return false;
+      }
+      // `throwIfNoEntry` only covers a missing entry; a stat error (permissions, symlink
+      // loop) on a crafted path must not take the request down — it is simply not an asset.
+      try {
+        return statSync(file, { throwIfNoEntry: false })?.isFile() === true;
+      } catch {
+        return false;
+      }
+    };
+
     // `document`/`iframe`/`frame` are definite navigations; any other concrete `Sec-Fetch-Dest`
     // (`image`, `video`, `style`, ...) is a definite asset load. Only `GET`/`HEAD` can be
     // browser asset loads at all — other methods are never assets.
@@ -395,7 +434,7 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
         : // Vite tags module-graph fetches for files it serves as modules (e.g. an imported
           // `.json`) with an `?import` query. Only the module graph emits it — a page navigation
           // never does — so it stays authoritative for extensions left out of `ASSET_EXT_RE` (#4433).
-          /[?&]import(?:[&=]|$)/.test(req.url!) || isAssetByExt);
+          /[?&]import(?:[&=]|$)/.test(req.url!) || isAssetByExt || isAssetByFile());
 
     // Non-asset requests go to Nitro: the catch-all (`matchedHandlers` are all catch-all here,
     // since explicit routes already returned) renders them, and bare (extensionless) unmatched
@@ -405,9 +444,10 @@ export async function configureViteDevServer(ctx: NitroPluginContext, server: Vi
     }
 
     if (isAsset) {
-      // Opaque catch-alls (the SSR renderer and a custom server entry) route requests Nitro
-      // cannot see in `nitro.routing.routes` (#4252), so an asset-tagged miss from Vite must
-      // still be dispatched — the response content-type then decides (`_nitroAssetCheck`).
+      // Opaque catch-alls (the SSR renderer, a custom server entry, config-registered `/**`)
+      // route requests Nitro cannot see in `nitro.routing.routes` (#4252, #4531), so an
+      // asset-tagged miss from Vite must still be dispatched — the response content-type then
+      // decides (`_nitroAssetCheck`).
       // A user-file root catch-all is transparent: Nitro sees everything it can handle, so
       // Vite stays the definitive asset handler and a Vite miss must not fall back into it.
       if (matchedHandlers.every(isOpaqueHandler)) {
@@ -441,16 +481,41 @@ export function matchesMiddlewareRoute(route: string | undefined, url: string): 
   return !boundary || boundary === "/" || boundary === ".";
 }
 
-// Vite derives the HTML file path from the URL, which relative imports (e.g. in inline `<style>`) resolve against.
-function _htmlTemplateURL(template: string | undefined, root: string): string {
-  if (!template) {
-    return "/index.html";
-  }
-  const path = relative(root, template);
-  return path.startsWith("../") || isAbsolute(path) ? join("/@fs", template) : `/${path}`;
-}
-
 // `Http2ServerResponse` (Vite with `server.https`) has no `destroyed`; its stream does.
 function _isResponseDestroyed(res: ServerResponse | Http2ServerResponse): boolean {
   return "stream" in res ? res.stream.destroyed : res.destroyed;
+}
+
+// Path on which Vite's own WebSocket server claims upgrades on `server.httpServer`, if it listens
+// there at all (mirrors `createWebSocketServer`: Vite 8.3 reads `server.ws`, older 8.x `server.hmr`).
+function _getViteHmrBase(server: ViteDevServer): string | undefined {
+  const { ws, hmr, port } = server.config.server;
+  if (ws === false) {
+    return;
+  }
+  const opts = (typeof ws === "object" ? ws : typeof hmr === "object" ? hmr : undefined) as
+    | { server?: unknown; port?: number; path?: string }
+    | undefined;
+  const wsServer = opts?.server || ((!opts?.port || opts.port === port) && server.httpServer);
+  if (!wsServer || wsServer !== server.httpServer) {
+    return;
+  }
+  return opts?.path ? join(server.config.base, opts.path) : server.config.base;
+}
+
+function _getListenURL(server: ViteDevServer): string | undefined {
+  const addr = server.httpServer?.address();
+  if (!addr || typeof addr === "string") {
+    return;
+  }
+  const host = addr.address.includes(":") ? `[${addr.address}]` : addr.address;
+  return `${server.config.server.https ? "https" : "http"}://${host}:${addr.port}/`;
+}
+
+function _isViteHmrUpgrade(req: IncomingMessage, hmrBase: string): boolean {
+  const protocol = req.headers["sec-websocket-protocol"];
+  return (
+    (protocol === "vite-hmr" || protocol === "vite-ping") &&
+    new URL(`http://localhost${req.url}`).pathname === hmrBase
+  );
 }

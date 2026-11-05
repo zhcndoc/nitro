@@ -22,7 +22,8 @@ import {
   type RouterContext,
 } from "rou3";
 import { escapeRegExp } from "../../utils/regex.ts";
-import { catchAllRef, parseRouteKey, sortRoutes } from "../_utils/routes.ts";
+import { getPublicAssetCorsHeaders } from "../_utils/cors.ts";
+import { catchAllRef, hasHeaders, parseRouteKey, sortRoutes } from "../_utils/routes.ts";
 import { joinURL, withLeadingSlash, withoutLeadingSlash } from "ufo";
 import type {
   PrerenderFunctionConfig,
@@ -30,11 +31,18 @@ import type {
   VercelServerlessFunctionConfig,
 } from "./types.ts";
 import { ISR_URL_PARAM } from "./runtime/isr.ts";
+import {
+  SCHEDULE_HANDLER_ROUTE,
+  getVercelBuildOutputSchedules,
+  getVercelScheduleFunction,
+  getVercelSchedulesMode,
+} from "./schedules.ts";
 
 // https://vercel.com/docs/build-output-api/configuration
 
 // https://vercel.com/docs/functions/runtimes/node-js/node-js-versions
-const SUPPORTED_NODE_VERSIONS = [22, 24];
+// https://github.com/vercel/vercel/blob/main/packages/build-utils/src/fs/node-version.ts
+const SUPPORTED_NODE_VERSIONS = [22, 24, 26];
 
 // h3 ProxyOptions that Vercel CDN rewrites cannot handle at the edge.
 // https://vercel.com/docs/rewrites
@@ -102,7 +110,8 @@ export async function generateFunctionFiles(nitro: Nitro) {
   const functionConfigPath = resolve(nitro.options.output.serverDir, ".vc-config.json");
   await writeFile(functionConfigPath, JSON.stringify(baseFunctionConfig, null, 2));
 
-  const functionRules = nitro.options.vercel?.functionRules;
+  const scheduleFunction = getVercelScheduleFunction(nitro);
+  const functionRules = getFunctionRules(nitro);
   const hasRouteFunctionConfig = functionRules && Object.keys(functionRules).length > 0;
   const routeFuncRouter = hasRouteFunctionConfig ? createPatternRouter(functionRules) : undefined;
 
@@ -169,6 +178,23 @@ export async function generateFunctionFiles(nitro: Nitro) {
       );
       createdFuncDirs.add(funcDir);
     }
+  }
+
+  // Write the private scheduled tasks function, without a route
+  if (scheduleFunction) {
+    const funcDir = resolve(
+      nitro.options.output.serverDir,
+      "..",
+      scheduleFunction.functionPath + ".func"
+    );
+    await fsp.mkdir(dirname(funcDir), { recursive: true });
+    await createFunctionDirWithCustomConfig(
+      funcDir,
+      nitro.options.output.serverDir,
+      baseFunctionConfig,
+      scheduleFunction.overrides,
+      scheduleFunction.functionPath
+    );
   }
 
   // Write observability routes
@@ -264,7 +290,7 @@ function generateBuildConfig(nitro: Nitro, o11Routes?: ObservabilityRoute[]) {
       ...rules
         .filter(
           ([path, routeRules]) =>
-            routeRules.headers && !cdnRedirectPaths.has(path) && !cdnProxyPaths.has(path)
+            hasHeaders(routeRules) && !cdnRedirectPaths.has(path) && !cdnProxyPaths.has(path)
         )
         .reverse()
         .map(([path, routeRules]) => {
@@ -276,6 +302,12 @@ function generateBuildConfig(nitro: Nitro, o11Routes?: ObservabilityRoute[]) {
             continue: true,
           };
         }),
+      // CORS headers of public asset dirs, which the server function does not serve
+      ...getPublicAssetCorsHeaders(nitro).map(({ base, headers }) => ({
+        src: joinURL(escapeRegExp(joinURL(nitro.options.baseURL, base)), "(.*)"),
+        headers,
+        continue: true,
+      })),
       // Redirect and proxy rules (most specific first)
       // Rules left to the server function stop routing so that less specific
       // rules below cannot match.
@@ -289,7 +321,7 @@ function generateBuildConfig(nitro: Nitro, o11Routes?: ObservabilityRoute[]) {
             ...(methods && { methods }),
             dest: (routeRules.proxy as ProxyRuleOptions).to.replaceAll("**", catchAllRef(src)),
           };
-          if (routeRules.headers) {
+          if (hasHeaders(routeRules)) {
             route.headers = routeRules.headers;
           }
           return [route];
@@ -305,7 +337,7 @@ function generateBuildConfig(nitro: Nitro, o11Routes?: ObservabilityRoute[]) {
               Location: redirect.to.replaceAll("**", catchAllRef(src)),
             },
           };
-          if (routeRules.headers) {
+          if (hasHeaders(routeRules)) {
             route = defu(route, { headers: routeRules.headers });
           }
           return [route];
@@ -358,8 +390,21 @@ function generateBuildConfig(nitro: Nitro, o11Routes?: ObservabilityRoute[]) {
     ],
   } as VercelBuildConfigV3);
 
+  // Schedules from scheduledTasks
+  if (getVercelSchedulesMode(nitro.options)) {
+    if (!nitro.options.static) {
+      const schedules = getVercelBuildOutputSchedules(nitro);
+      if (Object.keys(schedules).length > 0) {
+        config.schedules = { ...schedules, ...config.schedules };
+      }
+    } else if (Object.keys(nitro.options.scheduledTasks || {}).length > 0) {
+      nitro.logger.warn(
+        "Scheduled tasks are not supported by the `vercel-static` preset. Use the `vercel` preset to run them with Vercel Schedules."
+      );
+    }
+  }
   // Cron jobs from scheduledTasks
-  if (
+  else if (
     nitro.options.experimental.tasks &&
     Object.keys(nitro.options.scheduledTasks || {}).length > 0
   ) {
@@ -376,6 +421,7 @@ function generateBuildConfig(nitro: Nitro, o11Routes?: ObservabilityRoute[]) {
     return config;
   }
 
+  const functionRules = getFunctionRules(nitro);
   config.routes!.push(
     // ISR rules
     ...rules
@@ -397,8 +443,8 @@ function generateBuildConfig(nitro: Nitro, o11Routes?: ObservabilityRoute[]) {
         };
       }),
     // Route function config routes
-    ...(nitro.options.vercel?.functionRules
-      ? sortRoutes(Object.keys(nitro.options.vercel.functionRules)).map((pattern) => ({
+    ...(functionRules
+      ? sortRoutes(Object.keys(functionRules)).map((pattern) => ({
           src: routeSrc(pattern).source,
           dest: withLeadingSlash(normalizeRouteDest(pattern)),
         }))
@@ -640,13 +686,33 @@ export function getObservabilityRoutes(nitro: Nitro): ObservabilityRoute[] {
         .map((h) => h.route!),
     ]),
   ].filter(
-    (route) => !prerenderedPaths.has(route.replace(SURROUNDING_SLASH_RE, "")) && !hasISR(route)
+    (route) =>
+      !prerenderedPaths.has(route.replace(SURROUNDING_SLASH_RE, "")) &&
+      !hasISR(route) &&
+      !isPrivateScheduleRoute(nitro, route)
   );
 
   return sortRoutes(routePatterns).map((route) => ({
     route,
     dest: normalizeRouteDest(route),
   }));
+}
+
+/**
+ * `vercel.functionRules`, without the rule for the private scheduled tasks function, which is
+ * written separately and must not get a public route.
+ */
+function getFunctionRules(nitro: Nitro) {
+  const functionRules = nitro.options.vercel?.functionRules;
+  if (!functionRules || !getVercelScheduleFunction(nitro)) {
+    return functionRules;
+  }
+  const { [SCHEDULE_HANDLER_ROUTE]: _scheduleRule, ...rest } = functionRules;
+  return rest;
+}
+
+function isPrivateScheduleRoute(nitro: Nitro, route: string) {
+  return route === SCHEDULE_HANDLER_ROUTE && !!getVercelScheduleFunction(nitro);
 }
 
 // Output is a destination pathname to function name
@@ -664,7 +730,7 @@ function normalizeRouteDest(route: string) {
           return `[...${catchAll[1]}]`;
         }
         if (segment === "*") {
-          return "[-]";
+          return "[...]";
         }
         if (segment.startsWith(":")) {
           return `[${segment.slice(1)}]`;

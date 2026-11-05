@@ -53,8 +53,8 @@ export default defineConfig({
 - [`cloudflare:queue`](https://developers.cloudflare.com/queues/configuration/javascript-apis/#consumer)
 - [`cloudflare:tail`](https://developers.cloudflare.com/workers/runtime-apis/handlers/tail/)
 - `cloudflare:trace`
-- `cloudflare:durable:init`（仅适用于 [`cloudflare_durable`](#cloudflare-workers-with-durable-objects) 预设）
-- [`cloudflare:durable:alarm`](https://developers.cloudflare.com/durable-objects/api/alarms/)（仅适用于 [`cloudflare_durable`](#cloudflare-workers-with-durable-objects) 预设）
+- `cloudflare:durable:init`（参见[使用 Durable Objects 的 WebSocket](#websockets-with-durable-objects)）
+- [`cloudflare:durable:alarm`](https://developers.cloudflare.com/durable-objects/api/alarms/)（参见[使用 Durable Objects 的 WebSocket](#websockets-with-durable-objects)）
 
 ::note
 `cloudflare:queue` 钩子通过 `batch` 接收消息批次，`cloudflare:email` 钩子通过 `message` 接收传入的消息。
@@ -171,23 +171,13 @@ export default defineConfig({
 
 无需手动配置 Wrangler，Nitro 会为你处理。
 
-## Cloudflare Workers with Durable Objects
-
-**预设：** `cloudflare_durable`
+### 使用 Durable Objects 的 WebSocket {#websockets-with-durable-objects}
 
 :read-more{title="Durable Objects" to="https://developers.cloudflare.com/durable-objects/"}
 
-此预设扩展了 `cloudflare_module`，并通过 [Durable Object](https://developers.cloudflare.com/durable-objects/) 实例路由请求，从而支持有状态功能，例如 WebSocket 支持（通过 [CrossWS](https://crossws.h3.dev/adapters/cloudflare#durable-objects)）以及可跨请求持久存在的内存状态。
+[WebSocket](/docs/websocket) 连接默认由 Worker 处理。每个连接彼此隔离，因此不支持[发布/订阅](/docs/websocket#pubsub)。
 
-```ts [nitro.config.ts]
-import { defineConfig } from "nitro";
-
-export default defineConfig({
-  preset: "cloudflare_durable"
-})
-```
-
-预设入口会导出 `$DurableObject` 类。在 Wrangler 配置中声明其绑定和导出：
+Worker 入口还会导出 `$DurableObject` 类。声明对应绑定后，WebSocket 升级请求会转发给该类的单个实例，因此 peer 可以共享发布/订阅主题，连接也可以[休眠](https://developers.cloudflare.com/durable-objects/best-practices/websockets/#websocket-hibernation-api)（通过 [CrossWS](https://crossws.h3.dev/adapters/cloudflare#durable-objects)）。请在 Wrangler 配置中声明绑定和导出：
 
 ```json [wrangler.json]
 {
@@ -205,13 +195,19 @@ export default defineConfig({
 }
 ```
 
-你可以使用 `cloudflare:durable:init` 运行时钩子，在 Durable Object 初始化时运行代码，并使用 `cloudflare:durable:alarm` 钩子处理 [alarms](https://developers.cloudflare.com/durable-objects/api/alarms/)。
+本地开发时也支持此功能，包括使用 Vite 时。添加或移除绑定后，请重启开发服务器。
 
-### 追踪
+你可以使用 `cloudflare:durable:init` 运行时钩子在 Durable Object 初始化时运行代码，并使用 `cloudflare:durable:alarm` 钩子处理 [alarm](https://developers.cloudflare.com/durable-objects/api/alarms/)。
+
+::note
+`cloudflare_durable` 预设已弃用，构建输出与 `cloudflare_module` 相同。
+::
+
+### 追踪 {#tracing}
 
 **🧪 实验性功能！**
 
-启用实验性的 [`tracingChannel`](/config#tracingchannel) 选项后，Cloudflare 预设会将 Nitro 的追踪通道事件（h3 路由和中间件、srvx、unstorage 操作等）作为[自定义 span](https://developers.cloudflare.com/workers/observability/traces/custom-spans/)进行报告，同时还会报告 Cloudflare 的自动插桩事件（fetch 调用、KV 读取、D1 查询等），无需 OpenTelemetry SDK。
+启用实验性 [`tracingChannel`](/config/advanced#tracingchannel) 选项后，Cloudflare 预设会将 Nitro 追踪通道事件（h3 路由和中间件、srvx、unstorage 操作、db0 查询等）作为[自定义 span](https://developers.cloudflare.com/workers/observability/traces/custom-spans/)报告，同时报告 Cloudflare 自动插桩事件（fetch 调用、KV 读取、D1 查询等），无需 OpenTelemetry SDK。
 
 ```ts [nitro.config.ts]
 import { defineConfig } from "nitro";

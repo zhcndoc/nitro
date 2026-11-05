@@ -19,7 +19,7 @@ const { statusCode, headers, body } = handler({ rawPath: '/' })
 
 ## 内联代码块
 
-默认情况下，Nitro 输出使用动态代码块，仅在需要时才延迟加载代码。不过，这并不总是有利于性能（请参阅 [nitrojs/nitro#650](https://github.com/nitrojs/nitro/pull/650) 中的讨论）。你可以使用 [`inlineDynamicImports`](/config#inlinedynamicimports) 配置启用代码块内联。
+默认情况下，Nitro 输出使用动态分块，仅在需要时延迟加载代码。不过，这并不总是有利于性能（参阅 [nitrojs/nitro#650](https://github.com/nitrojs/nitro/pull/650) 中的讨论）。你可以通过 [`inlineDynamicImports`](/config/build#inlinedynamicimports) 配置启用分块内联。
 
 ```ts [nitro.config.ts]
 import { defineConfig } from "nitro";

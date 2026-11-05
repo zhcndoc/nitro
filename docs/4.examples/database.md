@@ -34,10 +34,11 @@ export default defineConfig({
     "build": "nitro build"
   },
   "dependencies": {
-    "db0": "^0.4.1"
+    "db0": "^0.4.2"
   },
   "devDependencies": {
-    "nitro": "latest"
+    "nitro": "latest",
+    "rolldown": "latest"
   }
 }
 ```

@@ -1,8 +1,9 @@
 import type { TransformResult, Plugin as VitePlugin } from "vite";
 import type { getBundlerConfig } from "./bundler.ts";
-import type { Nitro, NitroConfig, NitroModule, ViteServiceConfig } from "nitro/types";
+import type { Nitro, NitroConfig, NitroModule, NitroServiceConfig } from "nitro/types";
 import type { RunnerManager } from "env-runner";
 import type { NitroDevApp } from "../../dev/app.ts";
+import type { AssetsImportState } from "./_assets.ts";
 
 export type { ViteServiceConfig } from "nitro/types";
 
@@ -31,11 +32,12 @@ export interface NitroPluginContext {
   pluginConfig: NitroPluginConfig;
   bundlerConfig?: Awaited<ReturnType<typeof getBundlerConfig>>;
   devApp?: NitroDevApp;
-  services: Record<string, ViteServiceConfig>;
+  services: Record<string, NitroServiceConfig>;
 
   _isRolldown?: boolean;
   _isVitest?: boolean;
   _initialized?: boolean;
+  _viteVersionChecked?: boolean;
   _envRunner?: RunnerManager;
   _closingEnvRunner?: boolean;
   _closePromise?: Promise<void>;
@@ -45,4 +47,6 @@ export interface NitroPluginContext {
   _publicDistDir?: string;
   _entryPoints: Record<string, string>;
   _pluginModules?: VitePlugin[];
+  _nitroEnvAliases?: string[];
+  _assetsImport?: AssetsImportState;
 }

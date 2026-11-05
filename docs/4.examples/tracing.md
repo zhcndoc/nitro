@@ -17,7 +17,7 @@ import { defineConfig } from "nitro";
 export default defineConfig({
   serverDir: true,
 
-  // Instrument the h3, srvx and unstorage tracing channels.
+  // Instrument the h3, srvx, unstorage and db0 tracing channels.
   tracingChannel: true,
 
   experimental: {
@@ -36,10 +36,11 @@ export default defineConfig({
     "preview": "node .output/server/index.mjs"
   },
   "dependencies": {
-    "unstorage": "^2.0.0-alpha.10"
+    "unstorage": "^2.0.0-beta.0"
   },
   "devDependencies": {
-    "nitro": "latest"
+    "nitro": "latest",
+    "rolldown": "latest"
   }
 }
 ```
@@ -89,7 +90,7 @@ export default defineHandler((event) => ({
 
 <!-- automd:file src="../../examples/tracing/README.md" -->
 
-Nitro 可以通过 Node [诊断通道](https://nodejs.org/api/diagnostics_channel.html)记录其请求生命周期，无需 OpenTelemetry SDK。此示例会开启插桩并启用内置控制台日志记录器，将每个 h3、srvx 和 unstorage span 按请求分组为时间线（瀑布图）。
+Nitro 可以通过 Node [诊断通道](https://nodejs.org/api/diagnostics_channel.html)检测其请求生命周期，无需 OpenTelemetry SDK。此示例会开启插桩并启用内置控制台日志记录器，将每个 h3、srvx、unstorage 和 db0 span 按请求分组到时间线（瀑布图）中。
 
 ## 启用追踪
 
@@ -97,7 +98,7 @@ Nitro 可以通过 Node [诊断通道](https://nodejs.org/api/diagnostics_channe
 import { defineConfig } from "nitro";
 
 export default defineConfig({
-  // Instrument the h3, srvx and unstorage tracing channels.
+  // Instrument the h3, srvx, unstorage and db0 tracing channels.
   tracingChannel: true,
 
   experimental: {
@@ -107,7 +108,7 @@ export default defineConfig({
 });
 ```
 
-`tracingChannel: true` 会连接生产者（传入 `{ h3, srvx, unstorage }` 可仅追踪其中一部分）。`experimental.tracingLogger` 会添加一个内置接收器，通过 `console.log` 记录每个已完成的 span，是一种无需依赖的供应商导出器替代方案，适用于本地开发。
+`tracingChannel: true` 会连接生产者（传入 `{ h3, srvx, unstorage, db0 }` 可仅追踪其中一部分）。`experimental.tracingLogger` 会添加一个内置接收器，通过 `console.log` 记录每个已完成的 span，是一种无需依赖的供应商导出器替代方案，适用于本地开发。
 
 ## 试用
 
@@ -137,7 +138,7 @@ curl http://localhost:3000/users/42
 | 通道 | Span | 发出方 |
 | --- | --- | --- |
 | `h3.request` | 每个匹配的路由和中间件 | `server/routes/*`、`server/middleware/*` |
-| `unstorage.*` | 每个存储操作（`getItem`、`setItem`、…） | `server/routes/index.ts` 中的 `useKV()` |
-| `srvx.request` | 整个请求及响应状态（生产服务器） | srvx 服务器层 |
+| `unstorage.*` | 每个存储操作（`getItem`、`setItem` 等） | `server/routes/index.ts` 中的 `useKV()` |
+| `srvx.request` | 整个请求及响应状态 | srvx 服务器层 |
 
 <!-- /automd -->

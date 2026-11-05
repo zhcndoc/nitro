@@ -26,8 +26,9 @@ export default defineConfig({});
     "dev": "nitro dev"
   },
   "devDependencies": {
-    "hono": "^4.13.13",
-    "nitro": "latest"
+    "hono": "^4.13.16",
+    "nitro": "latest",
+    "rolldown": "latest"
   }
 }
 ```

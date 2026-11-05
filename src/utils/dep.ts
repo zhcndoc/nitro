@@ -2,10 +2,11 @@ import { existsSync, readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { consola } from "consola";
 import { clearResolveCache, resolveModulePath } from "exsolve";
-import { dirname, join } from "pathe";
+import { dirname, join, normalize } from "pathe";
 import { hasTTY, isAgent, isCI, isTest } from "std-env";
 import { depPackageName, resolveFromDepPath } from "./_dep-path.ts";
 import { getDepMeta } from "./_deps.ts";
+import type { NitroDepsOptions } from "nitro/types";
 import type { DepId, DepModules } from "./_deps.ts";
 
 /**
@@ -40,10 +41,10 @@ interface DepBaseOptions {
    */
   projectOnly?: boolean;
   /**
-   * Explicit package paths by package name (the `deps.paths` option), used instead of resolving
-   * (and installing) them from `dir`.
+   * The `deps` option: explicit package paths (`paths`), used instead of resolving (and
+   * installing) them from `dir`, and whether missing ones may be installed (`install`).
    */
-  paths?: Record<string, string>;
+  deps?: NitroDepsOptions;
 }
 
 /**
@@ -54,7 +55,7 @@ interface DepBaseOptions {
  */
 export function ensureDep(depOpts: DepOptions): Promise<string | undefined> {
   const opts = _resolveDepOptions(depOpts);
-  const path = opts.paths?.[opts.id];
+  const path = opts.deps?.paths?.[opts.id];
   const key = `${path ? `path:${path}` : opts.projectOnly ? "project" : "any"}:${opts.dir}:${opts.id}`;
   let pending = _pendingDeps.get(key);
   if (!pending) {
@@ -80,15 +81,24 @@ export async function importDep(opts: DepOptions): Promise<unknown> {
 /** Error for a dependency that is (still) not installed, with the command to install it. */
 export function missingDepError(depOpts: DepOptions): Error {
   const opts = _resolveDepOptions(depOpts);
+  if (_isInNodeModules(opts.dir)) {
+    return new Error(
+      `\`${opts.id}\` cannot be resolved from \`${opts.dir}\`, which is inside \`node_modules\`. It is required for ${opts.reason}. The package that configures Nitro with this \`rootDir\` must add \`${_depSpec(opts)}\` to its own dependencies (or provide it with the \`deps.paths\` option).`
+    );
+  }
   const dev = opts.dev === false ? "" : "dev ";
+  const ci =
+    opts.deps?.install === undefined && isCI && !isTest
+      ? " Dependencies are not installed on demand in CI unless the `deps.install` option is enabled."
+      : "";
   return new Error(
-    `\`${opts.id}\` is not installed. It is required for ${opts.reason}. Please add it to your ${dev}dependencies (e.g. \`npx nypm add ${dev ? "-D " : ""}${_depSpec(opts)}\`).`
+    `\`${opts.id}\` is not installed. It is required for ${opts.reason}. Please add it to your ${dev}dependencies (e.g. \`npx nypm add ${dev ? "-D " : ""}${_depSpec(opts)}\`).${ci}`
   );
 }
 
 export function isDepInstalled(
   id: string,
-  opts: Pick<DepOptions, "dir" | "projectOnly" | "paths">
+  opts: Pick<DepOptions, "dir" | "projectOnly" | "deps">
 ): boolean {
   return !!resolveDep(id, opts);
 }
@@ -103,9 +113,9 @@ export function isDepInstalled(
  */
 export function resolveDep(
   id: string,
-  opts: Pick<DepOptions, "dir" | "projectOnly" | "paths">
+  opts: Pick<DepOptions, "dir" | "projectOnly" | "deps">
 ): string | undefined {
-  const path = opts.paths?.[depPackageName(id)];
+  const path = opts.deps?.paths?.[depPackageName(id)];
   if (path) {
     return resolveFromDepPath(id, { dir: opts.dir, path });
   }
@@ -142,10 +152,12 @@ export function isLibOption(option: string): boolean {
 /**
  * Ensure the third-party libraries lazily imported by the configured storage drivers or
  * database connectors are installed, prompting to install the missing ones.
+ *
+ * Throws for a missing library when installing is disabled (`deps.install`, off in CI).
  */
 export async function ensureLibDeps(
   users: Array<{ name: string; options: Record<string, any>; deps: LibDep[] }>,
-  opts: { dir: string; label: string }
+  opts: { dir: string; label: string; deps?: NitroDepsOptions }
 ): Promise<void> {
   const required = new Map<string, { version?: string; users: Set<string> }>();
   for (const user of users) {
@@ -161,17 +173,23 @@ export async function ensureLibDeps(
 
   for (const [name, { version, users: names }] of required) {
     const reason = `the ${[...names].map((n) => `\`${n}\``).join(", ")} ${opts.label}${names.size > 1 ? "s" : ""}`;
-    const resolved = await ensureDep({
+    const depOpts = {
       id: name,
       version,
       dir: opts.dir,
+      // Imported by name from the bundle: explicit `deps.paths` cannot provide them
+      deps: { install: opts.deps?.install },
       reason,
       dev: false,
       projectOnly: true,
-    });
-    if (!resolved) {
-      consola.warn(`\`${name}\` is not installed. It is required for ${reason}.`);
+    };
+    if (await ensureDep(depOpts)) {
+      continue;
     }
+    if (!isTest && !_canInstall(opts.deps?.install) && !_isInNodeModules(opts.dir)) {
+      throw missingDepError(depOpts);
+    }
+    consola.warn(`\`${name}\` is not installed. It is required for ${reason}.`);
   }
 }
 
@@ -202,9 +220,13 @@ async function _ensureDep(opts: ResolvedDepOptions): Promise<string | undefined>
     return resolved;
   }
 
+  if (_isInNodeModules(opts.dir)) {
+    return undefined; // Never install into a package managed by the package manager
+  }
+
   let shouldInstall: boolean | undefined;
-  if (isTest) {
-    shouldInstall = false; // Do not install dependencies in test mode
+  if (isTest || !_canInstall(opts.deps?.install)) {
+    shouldInstall = false;
   } else if (opts.autoInstall) {
     consola.info(`\`${opts.id}\` is required for ${opts.reason}. Installing automatically...`);
     shouldInstall = true;
@@ -227,8 +249,15 @@ async function _ensureDep(opts: ResolvedDepOptions): Promise<string | undefined>
 
   const start = Date.now();
   consola.start(`Installing \`${opts.id}\` in \`${opts.dir}\`...`);
-  const { addDependency, addDevDependency } = await import("nypm");
-  await (opts.dev === false ? addDependency : addDevDependency)(_depSpec(opts), { cwd: opts.dir });
+  const { addDependency, addDevDependency, detectPackageManager } = await import("nypm");
+  // Projects without a lockfile (or `packageManager` field) use the package manager of the runtime
+  const packageManager = (await detectPackageManager(opts.dir)) ? undefined : _runtimePM();
+  await (opts.dev === false ? addDependency : addDevDependency)(_depSpec(opts), {
+    cwd: opts.dir,
+    packageManager,
+    // Builds set `NODE_ENV=production`, which makes package managers skip (and prune) dev dependencies
+    env: { NODE_ENV: "development" },
+  });
 
   const installed = resolveDep(opts.id, opts);
   if (installed) {
@@ -237,6 +266,20 @@ async function _ensureDep(opts: ResolvedDepOptions): Promise<string | undefined>
     consola.warn(`Installed \`${opts.id}\` in ${opts.dir}, but it cannot be resolved from there.`);
   }
   return installed;
+}
+
+/** Whether missing dependencies may be installed (the `deps.install` option, off in CI by default). */
+function _canInstall(install: boolean | undefined): boolean {
+  return install ?? !isCI;
+}
+
+/** Whether a directory is inside `node_modules` (e.g. the `rootDir` of a framework built on Nitro). */
+function _isInNodeModules(dir: string): boolean {
+  return `${normalize(dir)}/`.includes("/node_modules/");
+}
+
+function _runtimePM(): "bun" | "deno" | "npm" {
+  return process.versions.bun ? "bun" : process.versions.deno ? "deno" : "npm";
 }
 
 /** Package spec to install (with the version range if it is a simple one). */
@@ -253,17 +296,21 @@ function _checkVersion(opts: ResolvedDepOptions, entry: string): void {
     return;
   }
   _checkedVersions.add(key);
-  const version = _installedVersion(opts.id, entry);
-  if (!version || _isSupportedVersion(version, opts.version)) {
+  const pkg = _installedPackage(opts.id, entry);
+  if (!pkg?.version || _isSupportedVersion(pkg.version, opts.version)) {
     return;
   }
+  // Not `opts.dir`: an explicit path (or the `vite` running `nitro/vite`) can be outside of it
   consola.warn(
-    `\`${opts.id}@${version}\` is installed in \`${opts.dir}\` but ${opts.reason} requires \`${opts.version}\`. Please update it if you run into issues.`
+    `\`${opts.id}@${pkg.version}\` is used from \`${pkg.dir}\` but ${opts.reason} requires \`${opts.version}\`. Please update it if you run into issues.`
   );
 }
 
-/** Read the version of the package `entry` belongs to (walking up to its `package.json`). */
-function _installedVersion(id: string, entry: string): string | undefined {
+/** Find the package `entry` belongs to and read its version (walking up to its `package.json`). */
+function _installedPackage(
+  id: string,
+  entry: string
+): { dir: string; version?: string } | undefined {
   let dir = dirname(entry);
   for (let depth = 0; depth < 10; depth++) {
     const pkgPath = join(dir, "package.json");
@@ -271,7 +318,7 @@ function _installedVersion(id: string, entry: string): string | undefined {
       try {
         const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
         if (pkg.name === id) {
-          return typeof pkg.version === "string" ? pkg.version : undefined;
+          return { dir, version: typeof pkg.version === "string" ? pkg.version : undefined };
         }
       } catch {
         // Ignore unreadable or invalid `package.json` files

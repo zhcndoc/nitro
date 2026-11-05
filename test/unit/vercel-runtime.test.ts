@@ -2,6 +2,7 @@ import { mkdtemp, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "pathe";
 import type { Nitro } from "nitro/types";
+import { isBun } from "std-env";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createNitro } from "../../src/builder.ts";
 import { generateFunctionFiles, resolveVercelRuntime } from "../../src/presets/vercel/utils.ts";
@@ -13,10 +14,12 @@ describe("vercel: resolveVercelRuntime", () => {
   beforeEach(async () => {
     rootDir = await realpath(await mkdtemp(join(tmpdir(), "nitro-vercel-runtime-")));
     warn = vi.fn();
+    stubNodeVersion("26.0.0");
   });
 
   afterEach(async () => {
     vi.unstubAllGlobals();
+    restoreNodeVersion();
     await rm(rootDir, { recursive: true, force: true });
   });
 
@@ -50,9 +53,10 @@ describe("vercel: resolveVercelRuntime", () => {
     ["22.x", "nodejs22.x"],
     ["^22", "nodejs22.x"],
     [">=20 <24", "nodejs22.x"],
-    [">=22.0.0", "nodejs24.x"],
+    ["26.x", "nodejs26.x"],
+    [">=22.0.0", "nodejs26.x"],
     [">=24.20.0 <25", "nodejs24.x"],
-    ["^20.19.0 || >=22.12.0", "nodejs24.x"],
+    ["^20.19.0 || >=22.12.0", "nodejs26.x"],
   ])(
     "uses the newest supported Node.js version matching engines.node %s",
     async (node, expected) => {
@@ -61,8 +65,36 @@ describe("vercel: resolveVercelRuntime", () => {
     }
   );
 
+  it.skipIf(isBun).each([
+    ["26.0.0", "nodejs26.x"],
+    ["24.1.0", "nodejs24.x"],
+    ["22.0.0", "nodejs22.x"],
+    ["20.0.0", "nodejs22.x"],
+    ["23.0.0", "nodejs24.x"],
+    ["25.0.0", "nodejs26.x"],
+    ["27.0.0", "nodejs26.x"],
+    ["30.2.1", "nodejs26.x"],
+  ])("uses the runtime for the build Node.js version %s", async (version, expected) => {
+    stubNodeVersion(version);
+    expect(await resolveRuntime()).toBe(expected);
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("accepts an explicit nodejs26.x runtime", async () => {
+    stubNodeVersion("24.0.0");
+    expect(await resolveRuntime({ runtime: "nodejs26.x" })).toBe("nodejs26.x");
+  });
+
+  it("does not select versions newer than 26 when building on them", async () => {
+    stubNodeVersion("28.0.0");
+    expect(await resolveRuntime({ engines: { node: ">=22" } })).toBe("nodejs26.x");
+    expect(warn).not.toHaveBeenCalled();
+    expect(await resolveRuntime({ engines: { node: "28.x" } })).toBe("nodejs26.x");
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("(22, 24, 26)"));
+  });
+
   it("uses engines.node when building with Bun", async () => {
-    vi.stubGlobal("Bun", {});
+    stubBun();
     expect(await resolveRuntime({ engines: { node: ">=24.20.0 <25" } })).toBe("nodejs24.x");
     expect(await resolveRuntime({ engines: { node: "^22" } })).toBe("nodejs22.x");
   });
@@ -100,7 +132,7 @@ describe("vercel: resolveVercelRuntime", () => {
   });
 
   it("uses engines.node when both engines are set and vercel.json has no bunVersion", async () => {
-    vi.stubGlobal("Bun", {});
+    stubBun();
     expect(await resolveRuntime({ engines: { node: "22.x", bun: "1.x" } })).toBe("nodejs22.x");
     expect(warn).toHaveBeenCalledWith(expect.stringContaining("engines.bun"));
   });
@@ -123,19 +155,21 @@ describe("vercel: resolveVercelRuntime", () => {
   });
 
   it("uses bun when building with Bun without engines", async () => {
-    vi.stubGlobal("Bun", {});
+    stubBun();
     expect(await resolveRuntime()).toBe("bun1.x");
   });
 
-  it.each(["20.x", "18.x", ">=26", "lts/*"])(
+  it.each(["20.x", "18.x", ">=28", "lts/*"])(
     "warns and uses the build Node.js version when engines.node %s matches no supported version",
     async (node) => {
-      const fallback = await resolveRuntime();
+      const fallback = await resolveRuntime({ engines: { node } });
       expect(fallback).toMatch(/^nodejs\d+\.x$/);
-      expect(await resolveRuntime({ engines: { node } })).toBe(fallback);
       expect(warn).toHaveBeenCalledWith(expect.stringContaining(node));
+      if (!isBun) {
+        expect(await resolveRuntime()).toBe(fallback);
+      }
       // engines.node still asks for Node.js, so a Bun build does not switch to Bun
-      vi.stubGlobal("Bun", {});
+      stubBun();
       expect(await resolveRuntime({ engines: { node } })).toBe(fallback);
     }
   );
@@ -171,7 +205,7 @@ describe("vercel preset: function runtime from engines", () => {
   }
 
   it("writes a Node.js function without the bun condition for engines.node built with Bun", async () => {
-    vi.stubGlobal("Bun", {});
+    stubBun();
     const { runtime, exportConditions } = await generateFunctionConfig({ node: ">=24.20.0 <25" });
     expect(runtime).toBe("nodejs24.x");
     expect(exportConditions).not.toContain("bun");
@@ -189,3 +223,20 @@ describe("vercel preset: function runtime from engines", () => {
     expect(exportConditions).toContain("bun");
   });
 });
+
+const originalNodeVersion = Object.getOwnPropertyDescriptor(process.versions, "node")!;
+
+function stubNodeVersion(version: string) {
+  Object.defineProperty(process.versions, "node", { ...originalNodeVersion, value: version });
+}
+
+function restoreNodeVersion() {
+  Object.defineProperty(process.versions, "node", originalNodeVersion);
+}
+
+// `Bun` is a non-configurable global on Bun
+function stubBun() {
+  if (!isBun) {
+    vi.stubGlobal("Bun", {});
+  }
+}

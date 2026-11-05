@@ -19,25 +19,15 @@ import devtoolsJson from "vite-plugin-devtools-json";
 import { nitro } from "nitro/vite";
 
 export default defineConfig((_env) => ({
-  plugins: [patchVueExclude(vue(), /\?assets/), devtoolsJson(), nitro()],
+  plugins: [vue({ exclude: /\?assets/ }), devtoolsJson(), nitro()],
   environments: {
     client: { build: { rollupOptions: { input: "./app/entry-client.ts" } } },
     ssr: { build: { rollupOptions: { input: "./app/entry-server.ts" } } },
   },
 }));
-
-// Workaround https://github.com/vitejs/vite-plugin-vue/issues/677
-function patchVueExclude(plugin, exclude) {
-  const original = plugin.transform.handler;
-  plugin.transform.handler = function (...args) {
-    if (exclude.test(args[1])) return;
-    return original.call(this, ...args);
-  };
-  return plugin;
-}
 ```
 
-`patchVueExclude` 辅助函数会阻止 Vue 插件处理资源导入（带有 `?assets` 查询参数的文件）。
+`exclude` 选项会阻止 Vue 插件处理资源导入（带有 `?assets` 查询参数的文件）。
 
 ## 2. 定义路由
 

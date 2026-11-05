@@ -48,6 +48,5 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
         run: |
-          gh release create "$TAG" \
-            --notes "$(pnpm changelogen --from=$(git describe --tags --abbrev=0 "$TAG^"))" \
-            --title "$TAG"
+          node scripts/release-notes.ts "$TAG" > release-notes.md
+          gh release create "$TAG" --notes-file release-notes.md --title "$TAG"

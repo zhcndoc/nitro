@@ -314,7 +314,7 @@ features:
 ---
 ::
 
-::call-to-action{command="create-nitro-app"}
+::call-to-action{command="nitro@latest create"}
 #title
 从一条命令开始
 

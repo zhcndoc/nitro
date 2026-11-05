@@ -15,7 +15,7 @@ Nitro 会自动检测你处于 [Netlify](https://www.netlify.com) 构建环境�
 
 对于新站点，Netlify 会检测到你正在使用 Nitro，并将发布目录设置为 `dist`，将构建命令设置为 `npm run build`。如果你正在升级现有站点，请检查这些设置，并在需要时更新它们。
 
-要添加自定义重定向，请使用 [`routeRules`](/config#routerules)，或将 [`_redirects`](https://docs.netlify.com/routing/redirects/#syntax-for-the-redirects-file) 文件添加到你的 `public` 目录中。
+要添加自定义重定向，请使用 [`routeRules`](/config/routing#routerules)，或将 [`_redirects`](https://docs.netlify.com/routing/redirects/#syntax-for-the-redirects-file) 文件添加到 `public` 目录中。
 
 要进行部署，只需像平常为 Netlify 执行的那样推送到你的 git 仓库[即可](https://docs.netlify.com/configure-builds/get-started/)。
 

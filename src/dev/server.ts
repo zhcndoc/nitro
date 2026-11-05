@@ -3,7 +3,9 @@ import type { Socket } from "node:net";
 import type { FSWatcher } from "chokidar";
 import type { ServerOptions, Server } from "srvx";
 import type { Hooks } from "crossws";
+import type { ProxyAddr } from "httpxy";
 import type {
+  EnvRunner,
   EnvRunnerData,
   EnvRunnerPluginOption,
   RunnerMessageListener,
@@ -11,21 +13,20 @@ import type {
 } from "env-runner";
 import type { RunnerName } from "env-runner";
 import { RunnerManager, loadRunner } from "env-runner";
-import type { Nitro } from "nitro/types";
+import type { Nitro, WorkerAddress } from "nitro/types";
 
 import { HTTPError } from "h3";
 
 import consola from "consola";
-import { readFile } from "node:fs/promises";
 import { resolve } from "pathe";
 import { serve } from "srvx";
 import { debounce } from "perfect-debounce";
 import { isTest, isCI } from "std-env";
 import { NitroDevApp } from "./app.ts";
+import { withDevErrorRecovery } from "./_error-recovery.ts";
 import { createWatcher } from "../utils/watch.ts";
 import { resolveRunnerDeps } from "./runner-deps.ts";
 import { shutdownRunner } from "./shutdown.ts";
-import { handleDevRPC } from "./_rpc.ts";
 import { createWorkerWebSocketProxy } from "./_proxy.ts";
 import { webSocketPlugin } from "./_ws.ts";
 import { writeDevBuildInfo } from "../build/info.ts";
@@ -47,6 +48,8 @@ class DevServer extends NitroDevApp implements NitroDevServer, RunnerRPCHooks {
   #workerData: EnvRunnerData = {};
   #plugins?: EnvRunnerPluginOption[];
   #listeners: Server[] = [];
+  #devInfo: { workerAddress?: WorkerAddress; url?: string } = {};
+  #devInfoWrite: Promise<void> = Promise.resolve();
   #watcher?: FSWatcher;
   #manager: RunnerManager;
   #workerWebSocket: () => Promise<Partial<Hooks>>;
@@ -86,31 +89,40 @@ class DevServer extends NitroDevApp implements NitroDevServer, RunnerRPCHooks {
       }
     }
 
+    // Open dev error pages wait for the next reload
+    const appFetch = this.fetch;
+    this.fetch = async (req) =>
+      withDevErrorRecovery(req, await appFetch(req), {
+        signal: this.reloadSignal,
+        base: nitro.options.baseURL,
+      });
+
     // Attach to Nitro.fetch
     nitro.fetch = this.fetch.bind(this);
 
     this.#entry = resolve(nitro.options.output.dir, nitro.options.output.serverDir, "index.mjs");
 
     this.#manager = new RunnerManager();
-    this.#workerWebSocket = createWorkerWebSocketProxy(async () => {
-      if (this.#building) {
-        await this.#waitForBuild();
-      }
-      if (this.#reloadPromise) {
-        await this.#reloadPromise;
-      }
-      if (!this.#manager.ready) {
-        await this.#waitForBuild();
-      }
-      return this.#manager.address;
-    });
+    this.#workerWebSocket = createWorkerWebSocketProxy(
+      async () => {
+        if (this.#building) {
+          await this.#waitForBuild();
+        }
+        if (this.#reloadPromise) {
+          await this.#reloadPromise;
+        }
+        if (!this.#manager.ready) {
+          await this.#waitForBuild();
+        }
+        return this.#manager.address;
+      },
+      // Bun/Deno bridged WebSockets keep a drained worker until they close
+      { track: (addr) => trackRunnerExchange(this.#manager, addr) }
+    );
     this.#manager.onReady(async (_runner, addr) => {
       this.#workerRetries = 0;
-      writeDevBuildInfo(this.nitro, addr).catch((error) => {
-        this.nitro.logger.warn(
-          `Failed to write dev build info: ${error instanceof Error ? error.message : String(error)}`
-        );
-      });
+      this.#devInfo.workerAddress = addr;
+      this.#writeDevInfo();
     });
     this.#manager.onClose((_runner, cause) => {
       if (this.#shuttingDown) {
@@ -119,7 +131,8 @@ class DevServer extends NitroDevApp implements NitroDevServer, RunnerRPCHooks {
       this.#workerError = cause;
       if (this.#workerRetries++ < 3) {
         this.nitro.logger.info("Restarting dev worker...", cause ? `Cause: ${cause}` : "");
-        this.reload();
+        // Open error pages are not reloaded, since the worker may crash again on each request
+        this.#queueReload();
       } else {
         this.nitro.logger.error(
           "Dev worker failed after 3 retries.",
@@ -127,16 +140,6 @@ class DevServer extends NitroDevApp implements NitroDevServer, RunnerRPCHooks {
         );
       }
     });
-
-    // Worker => Host RPC
-    this.#manager.onMessage((message) =>
-      handleDevRPC(message, {
-        sendMessage: (message) => this.#manager.sendMessage(message),
-        handlers: {
-          rendererTemplate: () => readFile(nitro.options.renderer!.template!, "utf8"),
-        },
-      })
-    );
 
     nitro.hooks.hook("close", () => this.close());
 
@@ -163,6 +166,7 @@ class DevServer extends NitroDevApp implements NitroDevServer, RunnerRPCHooks {
     nitro.hooks.hook("dev:error", (cause: unknown) => {
       this.#buildError = cause;
       this.#building = false;
+      this.reloadSignal.bump();
     });
 
     const devWatch = nitro.options.devServer.watch;
@@ -204,6 +208,15 @@ class DevServer extends NitroDevApp implements NitroDevServer, RunnerRPCHooks {
       plugins: [...(opts?.plugins || []), webSocketPlugin(this.resolveWebSocketHooks)],
     });
     this.#listeners.push(server);
+    server.ready().then(
+      () => {
+        if (!this.#devInfo.url && server.url) {
+          this.#devInfo.url = server.url;
+          this.#writeDevInfo();
+        }
+      },
+      () => {}
+    );
     if (server.node?.server) {
       server.node.server.on("upgrade", (req, sock, head) => this.upgrade(req, sock, head));
     }
@@ -212,14 +225,19 @@ class DevServer extends NitroDevApp implements NitroDevServer, RunnerRPCHooks {
 
   async close() {
     this.#closing = true;
+    this.reloadSignal.close();
     await this.#reloadPromise?.catch(() => {});
-    await this.#shutdownWorker();
+    // With drain, the manager shuts the active and draining workers down gracefully
+    const drain = this.nitro.options.devServer.drain;
+    if (!drain) {
+      await this.#shutdownWorker();
+    }
     await Promise.all(
       [
         Promise.all(this.#listeners.map((l) => l.close())).then(() => {
           this.#listeners = [];
         }),
-        this.#manager.close(),
+        drain ? this.#manager.shutdown() : this.#manager.close(),
         Promise.resolve(this.#watcher?.close()).then(() => {
           this.#watcher = undefined;
         }),
@@ -232,6 +250,12 @@ class DevServer extends NitroDevApp implements NitroDevServer, RunnerRPCHooks {
   }
 
   reload() {
+    this.#queueReload()
+      ?.catch(() => {})
+      .finally(() => this.reloadSignal.bump());
+  }
+
+  #queueReload(): Promise<void> | undefined {
     if (this.#closing) {
       return;
     }
@@ -243,10 +267,15 @@ class DevServer extends NitroDevApp implements NitroDevServer, RunnerRPCHooks {
         this.#reloadPromise = undefined;
       }
     });
+    return nextReload;
   }
 
   async #reload() {
-    await this.#shutdownWorker();
+    const drain = this.nitro.options.devServer.drain;
+    // A drained worker is shut down by the manager once its requests settle
+    if (!drain) {
+      await this.#shutdownWorker();
+    }
     const runnerName = (this.nitro.options.devServer.runner ||
       process.env.NITRO_DEV_RUNNER ||
       "node-worker") as RunnerName;
@@ -257,7 +286,7 @@ class DevServer extends NitroDevApp implements NitroDevServer, RunnerRPCHooks {
       data: { entry: this.#entry, ...this.#workerData },
       plugins: this.#plugins,
     });
-    await this.#manager.reload(runner);
+    await this.#manager.reload(runner, { drain });
   }
 
   sendMessage(message: unknown) {
@@ -287,6 +316,18 @@ class DevServer extends NitroDevApp implements NitroDevServer, RunnerRPCHooks {
     } finally {
       this.#shuttingDown = false;
     }
+  }
+
+  /** Point CLI commands (`nitro task`, `nitro fetch`) to this dev server. */
+  #writeDevInfo() {
+    // One write at a time, so that an earlier one does not finish last
+    this.#devInfoWrite = this.#devInfoWrite
+      .then(() => writeDevBuildInfo(this.nitro, this.#devInfo))
+      .catch((error) => {
+        this.nitro.logger.warn(
+          `Failed to write dev build info: ${error instanceof Error ? error.message : String(error)}`
+        );
+      });
   }
 
   async #waitForBuild() {
@@ -336,4 +377,23 @@ class DevServer extends NitroDevApp implements NitroDevServer, RunnerRPCHooks {
   }
 
   // #endregion
+}
+
+/**
+ * Count a WebSocket as an exchange of the active runner, like `RunnerManager.wsSrvxPlugin()`
+ * does, whose tracking isn't exposed otherwise.
+ */
+function trackRunnerExchange(manager: RunnerManager, addr: ProxyAddr) {
+  const internal = manager as unknown as {
+    _runner?: EnvRunner;
+    _beginExchange?: (runner: EnvRunner) => () => void;
+  };
+  if (typeof internal._beginExchange !== "function") {
+    return;
+  }
+  const runner = internal._runner;
+  if (!runner || runner.address !== addr) {
+    throw new Error("The dev worker changed before the WebSocket connected");
+  }
+  return internal._beginExchange(runner);
 }

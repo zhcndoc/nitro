@@ -110,7 +110,7 @@ Nitro uses Vite 6+ environments API for multi-bundle builds:
 - Watches Nitro config file for changes (triggers full restart)
 - WebSocket upgrade handling
 - File watchers for route/API/middleware directories (debounced reload)
-- RPC for `transformHTML` messages
+- Page template (`_page-template-dev.ts`): `transformIndexHtml` output compiled into `#nitro/virtual/renderer-template`; transformed again on the first request routed to the renderer after any file change. When it changed, the module alone is invalidated in the worker (`nitro:invalidate`, acknowledged) before dispatching: the dev renderer route imports it on each request, so the app is not reloaded. Other requests never wait
 
 ### Dev Middleware (`nitroDevMiddleware`)
 Two-stage request routing:
@@ -140,10 +140,9 @@ Browser → Vite Dev Server
 - Service environments (SSR, API, custom)
 - Detailed logging per environment
 
-**Stage 2: Renderer template processing**
-- If client input == renderer template, replaces SSR outlet
-- Inlines `globalThis.__nitro_vite_envs__?.["ssr"]?.fetch($REQUEST)`
-- Moves processed template to build dir
+**Stage 2: Page template**
+- If client input == renderer template, the built client HTML is passed in memory (`nitro._pageTemplate.html`)
+- Core compiles it into `#nitro/virtual/renderer-template`, rendering the SSR outlet with `fetchService("ssr")` (when `nitro._serviceLoader` is set and an `ssr` service exists)
 
 **Stage 3: Asset management**
 - Calls `builder.writeAssetsManifest?.()`
@@ -217,7 +216,6 @@ current evaluations.
 |------|---------|
 | `dev-entry.mjs` | Dev entry: polyfills, WebSocket adapter, schedule runner |
 | `dev-worker.mjs` | Worker process: `ViteEnvRunner` class, RPC layer, env management |
-| `ssr-renderer.mjs` | SSR service: calls `fetchViteEnv("ssr", req)` |
 
 `dev-worker.mjs` is not loaded directly: `writeDevWorkerEntry()` generates `<buildDir>/vite/dev-worker.mjs`, which re-exports it and injects the `vite/module-runner` resolved from the app (`vite` is not resolvable from Nitro's `dist/`).
 
@@ -227,9 +225,11 @@ current evaluations.
 - Routes fetch requests to loaded entries
 - Exposes `__VITE_ENVIRONMENT_RUNNER_IMPORT__` for RSC
 
-### Runtime API (`src/runtime/vite.ts`)
-- `fetchViteEnv(name, input, init)` — route fetch to named Vite environment
-- Accesses `globalThis.__nitro_vite_envs__` registry
+### Services (core)
+- Top-level `services` option (`vite.services` is an alias), resolved in `src/config/resolvers/services.ts`
+- `src/build/services.ts`: `entry-server` detection, server entry conflict check, default `ssr` renderer (`internal/routes/ssr-renderer.ts`)
+- `#nitro/virtual/services` (`src/build/virtual/services.ts`) loads each service as reported by `nitro._serviceLoader`; the Vite plugin sets it (`viteServiceLoader()`): `globalThis.__nitro_vite_envs__[name]` in dev, the built output in production, the source entry with Vitest
+- Runtime API: `fetchService(name, input, init)` from `nitro/services`; `fetchViteEnv()` (`nitro/vite/runtime`) is an alias
 
 ## Dev vs Production
 
@@ -245,10 +245,13 @@ current evaluations.
 ## Vite Options
 
 `vite` Nitro config options (from inline plugin options, `nitro` in Vite config or `nitro.config.ts`;
-read from `nitro.options.vite`, `experimental.vite` is a deprecated alias mapped by `src/config/resolvers/vite.ts`):
-- `assetsImport` (default: true) — `?assets` imports via `@hiogawa/vite-plugin-fullstack`. Its plugins
+read from `nitro.options.vite`):
+- `assetsImport` (default: true) — `?assets` imports (ported from `@hiogawa/vite-plugin-fullstack`):
+  `_assets.ts` (plugin), `_assets-dev.ts` (dev css collection, vite client css `<link>` HMR patches),
+  `_assets-build.ts` (manifest written by `buildEnvironments()` before the Nitro build). The bundler-agnostic contract (result types, virtual ids, `mergeAssets` runtime, manifest
+  format) is in `src/build/_assets-import.ts`, and the `*?assets` module types in `lib/assets.types.d.mts`. The plugins
   are always registered (Vite resolves plugins before Nitro loads its config) and their hooks are
-  skipped when disabled (`_assets.ts`)
+  skipped when disabled
 - `serverReload` (default: true) — reload the dev worker on server-only module changes
 - `services` — register custom service environments
 
@@ -262,7 +265,7 @@ preset hooks such as the Cloudflare tracing bridge are skipped; tests run in Nod
 and service environments use Vite's default dev environment, and
 `configureServer`, `hotUpdate` and the service `nitro/*` proxy are skipped. Service entries (e.g.
 the SSR entry, still auto-detected despite Vitest's own `ssr` environment) are imported from the
-`nitro` environment by `viteServicesTemplate()`, as in production. The `vitest-setup.mjs` setup file
+`nitro` environment by `#nitro/virtual/services` (`viteServiceLoader()`), as in production. The `vitest-setup.mjs` setup file
 creates the app lazily in `beforeAll` (after the test file's `vi.mock` calls) so `serverFetch` from
 `nitro` works; it is an empty module in other environments. vm pools keep Vitest's default environment. Inline `test.projects` resolve from the raw `test`
 config (captured before plugin `config` hooks), so `configureVitest` adds the setup file to each

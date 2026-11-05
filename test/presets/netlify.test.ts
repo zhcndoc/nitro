@@ -1,6 +1,7 @@
 import { existsSync, promises as fsp } from "node:fs";
 import { tmpdir } from "node:os";
 import type { Context as FunctionContext } from "@netlify/functions";
+import { execa, execaSync } from "execa";
 import { join, resolve } from "pathe";
 import { describe, expect, it } from "vitest";
 import type { Nitro } from "nitro/types";
@@ -10,6 +11,7 @@ import {
   writeConfig,
 } from "../../src/presets/netlify/utils.ts";
 import { getPresetTmpDir, setupTest, testNitro } from "../tests.ts";
+import { testBuiltinImports } from "./_builtin-imports.ts";
 
 describe("nitro:preset:netlify", async () => {
   const ctx = await setupTest("netlify", {
@@ -243,5 +245,36 @@ describe("nitro:preset:netlify", async () => {
       expect(existsSync(configPath)).toBe(false);
       await fsp.rm(dir, { recursive: true, force: true });
     });
+  });
+});
+
+describe("nitro:preset:netlify-edge", async () => {
+  const ctx = await setupTest("netlify-edge", {
+    config: {
+      minify: false,
+      output: {
+        serverDir: resolve(getPresetTmpDir("netlify-edge"), ".output/server"),
+        publicDir: resolve(getPresetTmpDir("netlify-edge"), "dist"),
+      },
+    },
+  });
+
+  testBuiltinImports(ctx);
+
+  // Netlify Edge Functions run on Deno, which has no global `require`
+  const hasDeno =
+    execaSync("deno", ["--version"], { stdio: "ignore", reject: false }).exitCode === 0;
+  it.runIf(hasDeno)("requires builtins from bundled CommonJS on Deno", async () => {
+    const { stdout } = await execa(
+      "deno",
+      [
+        "eval",
+        `const { default: handler } = await import("./server.mjs");
+        const res = await handler(new Request("http://localhost/cjs-builtins"), {});
+        console.log(await res.text());`,
+      ],
+      { cwd: ctx.nitro!.options.output.serverDir }
+    );
+    expect(stdout).toBe("ok");
   });
 });

@@ -21,9 +21,9 @@ icon: i-simple-icons-tanstack
     "start": "node .output/server/index.mjs"
   },
   "dependencies": {
-    "@tanstack/react-router": "^1.170.44",
+    "@tanstack/react-router": "^1.170.46",
     "@tanstack/react-router-devtools": "^1.167.2",
-    "@tanstack/react-start": "^1.169.2",
+    "@tanstack/react-start": "^1.169.4",
     "nitro": "latest",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
@@ -35,7 +35,7 @@ icon: i-simple-icons-tanstack
     "@types/node": "latest",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.1.2",
+    "@vitejs/plugin-react": "^6.2.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "latest"
@@ -80,6 +80,10 @@ export default defineConfig({
     ssr: { build: { rollupOptions: { input: "./server.ts" } } },
   },
 });
+```
+
+```js [public/customScript.js]
+console.log("customScript.js loaded");
 ```
 
 ```tsx [src/router.tsx]
@@ -201,7 +205,7 @@ export const Route = createRootRoute({
       { name: "viewport", content: "width=device-width, initial-scale=1" },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
-    scripts: [{ src: "/customScript.js", type: "text/javascript" }],
+    scripts: [{ src: `${import.meta.env.BASE_URL}customScript.js`, type: "text/javascript" }],
   }),
   errorComponent: () => <h1>500: 内部服务器错误</h1>,
   notFoundComponent: () => <h1>404: 页面未找到</h1>,

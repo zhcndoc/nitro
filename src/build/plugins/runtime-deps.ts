@@ -29,18 +29,22 @@ export function isRuntimeImporter(importer: string | undefined): boolean {
  * installing it (without prompting) if missing.
  */
 export async function ensureRuntimeDep(nitro: Nitro, id: string): Promise<void> {
-  const name = depPackageName(id);
-  const opts = { id: name as DepId, dir: nitro.options.rootDir, paths: nitro.options.deps?.paths };
+  const opts = runtimeDepOptions(nitro, id);
   if (!(await ensureDep(opts))) {
     throw missingDepError(opts);
   }
 }
 
+/** Error for an optional runtime dependency imported as `id` that is not installed. */
+export function missingRuntimeDepError(nitro: Nitro, id: string): Error {
+  return missingDepError(runtimeDepOptions(nitro, id));
+}
+
 /**
- * Resolves optional runtime dependencies (`unstorage`, `db0`, `ocache`) imported by the Nitro runtime.
+ * Resolves optional runtime dependencies (`unstorage`, `db0`) imported by the Nitro runtime.
  *
  * They are not dependencies of Nitro: they are resolved from the project and only installed
- * once a build actually imports them (e.g. `nitro/kv`, `nitro/database` or `nitro/cache` is used).
+ * once a build actually imports them (e.g. `nitro/kv` or `nitro/database` is used).
  */
 export function runtimeDeps(nitro: Nitro): Plugin {
   return {
@@ -56,7 +60,7 @@ export function runtimeDeps(nitro: Nitro): Plugin {
         await ensureRuntimeDep(nitro, id);
         const path = resolveDep(id, {
           dir: nitro.options.rootDir,
-          paths: nitro.options.deps?.paths,
+          deps: nitro.options.deps,
         });
         if (!path) {
           const name = depPackageName(id);
@@ -67,5 +71,14 @@ export function runtimeDeps(nitro: Nitro): Plugin {
         return (await this.resolve(path, importer, { ...options, skipSelf: true })) || path;
       },
     },
+  };
+}
+
+function runtimeDepOptions(nitro: Nitro, id: string) {
+  const name = depPackageName(id) as DepId;
+  return {
+    id: name,
+    dir: nitro.options.rootDir,
+    deps: nitro.options.deps,
   };
 }

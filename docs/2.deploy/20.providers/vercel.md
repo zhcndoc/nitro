@@ -40,6 +40,8 @@ Nitro 会按以下顺序检查各配置来源，以确定服务器函数的运�
 3. `vercel.json` 中的 `bunVersion`。
 4. 执行构建的运行时：使用 Bun 构建时为 Bun，否则采用构建环境的 Node.js 主版本号，并限制在 Vercel 支持的版本范围内。
 
+Vercel 支持 Node.js 22、24 和 26。在 Node.js 23 或 25 上构建时会使用下一个受支持版本；在更新版本上构建时会使用 `26`。
+
 第 2、3 项遵循与 Vercel 相同的优先级。
 
 ```json [package.json]
@@ -184,6 +186,45 @@ export default defineConfig({
 默认情况下不会设置 `CRON_SECRET`。与 [Vercel 自身的行为](https://vercel.com/docs/cron-jobs/manage-cron-jobs#securing-cron-jobs)一致，当缺少此变量时，Cron 端点（`/_vercel/cron`，可通过 [`vercel.cronHandlerRoute`](#other-preset-options) 配置）不会执行身份验证。任何知道该路由的人都可以通过 `x-vercel-cron-schedule` 请求头选择一个计划，并按需运行为其注册的任务。在 Vercel 上使用 `scheduledTasks` 时，请始终设置 `CRON_SECRET`。
 ::
 
+### Vercel Schedules {#vercel-schedules}
+
+:read-more{title="Vercel Schedules" to="https://vercel.com/docs/schedules"}
+
+::warning
+Vercel Schedules 处于测试阶段，必须先为 Vercel 团队启用。
+::
+
+你可以使用 [Vercel Schedules](https://vercel.com/docs/schedules) 而不是 Cron Jobs 来运行 `scheduledTasks`。任务和 `scheduledTasks` 配置保持不变。请在 Nitro 配置中启用此功能，或设置 `NITRO_VERCEL_SCHEDULES=private` 环境变量：
+
+```ts [nitro.config.ts]
+import { defineConfig } from "nitro";
+
+export default defineConfig({
+  vercel: {
+    schedules: "private",
+  },
+});
+```
+
+此功能有两种模式：
+
+- **`"private"`**（推荐）：定时任务会调用私有的 `_vercel/tasks` 函数。该函数没有公共路由，只有 Vercel Schedules 可以调用，因此无需设置 `CRON_SECRET`。到达公共服务器的 `/_vercel/tasks` 请求会收到 `404`。若要配置函数（例如设置 `maxDuration`），请在 [`vercel.functionRules`](#per-route-function-configuration) 中使用 `/_vercel/tasks` 键。
+- **`"public"`**：定时任务会像 Cron Jobs 一样，通过 `GET` 请求调用公共 cron 路由（`/_vercel/cron`，或 [`vercel.cronHandlerRoute`](#other-preset-options)）。如果你也会自行调用该路由，请使用此模式：与 Cron Jobs 一样，直接请求仍可使用，并且会继续检查 `CRON_SECRET`。请设置 `CRON_SECRET`，否则任何能够访问该路由的人都可以运行定时任务。
+
+与 Cron Jobs 相比：
+
+- 每个任务都有独立的定时配置，并以任务名称命名。Vercel 不允许的字符会替换为 `.`，因此 `db:cleanup` 会变成 `db.cleanup`。一个任务配置了多个 Cron 表达式时，每个表达式都会获得一个后缀。
+- 每个任务都会在独立调用中运行，因此一个任务失败不会影响其他任务。
+- 与 Cron Jobs 一样，`payload.scheduledTime` 是调用开始的时间。失败的调用不会重试。
+
+#### 本地开发 {#local-development}
+
+使用 `vercel dev` 时，本地 Schedules broker 会代替进程内调度器运行定时任务；`vercel schedules invoke <name> --local` 可按需运行单个任务。此功能要求 `nitro dev` 使用 Vercel 预设，因此请在 Nitro 配置中设置 `preset: "vercel"`（或设置 `NITRO_PRESET=vercel`）。否则，以及单独使用 `nitro dev` 时，定时任务仍会在进程内运行。
+
+::note
+与 `/_nitro/tasks` 一样，`vercel dev` 用于发现和运行定时任务的路由只接受本地请求。
+::
+
 ## 队列
 
 :read-more{title="Vercel 队列" to="https://vercel.com/docs/queues"}
@@ -316,10 +357,6 @@ export default defineConfig({
 
 ## 不可变静态文件
 
-::important
-此功能目前仅在 Nitro v3 的 [nightly 发布频道](/docs/nightly)中可用。
-::
-
 <!-- :read-more{title="Immutable static files" to="https://vercel.com/docs/skew-protection"} -->
 
 客户端构建资源（例如 JS 和 CSS 分块）可以作为**不可变静态文件**输出。这些文件会从保留的 `/_vercel/immutable/` 路径提供，因此可以跨部署共享，即使更新后的部署不再引用它们也能继续解析，从而改善跨部署缓存。
@@ -356,9 +393,10 @@ export default defineConfig({
 
 Nitro 配置中的 `vercel` 键下提供了其他选项：
 
-- `entryFormat`：Vercel Functions 的处理程序格式。`"web"`（默认）或 `"node"`。`node` 格式支持与 Node.js 特定 API 的兼容性（例如 `req.runtime.node`）。
-- `skewProtection`：设置为 `false` 以禁用 Nitro 的 [skew protection](https://vercel.com/docs/skew-protection) 集成（当 Vercel 控制面板中启用 skew protection 时，默认启用）。
-- `cronHandlerRoute`：与 `scheduledTasks` 一起使用的 Vercel Cron 处理程序端点的路由路径（默认值：`"/_vercel/cron"`）。
+- `entryFormat`：Vercel Functions 的处理器格式。`"web"`（默认）或 `"node"`。`node` 格式支持与 Node.js 专属 API 的兼容性（例如 `req.runtime.node`）。
+- `skewProtection`：设为 `false` 可禁用 Nitro 的 [skew protection](https://vercel.com/docs/skew-protection) 集成（当 Vercel 控制面板中启用 skew protection 时，默认开启）。
+- `cronHandlerRoute`：与 `scheduledTasks` 一起使用的 Vercel cron 处理器端点路由路径（默认为 `"/_vercel/cron"`）。
+- `schedules`（实验性）：使用 [Vercel Schedules](#vercel-schedules) 而不是 Cron Jobs 运行 `scheduledTasks`，可设为 `"private"` 或 `"public"`（默认为 `NITRO_VERCEL_SCHEDULES` 环境变量的值）。
 
 ## 按需增量静态再生成（ISR）
 

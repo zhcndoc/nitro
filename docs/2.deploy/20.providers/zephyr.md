@@ -26,7 +26,7 @@ Zephyr 支持 BYOC（自带云）模式。在 Zephyr 的架构中，控制平面
 npx nitro deploy --preset zephyr
 ```
 
-Nitro 将使用 `zephyr-agent` 上传生成的输出。如果缺少 `zephyr-agent`，Nitro 将提示在本地安装，并会在 CI 环境中自动安装。
+Nitro 会使用 `zephyr-agent` 上传生成的输出。如果缺少 `zephyr-agent`，Nitro 会提示在本地安装。CI 中请将其添加到依赖中（或启用 [`deps.install`](/config/build#deps)）。
 
 ## 构建时部署
 

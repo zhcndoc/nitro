@@ -1,4 +1,4 @@
-Nitro 可以通过 Node [diagnostics channels](https://nodejs.org/api/diagnostics_channel.html) 对其请求生命周期进行检测，无需 OpenTelemetry SDK。此示例开启检测功能并启用内置控制台日志记录器，将每个 h3、srvx 和 unstorage span 按请求分组到时间线（瀑布图）中。
+Nitro 可以通过 Node [诊断通道](https://nodejs.org/api/diagnostics_channel.html)检测其请求生命周期，无需 OpenTelemetry SDK。此示例会开启插桩并启用内置控制台日志记录器，将每个 h3、srvx、unstorage 和 db0 span 按请求分组到时间线（瀑布图）中。
 
 ## 启用追踪
 
@@ -6,7 +6,7 @@ Nitro 可以通过 Node [diagnostics channels](https://nodejs.org/api/diagnostic
 import { defineConfig } from "nitro";
 
 export default defineConfig({
-  // Instrument the h3, srvx and unstorage tracing channels.
+  // Instrument the h3, srvx, unstorage and db0 tracing channels.
   tracingChannel: true,
 
   experimental: {
@@ -16,7 +16,7 @@ export default defineConfig({
 });
 ```
 
-`tracingChannel: true` 会连接生产者（它接受 `{ h3, srvx, unstorage }` 以追踪其中一部分）。`experimental.tracingLogger` 会添加一个内置接收器，将每个已完成的 span 通过 `console.log` 输出——这是无需依赖供应商导出器的替代方案，适合本地开发。
+`tracingChannel: true` 会连接生产者（传入 `{ h3, srvx, unstorage, db0 }` 可仅追踪其中一部分）。`experimental.tracingLogger` 会添加一个内置接收器，通过 `console.log` 记录每个已完成的 span，是一种无需依赖的供应商导出器替代方案，适用于本地开发。
 
 ## 试用
 
@@ -45,6 +45,6 @@ curl http://localhost:3000/users/42
 
 | Channel | Span | Emitted by |
 | --- | --- | --- |
-| `h3.request` | each matched route and middleware | `server/routes/*`, `server/middleware/*` |
-| `unstorage.*` | each storage operation (`getItem`, `setItem`, …) | `useKV()` in `server/routes/index.ts` |
-| `srvx.request` | the whole request, with response status (production server) | the srvx server layer |
+| `h3.request` | 每个匹配的路由和中间件 | `server/routes/*`、`server/middleware/*` |
+| `unstorage.*` | 每个存储操作（`getItem`、`setItem` 等） | `server/routes/index.ts` 中的 `useKV()` |
+| `srvx.request` | 整个请求及响应状态 | srvx 服务器层 |

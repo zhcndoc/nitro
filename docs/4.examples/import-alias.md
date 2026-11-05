@@ -32,7 +32,8 @@ export default defineConfig({
     "preview": "node .output/server/index.mjs"
   },
   "devDependencies": {
-    "nitro": "latest"
+    "nitro": "latest",
+    "rolldown": "latest"
   }
 }
 ```
@@ -52,7 +53,7 @@ export default defineConfig({
 import { defineConfig } from "vite";
 import { nitro } from "nitro/vite";
 
-export default defineConfig({ plugins: [nitro()], resolve: { tsconfigPaths: true } });
+export default defineConfig({ plugins: [nitro()] });
 ```
 
 ```ts [server/routes/index.ts]
@@ -103,7 +104,7 @@ export default () => {
 
 ## 配置
 
-别名可以在 `package.json` 的 imports 字段或 `nitro.config.ts` 中配置。
+可以在 `package.json` 的 imports 字段、`tsconfig.json` 的 `compilerOptions.paths` 或 `nitro.config.ts` 的 `alias` 选项中配置别名。
 
 <!-- /automd -->
 

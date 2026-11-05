@@ -29,7 +29,9 @@ export const NitroDefaults: NitroConfig = {
   serverAssets: [],
   plugins: [],
   tasks: {},
+  services: {},
   scheduledTasks: {},
+  scheduler: {},
   virtual: {},
   compressPublicAssets: false,
   ignore: [],
@@ -79,6 +81,7 @@ export const NitroDefaults: NitroConfig = {
   // Advanced
   typescript: {
     tsConfig: undefined,
+    tsconfigPaths: true,
   },
   hooks: {},
   commands: {},

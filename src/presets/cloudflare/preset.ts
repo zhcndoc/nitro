@@ -11,8 +11,9 @@ import {
   writeCFRoutes,
   writeCFHeaders,
   writeCFPagesRedirects,
+  moveCFRedirects,
 } from "./utils.ts";
-import { setupEntryExports } from "./entry-exports.ts";
+import { setupDevEntryExports, setupEntryExports } from "./entry-exports.ts";
 import { cloudflareOutputRewrites } from "./output-plugins.ts";
 
 export type { CloudflareOptions as PresetOptions } from "./types.ts";
@@ -102,9 +103,9 @@ export const cloudflareDev = defineNitroPreset(
       runner: "miniflare",
     },
     hooks: {
-      "build:before": (nitro) => {
+      "build:before": async (nitro) => {
         if (nitro.options.devServer.runner === "miniflare") {
-          setupMiniflareDev(nitro);
+          await setupMiniflareDev(nitro);
         }
       },
     },
@@ -150,7 +151,8 @@ const cloudflareModule = defineNitroPreset(
       },
       async compiled(nitro: Nitro) {
         await writeWranglerConfig(nitro, "module");
-        await writeCFHeaders(nitro, "public");
+        await writeCFHeaders(nitro, "assets");
+        await moveCFRedirects(nitro);
 
         await writeFile(
           resolve(nitro.options.output.dir, "package.json"),
@@ -169,10 +171,17 @@ const cloudflareModule = defineNitroPreset(
   }
 );
 
+/** @deprecated `cloudflare-module` exports the `$DurableObject` class. */
 const cloudflareDurable = defineNitroPreset(
   {
     extends: "cloudflare-module",
-    entry: "./cloudflare/runtime/cloudflare-durable",
+    hooks: {
+      "build:before": (nitro) => {
+        nitro.logger.warn(
+          "[cloudflare] The `cloudflare_durable` preset is deprecated. Use `cloudflare_module` instead: it exports the same `$DurableObject` class and forwards WebSocket upgrades to it when its binding is declared in your Wrangler configuration."
+        );
+      },
+    },
   },
   {
     name: "cloudflare-durable" as const,
@@ -188,7 +197,7 @@ export default [
 ];
 
 // Builds for workerd like the production presets
-function setupMiniflareDev(nitro: Nitro) {
+async function setupMiniflareDev(nitro: Nitro) {
   // Resolve packages for workerd (it rejects the CJS entries of the `node` condition)
   nitro.options.exportConditions = [
     ...new Set([
@@ -198,10 +207,7 @@ function setupMiniflareDev(nitro: Nitro) {
     ]),
   ];
   extendEnv(nitro, unenvCfExternals);
-  // In Vite dev, the nitro environment's entry re-exports them instead (`vite/dev-entry.mjs`)
-  if (nitro.options.builder !== "vite") {
-    setupEntryExports(nitro);
-  }
+  await setupDevEntryExports(nitro);
   // The bridge imports `cloudflare:workers`, only available in workerd
   setupTracingBridge(nitro);
 }

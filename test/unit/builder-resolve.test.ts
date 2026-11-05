@@ -4,7 +4,18 @@ import { tmpdir } from "node:os";
 import { join } from "pathe";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-const state = vi.hoisted(() => ({ rolldown: undefined as string | undefined, vite: false }));
+const state = vi.hoisted(() => ({
+  rolldown: undefined as string | undefined,
+  vite: false,
+  bun: false,
+}));
+
+vi.mock("std-env", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("std-env")>()),
+  get isBun() {
+    return state.bun;
+  },
+}));
 
 vi.mock("../../src/build/rolldown/_import.ts", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../src/build/rolldown/_import.ts")>()),
@@ -17,6 +28,8 @@ vi.mock("../../src/utils/dep.ts", async (importOriginal) => {
     ...mod,
     isDepInstalled: (id: string, opts: Parameters<typeof mod.isDepInstalled>[1]) =>
       id === "vite" ? state.vite : mod.isDepInstalled(id, opts),
+    ensureDep: (opts: Parameters<typeof mod.ensureDep>[0]) =>
+      opts.id === "vite" && !state.vite ? Promise.resolve(undefined) : mod.ensureDep(opts),
   };
 });
 
@@ -43,6 +56,7 @@ describe("resolveBuilder", () => {
     delete process.env.NITRO_BUILDER;
     state.rolldown = undefined;
     state.vite = false;
+    state.bun = false;
   });
 
   async function resolve(opts: Partial<NitroOptions>) {
@@ -90,6 +104,44 @@ describe("resolveBuilder", () => {
 
   it("installs an explicit rolldown builder on build, not on config load", async () => {
     expect(await resolve({ dev: false, builder: "rolldown" })).toBe("rolldown");
+  });
+
+  it("imports an explicit vite builder on build, not on config load", async () => {
+    expect(await resolve({ dev: true, builder: "vite" })).toBe("vite");
+    expect(await resolve({ dev: false, builder: "vite" })).toBe("vite");
+  });
+
+  it("keeps an explicit bun builder with the Bun runtime", async () => {
+    state.bun = true;
+    expect(await resolve({ dev: false, builder: "bun" })).toBe("bun");
+  });
+
+  it("rejects the bun builder without the Bun runtime", async () => {
+    await expect(resolve({ dev: false, builder: "bun" })).rejects.toThrow(
+      "The `bun` builder requires the Bun runtime"
+    );
+  });
+
+  it("uses the bun builder with the Bun runtime when rolldown and vite are not installed", async () => {
+    state.bun = true;
+    expect(await resolve({ dev: false })).toBe("bun");
+    expect(await resolve({ dev: true })).toBe("bun");
+    expect(await resolve({ dev: true, rollupConfig: { plugins: [] } })).toBe("bun");
+  });
+
+  it("keeps rolldown with the Bun runtime when rolldown or vite is installed", async () => {
+    state.bun = true;
+    state.rolldown = "/rolldown/index.mjs";
+    expect(await resolve({ dev: false })).toBe("rolldown");
+    state.rolldown = undefined;
+    state.vite = true;
+    expect(await resolve({ dev: false })).toBe("rolldown");
+  });
+
+  it("keeps an explicit builder with the Bun runtime", async () => {
+    state.bun = true;
+    expect(await resolve({ dev: false, builder: "rollup" })).toBe("rollup");
+    expect(await resolve({ dev: false, builder: false })).toBe(false);
   });
 
   it("keeps an explicit `builder: false`", async () => {

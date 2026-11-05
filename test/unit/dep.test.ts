@@ -30,9 +30,11 @@ vi.mock("std-env", async (importOriginal) => ({
 }));
 
 const addDevDependency = vi.fn();
+const detectPackageManager = vi.fn(async () => ({ name: "pnpm" }) as { name: string } | undefined);
 vi.mock("nypm", () => ({
   addDependency: vi.fn(),
   addDevDependency: (...args: unknown[]) => addDevDependency(...args),
+  detectPackageManager: () => detectPackageManager(),
 }));
 
 const prompt = vi.fn();
@@ -47,12 +49,13 @@ vi.mock("consola", () => ({
 }));
 
 const missingDep = { id: "nitro-missing-dep", dir: process.cwd(), reason: "testing" };
+const installEnv = { NODE_ENV: "development" };
 
 async function ensureDep(
   opts: typeof missingDep & {
     version?: string;
     autoInstall?: boolean;
-    paths?: Record<string, string>;
+    deps?: { paths?: Record<string, string>; install?: boolean };
   }
 ) {
   const mod = await import("../../src/utils/dep.ts");
@@ -116,14 +119,42 @@ describe("ensureDep", () => {
     env.isAgent = true;
     await ensureDep(missingDep);
     expect(prompt).not.toHaveBeenCalled();
-    expect(addDevDependency).toHaveBeenCalledWith(missingDep.id, { cwd: missingDep.dir });
+    expect(addDevDependency).toHaveBeenCalledWith(missingDep.id, {
+      cwd: missingDep.dir,
+      env: installEnv,
+    });
   });
 
   it("installs without prompting when there is no TTY", async () => {
     env.hasTTY = false;
     await ensureDep(missingDep);
     expect(prompt).not.toHaveBeenCalled();
-    expect(addDevDependency).toHaveBeenCalledWith(missingDep.id, { cwd: missingDep.dir });
+    expect(addDevDependency).toHaveBeenCalledWith(missingDep.id, {
+      cwd: missingDep.dir,
+      env: installEnv,
+    });
+  });
+
+  it("installs with the package manager of the runtime when none is detected", async () => {
+    env.isAgent = true;
+    detectPackageManager.mockResolvedValueOnce(undefined);
+    await ensureDep(missingDep);
+    expect(addDevDependency).toHaveBeenCalledWith(missingDep.id, {
+      cwd: missingDep.dir,
+      packageManager: process.versions.bun ? "bun" : "npm",
+      env: installEnv,
+    });
+  });
+
+  it("installs with a non-production `NODE_ENV` during builds", async () => {
+    env.isAgent = true;
+    vi.stubEnv("NODE_ENV", "production");
+    await ensureDep(missingDep);
+    vi.unstubAllEnvs();
+    expect(addDevDependency).toHaveBeenCalledWith(
+      missingDep.id,
+      expect.objectContaining({ env: { NODE_ENV: "development" } })
+    );
   });
 
   it("prompts in an interactive environment", async () => {
@@ -136,21 +167,86 @@ describe("ensureDep", () => {
   it("installs without prompting with `autoInstall`", async () => {
     await ensureDep({ ...missingDep, autoInstall: true });
     expect(prompt).not.toHaveBeenCalled();
-    expect(addDevDependency).toHaveBeenCalledWith(missingDep.id, { cwd: missingDep.dir });
+    expect(addDevDependency).toHaveBeenCalledWith(missingDep.id, {
+      cwd: missingDep.dir,
+      env: installEnv,
+    });
   });
 
-  it("does not install with `autoInstall` in test mode", async () => {
+  it("does not install with `autoInstall` or `install: true` in test mode", async () => {
     env.isTest = true;
     expect(await ensureDep({ ...missingDep, autoInstall: true })).toBeUndefined();
+    expect(await ensureDep({ ...missingDep, deps: { install: true } })).toBeUndefined();
     expect(prompt).not.toHaveBeenCalled();
     expect(addDevDependency).not.toHaveBeenCalled();
   });
+
+  it("does not install in CI", async () => {
+    Object.assign(env, { isCI: true, hasTTY: false });
+    for (const opts of [missingDep, { ...missingDep, autoInstall: true }]) {
+      expect(await ensureDep(opts)).toBeUndefined();
+    }
+    expect(prompt).not.toHaveBeenCalled();
+    expect(addDevDependency).not.toHaveBeenCalled();
+  });
+
+  it("installs in CI with `install: true`", async () => {
+    Object.assign(env, { isCI: true, hasTTY: false });
+    await ensureDep({ ...missingDep, deps: { install: true } });
+    expect(prompt).not.toHaveBeenCalled();
+    expect(addDevDependency).toHaveBeenCalledWith(missingDep.id, {
+      cwd: missingDep.dir,
+      env: installEnv,
+    });
+  });
+
+  it.each([
+    ["interactively", {}],
+    ["in an agent environment", { isAgent: true }],
+    ["without a TTY", { hasTTY: false }],
+  ])("does not install with `install: false` %s", async (_, flags) => {
+    Object.assign(env, flags);
+    prompt.mockResolvedValue(true);
+    for (const opts of [
+      { ...missingDep, deps: { install: false } },
+      { ...missingDep, deps: { install: false }, autoInstall: true },
+    ]) {
+      expect(await ensureDep(opts)).toBeUndefined();
+    }
+    expect(prompt).not.toHaveBeenCalled();
+    expect(addDevDependency).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["in CI", { isCI: true }, false],
+    ["interactively", {}, false],
+    ["with `autoInstall`", {}, true],
+  ])(
+    "does not install into a directory inside `node_modules` %s",
+    async (_, flags, autoInstall) => {
+      Object.assign(env, flags);
+      prompt.mockResolvedValue(true);
+      const dir = join(
+        createProject(),
+        "node_modules/.pnpm/framework@1.0.0/node_modules/framework"
+      );
+      mkdirSync(dir, { recursive: true });
+      for (const opts of [
+        { ...missingDep, dir, autoInstall, deps: { install: true } },
+        { ...missingDep, dir: `${dir}/`, autoInstall, deps: { install: true } },
+      ]) {
+        expect(await ensureDep(opts)).toBeUndefined();
+      }
+      expect(prompt).not.toHaveBeenCalled();
+      expect(addDevDependency).not.toHaveBeenCalled();
+    }
+  );
 });
 
 describe("ensureDep (resolve cache)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    Object.assign(env, { isAgent: false, isCI: true, isTest: false, hasTTY: false });
+    Object.assign(env, { isAgent: true, isCI: false, isTest: false, hasTTY: false });
     addDevDependency.mockImplementation((spec: string, opts: { cwd: string }) => {
       installStub(spec.split("@")[0]!, opts.cwd);
     });
@@ -269,13 +365,66 @@ describe("missing dependencies", () => {
 
   it("includes the supported version in the install command", async () => {
     const { missingDepError } = await import("../../src/utils/dep.ts");
-    const opts = { ...missingDep, version: "^2.0.0-rc.24" };
+    const opts = { ...missingDep, version: "^2.0.0-rc.24", deps: { install: false } };
     expect(missingDepError(opts).message).toBe(
       "`nitro-missing-dep` is not installed. It is required for testing. Please add it to your dev dependencies (e.g. `npx nypm add -D nitro-missing-dep@^2.0.0-rc.24`)."
     );
     expect(missingDepError({ ...opts, dev: false }).message).toContain(
       "Please add it to your dependencies (e.g. `npx nypm add nitro-missing-dep@^2.0.0-rc.24`)."
     );
+  });
+
+  it("explains that nothing is installed in CI by default", async () => {
+    const { missingDepError } = await import("../../src/utils/dep.ts");
+    const hint = "not installed on demand in CI unless the `deps.install` option is enabled";
+    expect(missingDepError(missingDep).message).toContain(hint);
+    expect(missingDepError({ ...missingDep, deps: { install: false } }).message).not.toContain(
+      hint
+    );
+    env.isCI = false;
+    expect(missingDepError(missingDep).message).not.toContain(hint);
+  });
+
+  it("fails for a missing driver library when installing is disabled", async () => {
+    const { ensureLibDeps } = await import("../../src/utils/dep.ts");
+    const users = [{ name: "redis", options: {}, deps: [{ option: "lib", name: missingDep.id }] }];
+    const opts = { dir: createProject(), label: "storage driver" };
+    await expect(ensureLibDeps(users, opts)).rejects.toThrow(
+      /`nitro-missing-dep` is not installed. It is required for the `redis` storage driver/
+    );
+    env.isCI = false;
+    await expect(ensureLibDeps(users, { ...opts, deps: { install: false } })).rejects.toThrow(
+      "is not installed"
+    );
+    env.isTest = true;
+    await expect(
+      ensureLibDeps(users, { ...opts, deps: { install: false } })
+    ).resolves.toBeUndefined();
+    expect(consola.warn).toHaveBeenCalledWith(expect.stringContaining("is not installed"));
+    expect(addDevDependency).not.toHaveBeenCalled();
+  });
+
+  it("does not accept an explicit path for a driver library (imported by name)", async () => {
+    const { ensureLibDeps } = await import("../../src/utils/dep.ts");
+    const frameworkDir = createProject();
+    installStub(missingDep.id, frameworkDir);
+    const users = [{ name: "redis", options: {}, deps: [{ option: "lib", name: missingDep.id }] }];
+    const paths = { [missingDep.id]: join(frameworkDir, "node_modules", missingDep.id) };
+    await expect(
+      ensureLibDeps(users, { dir: createProject(), label: "storage driver", deps: { paths } })
+    ).rejects.toThrow("is not installed");
+  });
+
+  it("asks the framework to add it when resolving from inside `node_modules`", async () => {
+    const { importDep, missingDepError } = await import("../../src/utils/dep.ts");
+    const dir = join(createProject(), "node_modules/framework");
+    mkdirSync(dir, { recursive: true });
+    const opts = { ...missingDep, dir, version: "^1.0.0" };
+    expect(missingDepError(opts).message).toBe(
+      `\`nitro-missing-dep\` cannot be resolved from \`${dir}\`, which is inside \`node_modules\`. It is required for testing. The package that configures Nitro with this \`rootDir\` must add \`nitro-missing-dep@^1.0.0\` to its own dependencies (or provide it with the \`deps.paths\` option).`
+    );
+    await expect(importDep(opts)).rejects.toThrow(missingDepError(opts).message);
+    expect(addDevDependency).not.toHaveBeenCalled();
   });
 
   it("throws the same error from `importDep`", async () => {
@@ -287,7 +436,9 @@ describe("missing dependencies", () => {
 
   it("does not report a successful install when it is still not resolvable", async () => {
     addDevDependency.mockImplementation(() => {}); // Package manager did not install it
-    expect(await ensureDep({ ...missingDep, dir: createProject() })).toBeUndefined();
+    expect(
+      await ensureDep({ ...missingDep, dir: createProject(), deps: { install: true } })
+    ).toBeUndefined();
     expect(addDevDependency).toHaveBeenCalledOnce();
     expect(consola.success).not.toHaveBeenCalled();
     expect(consola.warn).toHaveBeenCalledWith(expect.stringContaining("cannot be resolved"));
@@ -313,8 +464,10 @@ describe("explicit dependency paths (`deps.paths`)", () => {
     const dir = createProject();
     for (const path of [pkgDir, join(pkgDir, "index.mjs"), pathToFileURL(pkgDir).href]) {
       const paths = { [missingDep.id]: path };
-      expect(await ensureDep({ ...missingDep, dir, paths })).toBe(join(pkgDir, "index.mjs"));
-      expect(resolveDep(`${missingDep.id}/sub`, { dir, paths, projectOnly: true })).toBe(
+      expect(await ensureDep({ ...missingDep, dir, deps: { paths } })).toBe(
+        join(pkgDir, "index.mjs")
+      );
+      expect(resolveDep(`${missingDep.id}/sub`, { dir, deps: { paths }, projectOnly: true })).toBe(
         join(pkgDir, "index.mjs")
       );
     }
@@ -326,7 +479,9 @@ describe("explicit dependency paths (`deps.paths`)", () => {
     const dir = createProject();
     installStub(missingDep.id, dir, "1.0.0");
     const paths = { [missingDep.id]: pkgDir };
-    expect(await ensureDep({ ...missingDep, dir, paths })).toBe(join(pkgDir, "index.mjs"));
+    expect(await ensureDep({ ...missingDep, dir, deps: { paths } })).toBe(
+      join(pkgDir, "index.mjs")
+    );
   });
 
   it("resolves packages without `exports` from their explicit path only", async () => {
@@ -342,7 +497,7 @@ describe("explicit dependency paths (`deps.paths`)", () => {
     writeFileSync(join(pkgDir, "lib/sub.js"), "module.exports = 2;");
     // Another copy that would be found walking up from the explicit path
     installStub(missingDep.id, dirname(dirname(pkgDir)));
-    const opts = { dir: createProject(), paths: { [missingDep.id]: pkgDir } };
+    const opts = { dir: createProject(), deps: { paths: { [missingDep.id]: pkgDir } } };
     expect(resolveDep(missingDep.id, opts)).toBe(join(pkgDir, "lib/main.js"));
     expect(resolveDep(`${missingDep.id}/lib/sub`, opts)).toBe(join(pkgDir, "lib/sub.js"));
     expect(() => resolveDep(`${missingDep.id}/missing`, opts)).toThrow(
@@ -355,7 +510,7 @@ describe("explicit dependency paths (`deps.paths`)", () => {
     const frameworkDir = createProject();
     installStub("rolldown", frameworkDir, "0.1.0");
     await importRolldown(createProject(), {
-      paths: { rolldown: join(frameworkDir, "node_modules/rolldown") },
+      deps: { paths: { rolldown: join(frameworkDir, "node_modules/rolldown") } },
     });
     expect(consola.warn).toHaveBeenCalledWith(expect.stringContaining("`rolldown@0.1.0`"));
   });
@@ -363,13 +518,15 @@ describe("explicit dependency paths (`deps.paths`)", () => {
   it("checks the version of an explicit path", async () => {
     const pkgDir = createFrameworkDep("1.0.0");
     const paths = { [missingDep.id]: pkgDir };
-    await ensureDep({ ...missingDep, dir: createProject(), paths, version: "^2.0.0" });
+    await ensureDep({ ...missingDep, dir: createProject(), deps: { paths }, version: "^2.0.0" });
     expect(consola.warn).toHaveBeenCalledWith(expect.stringContaining("requires `^2.0.0`"));
   });
 
   it("throws for an explicit path that is not the package", async () => {
     const paths = { [missingDep.id]: createProject() };
-    await expect(ensureDep({ ...missingDep, dir: createProject(), paths })).rejects.toThrow(
+    await expect(
+      ensureDep({ ...missingDep, dir: createProject(), deps: { paths } })
+    ).rejects.toThrow(
       `The \`deps.paths["${missingDep.id}"]\` option must point to the \`${missingDep.id}\` package`
     );
     expect(addDevDependency).not.toHaveBeenCalled();

@@ -2,10 +2,12 @@ import { existsSync, readFileSync } from "node:fs";
 import { consola } from "consola";
 import type { NitroOptions } from "nitro/types";
 import { resolve } from "pathe";
+import { isBun } from "std-env";
+import { assertBunRuntime } from "../../build/bun/_runtime.ts";
 import { resolveRolldown } from "../../build/rolldown/_import.ts";
-import { ensureDep, isDepInstalled } from "../../utils/dep.ts";
+import { ensureDep, isDepInstalled, missingDepError } from "../../utils/dep.ts";
 
-const VALID_BUILDERS = ["rolldown", "rollup", "vite"] as const;
+const VALID_BUILDERS = ["rolldown", "rollup", "rspack", "vite", "bun"] as const;
 
 export async function resolveBuilder(options: NitroOptions) {
   // NITRO_BUILDER environment variable
@@ -29,23 +31,30 @@ export async function resolveBuilder(options: NitroOptions) {
         `Invalid nitro builder "${options.builder}". Valid builders are: ${VALID_BUILDERS.join(", ")}.`
       );
     }
-    // Check if the builder package is installed (`rolldown` is installed on build)
-    const pkg = options.builder;
-    if (pkg === "rolldown") {
+    // `Bun.build` is provided by the runtime
+    if (options.builder === "bun") {
+      assertBunRuntime();
       return;
     }
-    const resolved = await ensureDep({ id: pkg, dir: options.rootDir, paths: options.deps?.paths });
-    if (!resolved) {
-      throw new Error(
-        `Nitro builder package "${pkg}" is not installed. Please install it in your project dependencies.`
-      );
+    // Check if the builder package is installed (`rolldown` and `vite` are resolved when used)
+    const pkg = options.builder === "rspack" ? ("@rspack/core" as const) : options.builder;
+    if (pkg === "rolldown" || pkg === "vite") {
+      return;
+    }
+    const depOpts = {
+      id: pkg,
+      dir: options.rootDir,
+      deps: options.deps,
+    };
+    if (!(await ensureDep(depOpts))) {
+      throw missingDepError(depOpts);
     }
     return;
   }
 
   // Auto-detect: check for vite.config with nitro() plugin
   if (
-    isDepInstalled("vite", { dir: options.rootDir, paths: options.deps?.paths }) &&
+    isDepInstalled("vite", { dir: options.rootDir, deps: options.deps }) &&
     hasNitroViteConfig(options)
   ) {
     if (!options.dev) {
@@ -58,6 +67,23 @@ export async function resolveBuilder(options: NitroOptions) {
         "Detected a `vite.config` with the `nitro()` plugin, but the Nitro dev server does not run Vite, so Vite plugins and features are not available. Use `vite dev` for the full Vite experience."
       );
     }
+  }
+
+  // With the Bun runtime (`bun --bun`) and neither `rolldown` nor `vite` in the project, bundle with
+  // `Bun.build` instead of installing rolldown (build) or running without a builder (dev)
+  if (
+    isBun &&
+    !resolveRolldown(options.rootDir, { paths: options.deps?.paths }) &&
+    !isDepInstalled("vite", { dir: options.rootDir, deps: options.deps })
+  ) {
+    if (!_bunHintShown) {
+      _bunHintShown = true;
+      consola.info(
+        "Using the experimental `bun` builder (Bun runtime, `rolldown` is not installed in your project). Install `rolldown` or set the `builder` option to use another builder."
+      );
+    }
+    options.builder = "bun";
+    return;
   }
 
   // Default to rolldown when installed in the project, and otherwise install it on build, unless
@@ -84,6 +110,7 @@ export async function resolveBuilder(options: NitroOptions) {
 
 let _hintShown = false;
 let _viteHintShown = false;
+let _bunHintShown = false;
 
 function hasConfig(config: object | undefined): boolean {
   return !!config && Object.keys(config).length > 0;

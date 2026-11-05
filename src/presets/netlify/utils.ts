@@ -3,7 +3,8 @@ import type { Nitro, PublicAssetDir } from "nitro/types";
 import { dirname, join } from "pathe";
 import { joinURL, withoutTrailingSlash } from "ufo";
 import { escapeRegExp } from "../../utils/regex.ts";
-import { routeToSplat, skipUnsupportedRoute, sortRoutes } from "../_utils/routes.ts";
+import { getPublicAssetCorsHeaders } from "../_utils/cors.ts";
+import { hasHeaders, routeToSplat, skipUnsupportedRoute, sortRoutes } from "../_utils/routes.ts";
 
 export async function writeRedirects(nitro: Nitro) {
   let contents = "";
@@ -45,7 +46,7 @@ export async function writeHeaders(nitro: Nitro) {
 
   for (const path of sortRoutes(Object.keys(nitro.options.routeRules))) {
     const routeRules = nitro.options.routeRules[path];
-    if (!routeRules.headers || skipUnsupportedRoute(nitro, { route: path, file: "_headers" })) {
+    if (!hasHeaders(routeRules) || skipUnsupportedRoute(nitro, { route: path, file: "_headers" })) {
       continue;
     }
     const headers = [
@@ -56,6 +57,18 @@ export async function writeHeaders(nitro: Nitro) {
     ].join("\n");
 
     contents += headers + "\n";
+  }
+
+  const userHeadersPath = join(nitro.options.output.publicDir, "_headers");
+  const headersFile = existsSync(userHeadersPath)
+    ? await fsp.readFile(userHeadersPath, "utf8")
+    : undefined;
+  for (const { base, headers } of getPublicAssetCorsHeaders(nitro, { headersFile })) {
+    contents +=
+      [
+        joinURL(nitro.options.baseURL, base, "*"),
+        ...Object.entries(headers).map(([header, value]) => `  ${header}: ${value}`),
+      ].join("\n") + "\n";
   }
 
   await writePublishFile(nitro, "_headers", contents);
@@ -152,7 +165,7 @@ async function writePublishFile(nitro: Nitro, name: "_redirects" | "_headers", c
 
 // Public assets are output to `dist/{{ baseURL }}`, unless `publicDir` is customized
 function getPublishDir(nitro: Nitro) {
-  const { publicDir } = nitro.options.output;
+  const publicDir = withoutTrailingSlash(nitro.options.output.publicDir);
   const base = withoutTrailingSlash(nitro.options.baseURL);
   return base && publicDir.endsWith(base) ? publicDir.slice(0, -base.length) : publicDir;
 }

@@ -5,6 +5,7 @@ import { resolve, join, basename } from "pathe";
 import { joinURL } from "ufo";
 import { routeToRegExp } from "rou3";
 import { describe, expect, it, vi, beforeAll, afterAll } from "vitest";
+import { isBun } from "std-env";
 import { setupTest, testNitro, fixtureDir } from "../tests.ts";
 import { toFetchHandler } from "srvx/node";
 
@@ -50,6 +51,12 @@ describe("nitro:preset:vercel:web", async () => {
         "/rules/isr-true/**": { isr: true },
         "/rules/isr-query-empty/**": { isr: { allowQuery: [] } },
         "/rules/isr-query-nopass/**": { isr: { allowQuery: ["q"], passQuery: false } },
+        // Vercel rejects routes with empty `headers`
+        "/rules/cors-only": { cors: true },
+        "/rules/cors-empty-headers/**": { cors: true, headers: {} },
+        "/rules/cdn-empty-headers/**": { proxy: "https://cdn.jsdelivr.net/**", headers: {} },
+        // Public asset dirs are served without the server function, that applies `cors`
+        "/build/**": { cors: true },
       },
       vercel: {
         queues: {
@@ -87,6 +94,11 @@ describe("nitro:preset:vercel:web", async () => {
         const config = await fsp
           .readFile(resolve(ctx.outDir, "config.json"), "utf8")
           .then((r) => JSON.parse(r));
+        if (isBun) {
+          // Prerendered with Bun, which uses its own default content type for text bodies
+          expect(config.overrides["json-string"].contentType).toBe("text/plain;charset=utf-8");
+          config.overrides["json-string"].contentType = "text/plain; charset=UTF-8";
+        }
         expect(config).toMatchInlineSnapshot(`
           {
             "crons": [
@@ -170,6 +182,14 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "^\\/build(?:\\/(?<_0>(?:[\\s\\S]*[^/])?\\/*?))??\\/?$",
               },
               {
+                "continue": true,
+                "headers": {
+                  "access-control-allow-origin": "*",
+                  "access-control-expose-headers": "*",
+                },
+                "src": "/build/(.*)",
+              },
+              {
                 "dest": "https://cdn.jsdelivr.net/$1",
                 "src": "^\\/cdn(?:\\/(?<_0>(?:[\\s\\S]*[^/])?\\/*?))??\\/?$",
               },
@@ -183,6 +203,10 @@ describe("nitro:preset:vercel:web", async () => {
                 ],
                 "src": "^\\/rules\\/method-scoped\\/redirect\\/?$",
                 "status": 307,
+              },
+              {
+                "dest": "https://cdn.jsdelivr.net/$1",
+                "src": "^\\/rules\\/cdn-empty-headers(?:\\/(?<_0>(?:[\\s\\S]*[^/])?\\/*?))??\\/?$",
               },
               {
                 "headers": {
@@ -359,6 +383,10 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "^\\/single-headers\\/(?<id>[^/]+)\\/?$",
               },
               {
+                "dest": "/rules/swr/middleware-order",
+                "src": "^\\/rules\\/swr\\/middleware-order\\/?$",
+              },
+              {
                 "dest": "/rules/[...slug]",
                 "src": "^\\/rules(?:\\/(?<slug>(?:[\\s\\S]*[^/])?\\/*?))?\\/?$",
               },
@@ -403,12 +431,24 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "^\\/fetch\\/?$",
               },
               {
+                "dest": "/fetch-public-asset",
+                "src": "^\\/fetch-public-asset\\/?$",
+              },
+              {
+                "dest": "/fast-response",
+                "src": "^\\/fast-response\\/?$",
+              },
+              {
                 "dest": "/errors/throw",
                 "src": "^\\/errors\\/throw\\/?$",
               },
               {
                 "dest": "/errors/stack",
                 "src": "^\\/errors\\/stack\\/?$",
+              },
+              {
+                "dest": "/errors/err-headers",
+                "src": "^\\/errors\\/err-headers\\/?$",
               },
               {
                 "dest": "/errors/captured",
@@ -431,6 +471,10 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "^\\/config\\/?$",
               },
               {
+                "dest": "/cjs-builtins",
+                "src": "^\\/cjs-builtins\\/?$",
+              },
+              {
                 "dest": "/build-plugins",
                 "src": "^\\/build-plugins\\/?$",
               },
@@ -447,7 +491,11 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "^\\/assets\\/(?<id>[^/]+)\\/?$",
               },
               {
-                "dest": "/api/test/[-]/foo",
+                "dest": "/asset-url",
+                "src": "^\\/asset-url\\/?$",
+              },
+              {
+                "dest": "/api/test/[...]/foo",
                 "src": "^\\/api\\/test\\/(?<_0>[\\s\\S]*)\\/foo\\/?$",
               },
               {
@@ -531,6 +579,10 @@ describe("nitro:preset:vercel:web", async () => {
                 "src": "^\\/api\\/cached\\/?$",
               },
               {
+                "dest": "/api/cached-middleware",
+                "src": "^\\/api\\/cached-middleware\\/?$",
+              },
+              {
                 "dest": "/api/body-size",
                 "src": "^\\/api\\/body-size\\/?$",
               },
@@ -570,6 +622,18 @@ describe("nitro:preset:vercel:web", async () => {
           .then((r) => JSON.parse(r));
         expect(manifest.version).toBe(1);
         expect(manifest.hashes).toBeTypeOf("object");
+      });
+
+      it("should not write routes with empty headers", async () => {
+        const config = await fsp
+          .readFile(resolve(ctx.outDir, "config.json"), "utf8")
+          .then((r) => JSON.parse(r));
+        expect(
+          config.routes.filter(
+            (route: { headers?: object }) =>
+              route.headers && Object.keys(route.headers).length === 0
+          )
+        ).toEqual([]);
       });
 
       it("should not cache missing immutable public assets", async () => {
@@ -740,6 +804,7 @@ describe("nitro:preset:vercel:web", async () => {
             "functions/_vercel",
             "functions/_ws.func (symlink)",
             "functions/api/body-size.func (symlink)",
+            "functions/api/cached-middleware.func (symlink)",
             "functions/api/cached.func (symlink)",
             "functions/api/catch-all-index.func (symlink)",
             "functions/api/catch-all-index/[...slug].func (symlink)",
@@ -759,20 +824,25 @@ describe("nitro:preset:vercel:web", async () => {
             "functions/api/param/[test_id].func (symlink)",
             "functions/api/storage/item.func (symlink)",
             "functions/api/storage/legacy.func (symlink)",
-            "functions/api/test/[-]/foo.func (symlink)",
+            "functions/api/test/[...]/foo.func (symlink)",
             "functions/api/upload.func (symlink)",
             "functions/api/wildcard/[...param].func (symlink)",
+            "functions/asset-url.func (symlink)",
             "functions/assets/[id].func (symlink)",
             "functions/assets/all.func (symlink)",
             "functions/assets/md.func (symlink)",
             "functions/build-plugins.func (symlink)",
+            "functions/cjs-builtins.func (symlink)",
             "functions/config.func (symlink)",
             "functions/context.func (symlink)",
             "functions/embedded-kit.func (symlink)",
             "functions/env.func (symlink)",
             "functions/errors/captured.func (symlink)",
+            "functions/errors/err-headers.func (symlink)",
             "functions/errors/stack.func (symlink)",
             "functions/errors/throw.func (symlink)",
+            "functions/fast-response.func (symlink)",
+            "functions/fetch-public-asset.func (symlink)",
             "functions/fetch.func (symlink)",
             "functions/file.func (symlink)",
             "functions/icon.png.func (symlink)",
@@ -799,6 +869,7 @@ describe("nitro:preset:vercel:web", async () => {
             "functions/rules/isr-ttl/[...]-isr.prerender-config.json",
             "functions/rules/isr/[...]-isr.func",
             "functions/rules/isr/[...]-isr.prerender-config.json",
+            "functions/rules/swr/middleware-order.func (symlink)",
             "functions/single-headers/[id].func (symlink)",
             "functions/static-flags.func (symlink)",
             "functions/stream.func (symlink)",
@@ -935,7 +1006,7 @@ describe("nitro:preset:vercel:node", async () => {
           handler: resolve(presetFixturesDir, "websocket.ts"),
         },
       ],
-      vercel: { entryFormat: "node" },
+      vercel: { entryFormat: "node", schedules: "private" },
     },
   });
   testNitro(
@@ -977,7 +1048,75 @@ describe("nitro:preset:vercel:node", async () => {
         expect(waitUntil.mock.calls[0][0]).toBeInstanceOf(Promise);
       });
 
-      it.skipIf(typeof WebSocket !== "function")(
+      it("should emit vercel schedules instead of cron jobs", async () => {
+        const config = await fsp
+          .readFile(resolve(ctx.outDir, "config.json"), "utf8")
+          .then((r) => JSON.parse(r));
+        expect(config.crons).toBeUndefined();
+        expect(config.schedules).toEqual({
+          test: { schedule: "* * * * *", function: "_vercel/tasks" },
+        });
+        expect(config.routes.some((r: { dest?: string }) => r.dest === "/_vercel/cron")).toBe(
+          false
+        );
+        const funcConfig = await fsp
+          .readFile(resolve(ctx.outDir, "functions/_vercel/tasks.func/.vc-config.json"), "utf8")
+          .then((r) => JSON.parse(r));
+        expect(funcConfig.experimentalTriggers).toEqual([{ type: "schedule/v1beta" }]);
+        expect(funcConfig.environment).toMatchObject({ NITRO_VERCEL_SCHEDULES_FUNCTION: "1" });
+      });
+
+      it("should not route public requests to the private schedules function", async () => {
+        const config = await fsp
+          .readFile(resolve(ctx.outDir, "config.json"), "utf8")
+          .then((r) => JSON.parse(r));
+        const routes = config.routes as { src?: string; dest?: string }[];
+        expect(routes.some((r) => r.dest === "/_vercel/tasks")).toBe(false);
+      });
+
+      const dispatch = async () => {
+        // `_vercel/tasks.func` is a copy of the same bundle, importing it too would share globals
+        const nodeHandler = await import(
+          resolve(ctx.outDir, "functions/__server.func/index.mjs")
+        ).then((r) => r.default || r);
+        return toFetchHandler(nodeHandler)(
+          new Request("https://example.com/_vercel/tasks", {
+            method: "POST",
+            headers: {
+              "ce-specversion": "1.0",
+              "ce-type": "com.vercel.schedule.v1beta",
+              "ce-source": "/schedule/default/test",
+              "ce-id": "execution-1",
+              "ce-vssscheduleid": "schedule-1",
+              "ce-vssschedulename": "test",
+              "ce-vssnamespace": "default",
+              "ce-vssscheduledat": "2026-09-02T03:00:00.000Z",
+              "ce-vssschedulesource": "static",
+              "ce-vssexpression": "* * * * *",
+            },
+          })
+        );
+      };
+
+      it("should not run tasks from forged dispatches to the public server function", async () => {
+        const res = await dispatch();
+        expect(res.status).toBe(404);
+      });
+
+      it("should run the task of a schedule dispatch in the private function", async () => {
+        vi.stubEnv("NITRO_VERCEL_SCHEDULES_FUNCTION", "1");
+        try {
+          const res = await dispatch();
+          expect(res.status).toBe(200);
+          expect(await res.json()).toEqual({ success: true });
+        } finally {
+          vi.unstubAllEnvs();
+        }
+      });
+
+      // Bun's `ServerResponse` writes to `req.socket` without an assigned socket, so the
+      // emulated `204` of this harness ends up in the upgraded stream
+      it.skipIf(isBun || typeof WebSocket !== "function")(
         "should handle Vercel request context websocket upgrades",
         async () => {
           const nodeHandler = await import(

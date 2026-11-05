@@ -1,7 +1,9 @@
 import { defineBuildConfig } from "obuild/config";
 
-import { readdir, readFile, writeFile } from "node:fs/promises";
+import { copyFile, readdir, readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { resolveModulePath } from "exsolve";
+import { dirname, join } from "pathe";
 import type { CodeSplittingOptions } from "rolldown";
 import { glob } from "tinyglobby";
 import { deps } from "./src/utils/_deps.ts";
@@ -33,7 +35,13 @@ export default defineBuildConfig({
   entries: [
     {
       type: "bundle",
-      input: ["src/builder.ts", "src/cli/index.ts", "src/types/index.ts", "src/vite.ts"],
+      input: [
+        "src/builder.ts",
+        "src/cli/index.ts",
+        "src/rsbuild.ts",
+        "src/types/index.ts",
+        "src/vite.ts",
+      ],
       minifyLibs: true,
       license: { gzip: true },
     },
@@ -116,6 +124,7 @@ export default defineBuildConfig({
         "@scalar/api-reference",
         "cloudflare:workers",
         "@cloudflare/workers-types",
+        "@rsbuild/core",
         // unplugin deps
         "@rspack/core",
         "@farmfe/core",
@@ -200,10 +209,27 @@ export default defineBuildConfig({
         }
       }
 
+      // `unwasm/plugin/rspack` (bundled) uses a loader file next to it
+      const unwasmLoader = join(
+        dirname(resolveModulePath("unwasm/plugin/rspack", { from: import.meta.url })),
+        "rspack-loader.cjs"
+      );
+      for (const file of await glob("dist/**/*.mjs")) {
+        if ((await readFile(file, "utf8")).includes("rspack-loader.cjs")) {
+          await copyFile(unwasmLoader, join(dirname(file), "rspack-loader.cjs"));
+        }
+      }
+
       // Vite types
       await writeFile(
         "dist/vite.d.mts",
         `import "vite/client";\nimport "nitro/vite/types";\n${await readFile("dist/vite.d.mts", "utf8")}`
+      );
+
+      // Rsbuild types
+      await writeFile(
+        "dist/rsbuild.d.mts",
+        `import "nitro/rsbuild/types";\n${await readFile("dist/rsbuild.d.mts", "utf8")}`
       );
     },
   },

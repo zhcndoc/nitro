@@ -18,4 +18,4 @@ export default () => {
 
 ## 配置
 
-可以在 `package.json` 的 imports 字段或 `nitro.config.ts` 中配置别名。
+可以在 `package.json` 的 imports 字段、`tsconfig.json` 的 `compilerOptions.paths` 或 `nitro.config.ts` 的 `alias` 选项中配置别名。

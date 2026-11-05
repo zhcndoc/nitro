@@ -67,7 +67,7 @@ All prefixed `#nitro/virtual/<name>`:
 - `polyfills.ts` — Env polyfills
 - `feature-flags.ts` — Feature detection
 - `routing-meta.ts` — Route metadata (OpenAPI)
-- `renderer-template.ts` — SSR renderer
+- `renderer-template.ts` — Renderer template compiled at build time (dev too); page HTML from `renderer.template` or `nitro._pageTemplate` (builder integrations), `<!--ssr-outlet-->` rendered by the `ssr` service; the template file is a watch file of the module (bundlers rebuild on change)
 - `_all.ts` — Aggregator
 
 ## Configuration System (`src/config/`)
@@ -101,6 +101,7 @@ All prefixed `#nitro/virtual/<name>`:
 
 - `dev/server.ts` — `createDevServer()` (public `NitroDevServer` interface, internal `DevServer` class): Worker management via `env-runner`, restart on failure (max 3 retries), WebSocket support, VFS debug endpoint (`/_vfs/**`)
 - `dev/app.ts` — `NitroDevApp`: H3 app with error handling, static serving with compression, dev proxy
+- `dev/_reload-signal.ts` + `dev/_error-recovery.ts` — Dev error page auto-reload (all builders): HTML 5xx page loads get a script that long-polls `/_nitro/dev/reload?id=<instance>&v=<generation>`; the generation is bumped by `DevServer.reload()`/`dev:error` (Rollup/Rolldown) or `hotUpdate` (Vite, where the page also re-checks its status since the worker reloads lazily)
 
 ## Prerender (`src/prerender/`)
 
@@ -133,7 +134,7 @@ presets/<name>/
 └── unenv/           # Env overrides (optional)
 ```
 
-Key presets: `standard`, `node` (server/middleware/cluster), `cloudflare` (pages/workers), `vercel`, `netlify`, `aws-lambda`, `deno`, `firebase`, `azure`, `bun`, `winterjs`
+Key presets: `standard`, `node` (server/middleware/cluster), `cloudflare` (pages/workers), `vercel`, `netlify`, `aws-lambda`, `deno`, `firebase`, `azure`, `bun`
 
 Resolution: `presets/_resolve.ts` handles aliases, dev/prod, compat dates, static hosting.
 
@@ -152,7 +153,7 @@ Uses `citty` with lazy-loaded commands: `dev`, `build`, `deploy`, `preview`, `pr
 | `hookable` | Hook system |
 | `unstorage` | Storage abstraction (`nitro/kv`), installed on demand by `build/plugins/runtime-deps.ts` |
 | `db0` | SQL database layer (`nitro/database`), installed on demand by `build/plugins/runtime-deps.ts` |
-| `ocache` | Caching (`nitro/cache`, `cache` route rules), installed on demand by `build/plugins/runtime-deps.ts` |
+| `ocache` | Caching (`nitro/cache`, `cache` route rules) |
 | `unenv` | Node.js polyfills for `node: false` builds (`build/_node-compat.ts`), installed on demand by `build/plugins/unenv.ts` |
 | `defu` | Config merging |
 | `pathe` | Path operations |
